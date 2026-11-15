@@ -560,7 +560,14 @@ LO-01 is an n8n Form with its own URL. LO-09 has no route.
 ### 19.4 Seed data
 `demo/seed-data.json` stores transaction dates as `day_offset` from the current week's Monday (0 = this Monday, -7 = last Monday). LO-00 turns them into real dates at seed time with `seedDate()` from `lib/week.mjs`, clamping any date after today to today, so whenever the demo runs there's always a live "this week" plus 3 past weeks. The seed's `_expected` block holds the audit results a correct implementation must produce (checked by `scripts/seed.test.mjs`).
 
-### 19.5 Code
+### 19.5 When an outside service is missing or down
+The demo must never break (§15 backup plan), and lanes build before every credential exists.
+- `POST /lo/invest/run` and `POST /lo/digest/send` accept **`dry_run: true`**. Invest computes FX and the sleeve split and returns the orders it *would* place (status `dry_run`), without calling Alpaca or writing rows. Digest returns `subject` and `body` without sending.
+- If Alpaca is unreachable or the `Alpaca Paper` credential is missing, LO-05 behaves like `dry_run` and returns `error.code = "UPSTREAM_ERROR"` alongside the computed split. The audit stays `computed`, so a later run can still invest.
+- If the LLM fails, LO-01 and LO-07 fall back to a fixed template text (still general, non-advisory language), so the form and the digest always complete.
+- If Plaid is missing, LO-03b (manual expense) and the seed carry the demo (§15).
+
+### 19.6 Code
 - Pure logic lives in `lib/*.mjs`: plain functions, no imports, no npm packages, tested with `node --test`, then pasted verbatim into Code nodes.
 - Week math (Monday start, America/Vancouver) comes from `lib/week.mjs` only.
 - Workflow JSON is built from `n8n/templates/node-snippets.json` (exported from the pinned n8n version), never from guessed `typeVersion`s.

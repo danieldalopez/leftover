@@ -75,7 +75,9 @@ Request `{ "user_id"?: "maya", "week_start"?: "2026-11-09", "invest"?: true }`. 
 ```
 
 ## POST /lo/invest/run (LO-05 test entry), same as the internal call from LO-04
-Request `{ "audit_id": "maya-2026-11-02", "user_id": "maya", "investable_cad": 26.15 }`
+Request `{ "audit_id": "maya-2026-11-02", "user_id": "maya", "investable_cad": 26.15, "dry_run"?: false }`
+
+`dry_run: true` (spec §19.5): same response shape, `status: "dry_run"`, each order `status: "dry_run"`, nothing sent to Alpaca, no rows written. A missing credential or unreachable Alpaca gives the same computed split plus `"ok": false, "error": {"code": "UPSTREAM_ERROR", …}`, and the audit stays `computed`.
 ```json
 {
   "ok": true,
@@ -102,7 +104,7 @@ Request `{}`
 ```
 
 ## POST /lo/digest/send (LO-07), same as the internal call from LO-04
-Request `{ "user_id": "maya", "audit_id"?: "maya-2026-11-02" }` (default: the user's latest audit)
+Request `{ "user_id": "maya", "audit_id"?: "maya-2026-11-02", "dry_run"?: false }` (default: the user's latest audit). `dry_run: true` returns `subject` and `body` (plus `sent_to: null`) without sending. If the LLM fails, the body uses the fixed template (spec §19.5).
 ```json
 { "ok": true, "data": { "user_id": "maya", "audit_id": "maya-2026-11-02", "sent_to": "…", "subject": "Your week: $26.15 invested" } }
 ```
