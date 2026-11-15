@@ -1,0 +1,69 @@
+{
+  "ok": true,
+  "data": {
+    "user_id": "maya",
+    "audits": [
+      {
+        "audit_id": "maya-2026-11-02", "week_start": "2026-11-02", "week_end": "2026-11-08", "status": "invested",
+        "gross_surplus_cad": 52.30, "total_over_cad": 12.40, "late_adj_cad": 0, "to_buffer_cad": 26.15,
+        "buffer_after_cad": 41.00, "investable_cad": 26.15, "pending_carry_after_cad": 0,
+        "best_category": { "category_key": "other", "label": "Other variable", "under_cad": 20.00 },
+        "lines": [
+          { "category_key": "groceries", "label": "Groceries", "planned_cad": 80.00, "actual_cad": 68.15, "under_cad": 11.85, "over_cad": 0 },
+          { "category_key": "eating_out", "label": "Eating out and coffee", "planned_cad": 50.00, "actual_cad": 47.55, "under_cad": 2.45, "over_cad": 0 },
+          { "category_key": "transport", "label": "Transport", "planned_cad": 30.00, "actual_cad": 18.00, "under_cad": 12.00, "over_cad": 0 },
+          { "category_key": "entertainment", "label": "Fun and entertainment", "planned_cad": 40.00, "actual_cad": 40.00, "under_cad": 0, "over_cad": 0 },
+          { "category_key": "shopping", "label": "Shopping", "planned_cad": 40.00, "actual_cad": 52.40, "under_cad": 0, "over_cad": 12.40 },
+          { "category_key": "personal_care", "label": "Personal care", "planned_cad": 20.00, "actual_cad": 14.00, "under_cad": 6.00, "over_cad": 0 },
+          { "category_key": "other", "label": "Other variable", "planned_cad": 20.00, "actual_cad": 0, "under_cad": 20.00, "over_cad": 0 }
+        ]
+      },
+      {
+        "audit_id": "maya-2026-10-26", "week_start": "2026-10-26", "week_end": "2026-11-01", "status": "invested",
+        "gross_surplus_cad": 54.50, "total_over_cad": 78.50, "late_adj_cad": 0, "to_buffer_cad": 27.25,
+        "buffer_after_cad": 27.25, "investable_cad": 27.25, "pending_carry_after_cad": 0,
+        "best_category": { "category_key": "shopping", "label": "Shopping", "under_cad": 40.00 },
+        "lines": [
+          { "category_key": "groceries", "label": "Groceries", "planned_cad": 80.00, "actual_cad": 91.30, "under_cad": 0, "over_cad": 11.30 },
+          { "category_key": "eating_out", "label": "Eating out and coffee", "planned_cad": 50.00, "actual_cad": 64.20, "under_cad": 0, "over_cad": 14.20 },
+          { "category_key": "transport", "label": "Transport", "planned_cad": 30.00, "actual_cad": 30.00, "under_cad": 0, "over_cad": 0 },
+          { "category_key": "entertainment", "label": "Fun and entertainment", "planned_cad": 40.00, "actual_cad": 85.00, "under_cad": 0, "over_cad": 45.00 },
+          { "category_key": "shopping", "label": "Shopping", "planned_cad": 40.00, "actual_cad": 0, "under_cad": 40.00, "over_cad": 0 },
+          { "category_key": "personal_care", "label": "Personal care", "planned_cad": 20.00, "actual_cad": 28.00, "under_cad": 0, "over_cad": 8.00 },
+          { "category_key": "other", "label": "Other variable", "planned_cad": 20.00, "actual_cad": 5.50, "under_cad": 14.50, "over_cad": 0 }
+        ]
+      },
+      {
+        "audit_id": "maya-2026-10-19", "week_start": "2026-10-19", "week_end": "2026-10-25", "status": "invested",
+        "gross_surplus_cad": 90.36, "total_over_cad": 0, "late_adj_cad": 0, "to_buffer_cad": 45.18,
+        "buffer_after_cad": 45.18, "investable_cad": 45.18, "pending_carry_after_cad": 0,
+        "best_category": { "category_key": "shopping", "label": "Shopping", "under_cad": 21.01 },
+        "lines": [
+          { "category_key": "groceries", "label": "Groceries", "planned_cad": 80.00, "actual_cad": 72.40, "under_cad": 7.60, "over_cad": 0 },
+          { "category_key": "eating_out", "label": "Eating out and coffee", "planned_cad": 50.00, "actual_cad": 38.75, "under_cad": 11.25, "over_cad": 0 },
+          { "category_key": "transport", "label": "Transport", "planned_cad": 30.00, "actual_cad": 22.50, "under_cad": 7.50, "over_cad": 0 },
+          { "category_key": "entertainment", "label": "Fun and entertainment", "planned_cad": 40.00, "actual_cad": 25.00, "under_cad": 15.00, "over_cad": 0 },
+          { "category_key": "shopping", "label": "Shopping", "planned_cad": 40.00, "actual_cad": 18.99, "under_cad": 21.01, "over_cad": 0 },
+          { "category_key": "personal_care", "label": "Personal care", "planned_cad": 20.00, "actual_cad": 0, "under_cad": 20.00, "over_cad": 0 },
+          { "category_key": "other", "label": "Other variable", "planned_cad": 20.00, "actual_cad": 12.00, "under_cad": 8.00, "over_cad": 0 }
+        ]
+      }
+    ],
+    "totals": {
+      "gross_surplus_cad": 197.16,
+      "to_buffer_cad": 98.58,
+      "invested_cad": 98.58,
+      "weeks_audited": 3,
+      "weeks_invested": 3
+    },
+    "streaks": [
+      { "category_key": "groceries", "label": "Groceries", "weeks_under": 2, "weeks_total": 3, "current_streak": 1 },
+      { "category_key": "eating_out", "label": "Eating out and coffee", "weeks_under": 2, "weeks_total": 3, "current_streak": 1 },
+      { "category_key": "transport", "label": "Transport", "weeks_under": 3, "weeks_total": 3, "current_streak": 3 },
+      { "category_key": "entertainment", "label": "Fun and entertainment", "weeks_under": 2, "weeks_total": 3, "current_streak": 1 },
+      { "category_key": "shopping", "label": "Shopping", "weeks_under": 2, "weeks_total": 3, "current_streak": 0 },
+      { "category_key": "personal_care", "label": "Personal care", "weeks_under": 2, "weeks_total": 3, "current_streak": 1 },
+      { "category_key": "other", "label": "Other variable", "weeks_under": 3, "weeks_total": 3, "current_streak": 3 }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "data": {
+    "user_id": "maya",
+    "status": "active",
+    "buffer_target_cad": 100.00,
+    "cushion_rate": 0.5,
+    "absorb_overspend": true,
+    "min_invest_cad": 5.00,
+    "max_weekly_invest_cad": 200.00,
+    "onboarding_url": "http://localhost:5678/form/lo-onboarding",
+    "budgets": [
+      { "category_key": "groceries", "label": "Groceries", "weekly_amount_cad": 80.00, "active": true },
+      { "category_key": "eating_out", "label": "Eating out and coffee", "weekly_amount_cad": 50.00, "active": true },
+      { "category_key": "transport", "label": "Transport", "weekly_amount_cad": 30.00, "active": true },
+      { "category_key": "entertainment", "label": "Fun and entertainment", "weekly_amount_cad": 40.00, "active": true },
+      { "category_key": "shopping", "label": "Shopping", "weekly_amount_cad": 40.00, "active": true },
+      { "category_key": "personal_care", "label": "Personal care", "weekly_amount_cad": 20.00, "active": true },
+      { "category_key": "other", "label": "Other variable", "weekly_amount_cad": 20.00, "active": true }
+    ]
+  }
+}
