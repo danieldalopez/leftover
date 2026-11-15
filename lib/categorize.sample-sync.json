@@ -1,0 +1,300 @@
+{
+  "_about": "Realistic Plaid /transactions/sync responses (shape per plaid.com/docs/api/products/transactions/#transactionssync, PFC v2 names per plaid.com/documents/pfc-taxonomy-all.csv), used by lib/categorize.test.mjs and by Lane C's mock Plaid harness. run_1 = first sync of a new Item (cursor ''), two pages. run_2 = the next sync after a refresh: a pending coffee posts (posted row added with pending_transaction_id, pending id removed), a grocery amount is corrected, a charge is reversed. not_ready = what Plaid returns when the Item hasn't pulled transactions yet. incomplete = a run that stopped while has_more was still true.",
+  "user_id": "test-c",
+  "item_id": "item-sample-001",
+  "run_1": {
+    "cursor_before": "",
+    "pages": [
+      {
+        "added": [
+          {
+            "account_id": "acc-checking-001",
+            "account_owner": null,
+            "amount": 62.15,
+            "authorized_date": "2026-11-10",
+            "authorized_datetime": null,
+            "counterparties": [{ "name": "Save-On-Foods", "type": "merchant", "confidence_level": "VERY_HIGH" }],
+            "date": "2026-11-11",
+            "datetime": null,
+            "iso_currency_code": "CAD",
+            "location": { "city": "Vancouver", "region": "BC", "country": "CA" },
+            "merchant_name": "Save-On-Foods",
+            "name": "SAVE ON FOODS #2231 VANCOUVER BC",
+            "payment_channel": "in store",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "FOOD_AND_DRINK", "detailed": "FOOD_AND_DRINK_GROCERIES", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-groc-1",
+            "transaction_type": "place",
+            "unofficial_currency_code": null
+          },
+          {
+            "account_id": "acc-credit-001",
+            "amount": 6.45,
+            "authorized_date": "2026-11-12",
+            "date": "2026-11-12",
+            "iso_currency_code": "CAD",
+            "merchant_name": "Starbucks",
+            "name": "STARBUCKS 4471",
+            "payment_channel": "in store",
+            "pending": true,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "FOOD_AND_DRINK", "detailed": "FOOD_AND_DRINK_COFFEE", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-coffee-pending",
+            "unofficial_currency_code": null
+          },
+          {
+            "account_id": "acc-checking-001",
+            "amount": 1650,
+            "authorized_date": "2026-11-01",
+            "date": "2026-11-02",
+            "iso_currency_code": "CAD",
+            "merchant_name": null,
+            "name": "E-TRANSFER RENT NOV",
+            "payment_channel": "other",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "RENT_AND_UTILITIES", "detailed": "RENT_AND_UTILITIES_RENT", "confidence_level": "HIGH", "version": "v2" },
+            "transaction_id": "txn-rent-nov"
+          },
+          {
+            "account_id": "acc-checking-001",
+            "amount": -1800,
+            "authorized_date": null,
+            "date": "2026-11-06",
+            "iso_currency_code": "CAD",
+            "merchant_name": null,
+            "name": "PAYROLL DEPOSIT ACME CORP",
+            "payment_channel": "other",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "INCOME", "detailed": "INCOME_SALARY", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-payroll-1"
+          },
+          {
+            "account_id": "acc-credit-001",
+            "amount": 24.99,
+            "authorized_date": "2026-11-09",
+            "date": "2026-11-10",
+            "iso_currency_code": "CAD",
+            "merchant_name": "BC Liquor Stores",
+            "name": "BCLS #102",
+            "payment_channel": "in store",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "FOOD_AND_DRINK", "detailed": "FOOD_AND_DRINK_BEER_WINE_AND_LIQUOR", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-liquor-1"
+          },
+          {
+            "account_id": "acc-credit-001",
+            "amount": 18.4,
+            "authorized_date": "2026-11-11",
+            "date": "2026-11-12",
+            "iso_currency_code": "CAD",
+            "merchant_name": "Uber",
+            "name": "UBER *TRIP",
+            "payment_channel": "online",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "TRANSPORTATION", "detailed": "TRANSPORTATION_TAXIS_AND_RIDE_SHARES", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-uber-1"
+          },
+          {
+            "account_id": "acc-credit-001",
+            "amount": 9.99,
+            "authorized_date": "2026-11-12",
+            "date": "2026-11-13",
+            "iso_currency_code": "CAD",
+            "merchant_name": null,
+            "name": "POS PURCHASE 0049 VAN",
+            "payment_channel": "in store",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": null,
+            "transaction_id": "txn-no-pfc"
+          }
+        ],
+        "modified": [],
+        "removed": [],
+        "accounts": [],
+        "next_cursor": "cursor-run1-p1",
+        "has_more": true,
+        "transactions_update_status": "HISTORICAL_UPDATE_COMPLETE",
+        "request_id": "req-sample-1"
+      },
+      {
+        "added": [
+          {
+            "account_id": "acc-checking-001",
+            "amount": -500,
+            "authorized_date": null,
+            "date": "2026-11-05",
+            "iso_currency_code": "CAD",
+            "merchant_name": null,
+            "name": "LOAN ADVANCE PERSONAL LOC",
+            "payment_channel": "other",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "LOAN_DISBURSEMENTS", "detailed": "LOAN_DISBURSEMENTS_PERSONAL", "confidence_level": "HIGH", "version": "v2" },
+            "transaction_id": "txn-loan-disb"
+          },
+          {
+            "account_id": "acc-credit-001",
+            "amount": -35,
+            "authorized_date": "2026-11-13",
+            "date": "2026-11-13",
+            "iso_currency_code": "CAD",
+            "merchant_name": "Uniqlo",
+            "name": "UNIQLO ROBSON REFUND",
+            "payment_channel": "in store",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "GENERAL_MERCHANDISE", "detailed": "GENERAL_MERCHANDISE_CLOTHING_AND_ACCESSORIES", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-refund-1"
+          },
+          {
+            "account_id": "acc-credit-001",
+            "amount": 16.99,
+            "authorized_date": "2026-11-09",
+            "date": "2026-11-09",
+            "iso_currency_code": "CAD",
+            "merchant_name": "Netflix",
+            "name": "NETFLIX.COM",
+            "payment_channel": "online",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "ENTERTAINMENT", "detailed": "ENTERTAINMENT_TV_AND_MOVIES", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-netflix-1"
+          },
+          {
+            "account_id": "acc-checking-001",
+            "amount": 12,
+            "authorized_date": "2026-11-10",
+            "date": "2026-11-10",
+            "iso_currency_code": "CAD",
+            "merchant_name": null,
+            "name": "MISC DEBIT 8812",
+            "payment_channel": "other",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "OTHER", "detailed": "OTHER_OTHER", "confidence_level": "LOW", "version": "v2" },
+            "transaction_id": "txn-other-v2"
+          },
+          {
+            "account_id": "acc-checking-001",
+            "amount": 3.5,
+            "date": "2026-11-10",
+            "name": "RECORD WITH NO ID",
+            "pending": false,
+            "personal_finance_category": { "primary": "FOOD_AND_DRINK", "detailed": "FOOD_AND_DRINK_COFFEE" }
+          }
+        ],
+        "modified": [
+          {
+            "account_id": "acc-credit-001",
+            "amount": 19.1,
+            "authorized_date": "2026-11-11",
+            "date": "2026-11-12",
+            "iso_currency_code": "CAD",
+            "merchant_name": "Uber",
+            "name": "UBER *TRIP",
+            "payment_channel": "online",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "TRANSPORTATION", "detailed": "TRANSPORTATION_TAXIS_AND_RIDE_SHARES", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-uber-1"
+          }
+        ],
+        "removed": [],
+        "accounts": [],
+        "next_cursor": "cursor-run1-p2",
+        "has_more": false,
+        "transactions_update_status": "HISTORICAL_UPDATE_COMPLETE",
+        "request_id": "req-sample-2"
+      }
+    ]
+  },
+  "run_2": {
+    "cursor_before": "cursor-run1-p2",
+    "pages": [
+      {
+        "added": [
+          {
+            "account_id": "acc-credit-001",
+            "amount": 6.95,
+            "authorized_date": "2026-11-12",
+            "date": "2026-11-14",
+            "iso_currency_code": "CAD",
+            "merchant_name": "Starbucks",
+            "name": "STARBUCKS 4471",
+            "payment_channel": "in store",
+            "pending": false,
+            "pending_transaction_id": "txn-coffee-pending",
+            "personal_finance_category": { "primary": "FOOD_AND_DRINK", "detailed": "FOOD_AND_DRINK_COFFEE", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-coffee-posted"
+          }
+        ],
+        "modified": [
+          {
+            "account_id": "acc-checking-001",
+            "amount": 61.15,
+            "authorized_date": "2026-11-10",
+            "date": "2026-11-11",
+            "iso_currency_code": "CAD",
+            "merchant_name": "Save-On-Foods",
+            "name": "SAVE ON FOODS #2231 VANCOUVER BC",
+            "payment_channel": "in store",
+            "pending": false,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "FOOD_AND_DRINK", "detailed": "FOOD_AND_DRINK_GROCERIES", "confidence_level": "VERY_HIGH", "version": "v2" },
+            "transaction_id": "txn-groc-1"
+          }
+        ],
+        "removed": [
+          { "account_id": "acc-credit-001", "transaction_id": "txn-coffee-pending" },
+          { "account_id": "acc-credit-001", "transaction_id": "txn-no-pfc" }
+        ],
+        "accounts": [],
+        "next_cursor": "cursor-run2-p1",
+        "has_more": false,
+        "transactions_update_status": "HISTORICAL_UPDATE_COMPLETE",
+        "request_id": "req-sample-3"
+      }
+    ]
+  },
+  "not_ready": {
+    "cursor_before": "",
+    "pages": [
+      { "added": [], "modified": [], "removed": [], "accounts": [], "next_cursor": "", "has_more": false, "transactions_update_status": "NOT_READY", "request_id": "req-sample-4" }
+    ]
+  },
+  "incomplete": {
+    "cursor_before": "cursor-run2-p1",
+    "pages": [
+      {
+        "added": [
+          {
+            "account_id": "acc-credit-001",
+            "amount": 14,
+            "authorized_date": "2026-11-14",
+            "date": "2026-11-14",
+            "iso_currency_code": "CAD",
+            "merchant_name": "Banh Mi Saigon",
+            "name": "BANH MI SAIGON",
+            "pending": true,
+            "pending_transaction_id": null,
+            "personal_finance_category": { "primary": "FOOD_AND_DRINK", "detailed": "FOOD_AND_DRINK_RESTAURANT", "confidence_level": "HIGH", "version": "v2" },
+            "transaction_id": "txn-banhmi-pending"
+          }
+        ],
+        "modified": [],
+        "removed": [],
+        "accounts": [],
+        "next_cursor": "cursor-run3-p1",
+        "has_more": true,
+        "transactions_update_status": "HISTORICAL_UPDATE_COMPLETE",
+        "request_id": "req-sample-5"
+      }
+    ]
+  }
+}
