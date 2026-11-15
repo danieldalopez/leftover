@@ -1,49 +1,845 @@
 {
   "id": "leftoverWF01form",
   "name": "LO-01 Onboarding Form",
-  "active": false,
+  "active": true,
   "nodes": [
     {
-      "parameters": {},
-      "name": "Run manually",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
+      "parameters": {
+        "formTitle": "Leftover: invest what you did not spend",
+        "formDescription": "Four short pages: your financial profile, weekly budgets, an investor quiz, and your result.\nEducational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your name",
+              "fieldName": "name",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Maya"
+            },
+            {
+              "fieldLabel": "Email (it identifies you: use the same one to retake the quiz later)",
+              "fieldName": "email",
+              "fieldType": "email",
+              "requiredField": true,
+              "placeholder": "you@example.com"
+            },
+            {
+              "fieldLabel": "Age range",
+              "fieldName": "age_range",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "18 to 24"
+                  },
+                  {
+                    "option": "25 to 34"
+                  },
+                  {
+                    "option": "35 to 44"
+                  },
+                  {
+                    "option": "45 to 54"
+                  },
+                  {
+                    "option": "55 to 64"
+                  },
+                  {
+                    "option": "65 or older"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Income type",
+              "fieldName": "income_type",
+              "fieldType": "radio",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Salaried"
+                  },
+                  {
+                    "option": "Hourly"
+                  },
+                  {
+                    "option": "Freelance or variable"
+                  },
+                  {
+                    "option": "Student"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Monthly take-home pay (CAD)",
+              "fieldName": "monthly_take_home",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Under $2,000"
+                  },
+                  {
+                    "option": "$2,000 to $3,000"
+                  },
+                  {
+                    "option": "$3,000 to $4,000"
+                  },
+                  {
+                    "option": "$4,000 to $6,000"
+                  },
+                  {
+                    "option": "$6,000 or more"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "How often are you paid?",
+              "fieldName": "pay_frequency",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Weekly"
+                  },
+                  {
+                    "option": "Every two weeks"
+                  },
+                  {
+                    "option": "Twice a month"
+                  },
+                  {
+                    "option": "Monthly"
+                  },
+                  {
+                    "option": "Irregularly"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Emergency fund: how many months of expenses do you have saved?",
+              "fieldName": "emergency_fund_months",
+              "fieldType": "radio",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "None yet"
+                  },
+                  {
+                    "option": "Less than 1 month"
+                  },
+                  {
+                    "option": "1 to 3 months"
+                  },
+                  {
+                    "option": "3 to 6 months"
+                  },
+                  {
+                    "option": "6 months or more"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Any debt with interest above 8% (a credit card balance, for example)?",
+              "fieldName": "high_interest_debt",
+              "fieldType": "radio",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Account you would hold this in (for your reference only)",
+              "fieldName": "account_type",
+              "fieldType": "radio",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "TFSA"
+                  },
+                  {
+                    "option": "RRSP"
+                  },
+                  {
+                    "option": "FHSA"
+                  },
+                  {
+                    "option": "Non-registered"
+                  },
+                  {
+                    "option": "Not sure yet"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "path": "lo-onboarding",
+          "buttonLabel": "Next",
+          "appendAttribution": false
+        }
+      },
+      "name": "Page 1: Financial profile",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
       "position": [
         0,
         0
-      ]
+      ],
+      "webhookId": "b0d1a5e2-0101-4d00-8000-000000000001"
     },
     {
       "parameters": {
-        "jsCode": "// STUB: replaced by its lane (see BUILD-PLAN.md). Keep the workflow id.\nreturn [{ json: { ok: true, stub: true, workflow: 'LO-01' } }];"
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "users"
+        },
+        "returnAll": true
       },
-      "name": "Stub response",
+      "name": "Read users",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        260,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "budgets"
+        },
+        "returnAll": true
+      },
+      "name": "Read budgets",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// LO-01 · Identify user: email -> user_id (an existing email keeps its user_id, so\n// retaking the quiz updates that user), plus the fields for pages 2 and 3.\n// Budgets page is prefilled with the user's current budgets, or the §6.2 defaults.\nfunction main() {\n  const form = $('Page 1: Financial profile').first().json;\n  const users = $('Read users').all().map((i) => i.json).filter((u) => u && u.user_id);\n  const email = normalizeEmail(form.email);\n  if (!isEmail(email)) throw new Error(`Not a valid email: ${form.email}`);\n  const { user_id, is_new } = resolveUserId(email, users);\n  const theirBudgets = $('Read budgets').all().map((i) => i.json).filter((b) => b && b.user_id === user_id);\n  const prefill = budgetDefaults(is_new ? [] : theirBudgets);\n  const { answers, missing } = answersFromForm(form, 'profile');\n  if (missing.length) throw new Error(`Missing answers on page 1: ${missing.join(', ')}`);\n  return [{ json: {\n    user_id, is_new, email, name: String(form.name || '').trim(),\n    profile_answers: answers,\n    budget_prefill: prefill,\n    budget_fields: budgetFields(prefill),\n    quiz_fields: questionFields('quiz'),\n  } }];\n}\n\n// ===== lib/scoring.mjs (pasted verbatim: edit the lib, then LO_UPDATE_WF01=1 npm test) =====\n// lib/scoring.mjs: onboarding logic for LO-01 (spec §7 F1, §10 WF01, §11, §14).\n//\n//   quiz answers -> capacity + willingness scores (0-100) -> a tier for each\n//   -> final tier = the lower one (horizon under 3 years forces cash)\n//   -> allocation (§11.5 + home bias), warnings (§11.4), explanation.\n//\n// It also holds the small pieces LO-01 needs around the quiz: the questions and\n// their form labels, default budgets, email -> user_id, the editable allocation,\n// the explanation prompt + template fallback (§19.5), and the rows LO-01 writes.\n//\n// Plain functions, no imports, so this pastes straight into an n8n Code node:\n// LO-01's Code nodes embed everything above the `export` line verbatim, and\n// lib/scoring.test.mjs fails if they drift (LO_UPDATE_WF01=1 re-pastes them).\n\nconst LO_TIERS = ['cash', 'conservative', 'balanced', 'growth', 'all_equity'];\n\n// §11.5: percent of the portfolio per asset class, by tier.\nconst LO_TIER_INFO = {\n  cash: { label: 'Cash', equity: 0, bonds: 0, cash: 100 },\n  conservative: { label: 'Conservative', equity: 20, bonds: 60, cash: 20 },\n  balanced: { label: 'Balanced', equity: 60, bonds: 40, cash: 0 },\n  growth: { label: 'Growth', equity: 80, bonds: 20, cash: 0 },\n  all_equity: { label: 'All equity', equity: 100, bonds: 0, cash: 0 },\n};\n\n// §11.5: how the equity part splits, by home bias (percent of the equity part).\nconst LO_EQUITY_SPLIT = {\n  global: { equity_us: 60, equity_intl: 35, equity_ca: 5 },\n  more_canada: { equity_us: 45, equity_intl: 25, equity_ca: 30 },\n};\n\nconst LO_SLEEVES = ['equity_us', 'equity_intl', 'equity_ca', 'bonds', 'cash'];\nconst LO_SLEEVE_LABELS = {\n  equity_us: 'US stocks',\n  equity_intl: 'International stocks',\n  equity_ca: 'Canadian stocks',\n  bonds: 'Bonds',\n  cash: 'Cash (short-term T-bills)',\n};\n\n// §6.2 default weekly budgets (CAD).\nconst LO_DEFAULT_BUDGETS = [\n  { category_key: 'groceries', label: 'Groceries', weekly_amount: 80 },\n  { category_key: 'eating_out', label: 'Eating out and coffee', weekly_amount: 50 },\n  { category_key: 'transport', label: 'Transport', weekly_amount: 30 },\n  { category_key: 'entertainment', label: 'Fun and entertainment', weekly_amount: 40 },\n  { category_key: 'shopping', label: 'Shopping', weekly_amount: 40 },\n  { category_key: 'personal_care', label: 'Personal care', weekly_amount: 20 },\n  { category_key: 'other', label: 'Other variable', weekly_amount: 20 },\n];\nconst LO_MAX_WEEKLY_BUDGET = 10000;\n\n// Defaults for a new users row (contracts/data-tables.md, spec §18 D2/D5).\nconst LO_NEW_USER_DEFAULTS = {\n  timezone: 'America/Vancouver',\n  buffer_balance: 0,\n  buffer_target: 100,\n  cushion_rate: 0.5,\n  absorb_overspend: true,\n  min_invest: 5,\n  max_weekly_invest: 200,\n  pending_carry: 0,\n  deficit_carry: 0,\n};\n// §11.4: with little or no emergency fund, the result page suggests a bigger cushion.\nconst LO_LOW_EF_BUFFER_TARGET = 200;\nconst LO_MAX_BUFFER_TARGET = 5000;\n\n// The demo user is never touched by the form (BUILD-PLAN ground rule 5).\nconst LO_PROTECTED_USER_IDS = ['maya'];\n\n// §11.1 + §11.2. `value` is what answers_json stores (same keys and values as\n// the seed's profile.answers); `label` is what the form shows and sends back.\n// Labels avoid < and > because n8n escapes them in JSON-defined form pages.\nconst LO_QUESTIONS = [\n  // Page 1: financial profile (§11.1)\n  { key: 'age_range', page: 'profile', type: 'dropdown', label: 'Age range', options: [\n    ['18-24', '18 to 24'], ['25-34', '25 to 34'], ['35-44', '35 to 44'],\n    ['45-54', '45 to 54'], ['55-64', '55 to 64'], ['65+', '65 or older']] },\n  { key: 'income_type', page: 'profile', type: 'radio', label: 'Income type', options: [\n    ['salaried', 'Salaried'], ['hourly', 'Hourly'], ['freelance', 'Freelance or variable'], ['student', 'Student']] },\n  { key: 'monthly_take_home', page: 'profile', type: 'dropdown', label: 'Monthly take-home pay (CAD)', options: [\n    ['under-2000', 'Under $2,000'], ['2000-3000', '$2,000 to $3,000'], ['3000-4000', '$3,000 to $4,000'],\n    ['4000-6000', '$4,000 to $6,000'], ['6000+', '$6,000 or more']] },\n  { key: 'pay_frequency', page: 'profile', type: 'dropdown', label: 'How often are you paid?', options: [\n    ['weekly', 'Weekly'], ['biweekly', 'Every two weeks'], ['semimonthly', 'Twice a month'],\n    ['monthly', 'Monthly'], ['irregular', 'Irregularly']] },\n  { key: 'emergency_fund_months', page: 'profile', type: 'radio', label: 'Emergency fund: how many months of expenses do you have saved?', options: [\n    ['0', 'None yet'], ['<1', 'Less than 1 month'], ['1-3', '1 to 3 months'], ['3-6', '3 to 6 months'], ['6+', '6 months or more']] },\n  { key: 'high_interest_debt', page: 'profile', type: 'radio', label: 'Any debt with interest above 8% (a credit card balance, for example)?', options: [\n    [true, 'Yes'], [false, 'No']] },\n  { key: 'account_type', page: 'profile', type: 'radio', label: 'Account you would hold this in (for your reference only)', options: [\n    ['TFSA', 'TFSA'], ['RRSP', 'RRSP'], ['FHSA', 'FHSA'], ['non_registered', 'Non-registered'], ['not_sure', 'Not sure yet']] },\n  // Page 3: investor quiz (§11.2; Q15 ESG is P2 and not asked)\n  { key: 'goal', page: 'quiz', type: 'radio', label: 'Main goal', options: [\n    ['retirement', 'Retirement'], ['house', 'A home'], ['long_term_wealth', 'Long-term wealth'], ['no_specific_goal', 'No specific goal']] },\n  { key: 'horizon', page: 'quiz', type: 'radio', label: 'When might you need this money?', options: [\n    ['<3', 'In less than 3 years'], ['3-5', 'In 3 to 5 years'], ['5-10', 'In 5 to 10 years'],\n    ['10-20', 'In 10 to 20 years'], ['20+', 'In 20 years or more']] },\n  { key: 'drop_reaction', page: 'quiz', type: 'radio', label: 'Your portfolio drops 30% in a year. You:', options: [\n    ['sell_all', 'Sell everything'], ['sell_some', 'Sell some'], ['hold', 'Hold'], ['buy_more', 'Buy more']] },\n  { key: 'max_drop', page: 'quiz', type: 'radio', label: 'Largest one-year drop you could live with', options: [\n    ['5', '5%'], ['10', '10%'], ['20', '20%'], ['30', '30%'], ['40+', '40% or more']] },\n  { key: 'experience', page: 'quiz', type: 'radio', label: 'Investing experience', options: [\n    ['none', 'None'], ['some', 'Some'], ['experienced', 'Experienced']] },\n  { key: 'income_stability', page: 'quiz', type: 'radio', label: 'How stable is your income?', options: [\n    ['very', 'Very stable'], ['somewhat', 'Somewhat stable'], ['not', 'Not stable']] },\n  { key: 'geo_preference', page: 'quiz', type: 'radio', label: 'For the stock part: geographic preference', options: [\n    ['global', 'Global market weight'], ['more_canada', 'More Canada'], ['no_preference', 'No preference']] },\n];\n\n// §11.3 scoring. Each answer maps to 0-100 points; a score is the weighted sum.\n// Capacity: horizon heaviest, then income stability and emergency fund.\n// Willingness: reaction to a drop, the largest drop you could live with, experience.\nconst LO_CAPACITY = {\n  horizon: { weight: 0.6, points: { '<3': 0, '3-5': 20, '5-10': 40, '10-20': 60, '20+': 100 } },\n  income_stability: { weight: 0.2, points: { not: 0, somewhat: 50, very: 100 } },\n  emergency_fund_months: { weight: 0.2, points: { 0: 0, '<1': 20, '1-3': 40, '3-6': 70, '6+': 100 } },\n};\nconst LO_WILLINGNESS = {\n  drop_reaction: { weight: 0.4, points: { sell_all: 0, sell_some: 30, hold: 60, buy_more: 100 } },\n  max_drop: { weight: 0.4, points: { 5: 0, 10: 20, 20: 40, 30: 70, '40+': 100 } },\n  experience: { weight: 0.2, points: { none: 0, some: 40, experienced: 100 } },\n};\n\n// §11.4 warning codes (warnings_json) and their text, word for word from the spec.\nconst LO_WARNINGS = {\n  low_emergency_fund: 'Many people build a cash cushion first.',\n  high_interest_debt: 'Paying off debt above 8% is a guaranteed return many people prioritize.',\n};\n\n// §14 wording shown with every result.\nconst LO_DISCLAIMER = 'Educational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.';\nconst LO_RESULT_NOTE = 'This is a general asset mix based on your own answers, not a recommendation to buy, sell or hold any specific security. You can change it below, and anytime later.';\n\nfunction loRound2(x) {\n  return Math.round((Number(x) + Number.EPSILON) * 100) / 100;\n}\n\nfunction loQuestion(key) {\n  const q = LO_QUESTIONS.find((x) => x.key === key);\n  if (!q) throw new Error(`unknown question ${key}`);\n  return q;\n}\n\n// Form value (label, or already a stored value) -> stored value. Unknown -> undefined.\nfunction answerValue(key, raw) {\n  const q = loQuestion(key);\n  if (Array.isArray(raw)) raw = raw[0];\n  if (raw === undefined || raw === null) return undefined;\n  const s = String(raw).trim();\n  const hit = q.options.find(([value, label]) => label === s || String(value) === s);\n  return hit ? hit[0] : undefined;\n}\n\nfunction answerLabel(key, value) {\n  const hit = loQuestion(key).options.find(([v]) => String(v) === String(value));\n  return hit ? hit[1] : String(value);\n}\n\n// Every answer the form returned, as stored values. `missing` lists the keys\n// with no valid answer (the form marks them all required, so this should be empty).\nfunction answersFromForm(formJson, page) {\n  const answers = {};\n  const missing = [];\n  for (const q of LO_QUESTIONS) {\n    if (page && q.page !== page) continue;\n    const v = answerValue(q.key, formJson ? formJson[q.key] : undefined);\n    if (v === undefined) missing.push(q.key);\n    else answers[q.key] = v;\n  }\n  return { answers, missing };\n}\n\nfunction loWeightedScore(table, answers) {\n  let total = 0;\n  for (const [key, { weight, points }] of Object.entries(table)) {\n    const p = points[String(answers[key])];\n    if (p === undefined) throw new Error(`score: missing or invalid answer for ${key}: ${answers[key]}`);\n    total += weight * p;\n  }\n  return Math.max(0, Math.min(100, Math.round(total)));\n}\n\nfunction capacityScore(answers) {\n  return loWeightedScore(LO_CAPACITY, answers);\n}\n\nfunction willingnessScore(answers) {\n  return loWeightedScore(LO_WILLINGNESS, answers);\n}\n\n// §11.3: 0-19 cash, 20-39 conservative, 40-59 balanced, 60-79 growth, 80+ all_equity.\nfunction tierForScore(score) {\n  const s = Number(score);\n  if (!Number.isFinite(s)) throw new Error(`tierForScore: not a number ${score}`);\n  if (s < 20) return 'cash';\n  if (s < 40) return 'conservative';\n  if (s < 60) return 'balanced';\n  if (s < 80) return 'growth';\n  return 'all_equity';\n}\n\nfunction lowerTier(a, b) {\n  const ia = LO_TIERS.indexOf(a);\n  const ib = LO_TIERS.indexOf(b);\n  if (ia < 0 || ib < 0) throw new Error(`lowerTier: unknown tier ${ia < 0 ? a : b}`);\n  return LO_TIERS[Math.min(ia, ib)];\n}\n\nfunction homeBias(geoPreference) {\n  return geoPreference === 'more_canada' ? 'more_canada' : 'global';\n}\n\n// §11.4 warning codes, in a fixed order.\nfunction warningsFor(answers) {\n  const out = [];\n  if (answers.emergency_fund_months === '0' || answers.emergency_fund_months === '<1') out.push('low_emergency_fund');\n  if (answers.high_interest_debt === true || answers.high_interest_debt === 'true') out.push('high_interest_debt');\n  return out;\n}\n\n// §11.5: sleeve weights (fractions summing to exactly 1) for a tier and home bias.\nfunction allocationFor(tier, bias) {\n  const t = LO_TIER_INFO[tier];\n  const split = LO_EQUITY_SPLIT[bias];\n  if (!t) throw new Error(`allocationFor: unknown tier ${tier}`);\n  if (!split) throw new Error(`allocationFor: unknown home bias ${bias}`);\n  // Percent * percent / 100 is a whole percent for every tier and split in §11.5.\n  return {\n    equity_us: (t.equity * split.equity_us) / 10000,\n    equity_intl: (t.equity * split.equity_intl) / 10000,\n    equity_ca: (t.equity * split.equity_ca) / 10000,\n    bonds: t.bonds / 100,\n    cash: t.cash / 100,\n  };\n}\n\n// Fractions -> whole percents (for the form), summing to 100.\nfunction allocationToPercents(allocation) {\n  const pct = {};\n  for (const s of LO_SLEEVES) pct[s] = Math.round((Number(allocation[s]) || 0) * 100);\n  const drift = 100 - LO_SLEEVES.reduce((a, s) => a + pct[s], 0);\n  if (drift !== 0) {\n    const biggest = LO_SLEEVES.reduce((a, s) => (pct[s] > pct[a] ? s : a), LO_SLEEVES[0]);\n    pct[biggest] += drift;\n  }\n  return pct;\n}\n\n// The user's edited percents -> fractions summing to exactly 1 (4 decimals).\n// Blank or negative entries count as 0. If the total isn't 100 the entries are\n// scaled to it; if everything is 0 or invalid, `fallback` (the suggested mix) is kept.\n// Returns { allocation, edited, scaled }.\nfunction normalizeAllocation(percents, fallback) {\n  const raw = {};\n  let total = 0;\n  for (const s of LO_SLEEVES) {\n    const n = Number(percents ? percents[s] : undefined);\n    raw[s] = Number.isFinite(n) && n > 0 ? n : 0;\n    total += raw[s];\n  }\n  if (!(total > 0)) return { allocation: { ...fallback }, edited: false, scaled: false };\n  const allocation = {};\n  for (const s of LO_SLEEVES) allocation[s] = Math.round((raw[s] / total) * 10000) / 10000;\n  const drift = Math.round((1 - LO_SLEEVES.reduce((a, s) => a + allocation[s], 0)) * 10000) / 10000;\n  if (drift !== 0) {\n    const biggest = LO_SLEEVES.reduce((a, s) => (allocation[s] > allocation[a] ? s : a), LO_SLEEVES[0]);\n    allocation[biggest] = Math.round((allocation[biggest] + drift) * 10000) / 10000;\n  }\n  const edited = LO_SLEEVES.some((s) => Math.abs(allocation[s] - (Number(fallback[s]) || 0)) > 0.00005);\n  return { allocation, edited, scaled: Math.abs(total - 100) > 1e-9 };\n}\n\n// Everything §11.3-§11.5 derive from the answers.\nfunction scoreProfile(answers) {\n  const capacity = capacityScore(answers);\n  const willingness = willingnessScore(answers);\n  const capacityTier = tierForScore(capacity);\n  const willingnessTier = tierForScore(willingness);\n  const forcedCash = answers.horizon === '<3';\n  const tier = forcedCash ? 'cash' : lowerTier(capacityTier, willingnessTier);\n  const bias = homeBias(answers.geo_preference);\n  const warnings = warningsFor(answers);\n  let limitedBy = 'both';\n  if (forcedCash) limitedBy = 'horizon';\n  else if (LO_TIERS.indexOf(capacityTier) < LO_TIERS.indexOf(willingnessTier)) limitedBy = 'capacity';\n  else if (LO_TIERS.indexOf(willingnessTier) < LO_TIERS.indexOf(capacityTier)) limitedBy = 'willingness';\n  return {\n    capacity_score: capacity,\n    willingness_score: willingness,\n    capacity_tier: capacityTier,\n    willingness_tier: willingnessTier,\n    tier,\n    tier_label: LO_TIER_INFO[tier].label,\n    forced_cash: forcedCash,\n    limited_by: limitedBy,\n    home_bias: bias,\n    allocation: allocationFor(tier, bias),\n    warnings,\n    warning_messages: warnings.map((code) => LO_WARNINGS[code]),\n    suggested_buffer_target: warnings.includes('low_emergency_fund') ? LO_LOW_EF_BUFFER_TARGET : LO_NEW_USER_DEFAULTS.buffer_target,\n  };\n}\n\n// \"about 60% stocks and 40% bonds\", from an allocation (fractions).\nfunction mixPhrase(allocation) {\n  const pct = allocationToPercents(allocation);\n  const stocks = pct.equity_us + pct.equity_intl + pct.equity_ca;\n  const parts = [];\n  if (stocks) parts.push(`${stocks}% stocks`);\n  if (pct.bonds) parts.push(`${pct.bonds}% bonds`);\n  if (pct.cash) parts.push(`${pct.cash}% cash-like holdings`);\n  if (parts.length === 1) return stocks === 100 ? 'all stocks' : pct.cash === 100 ? 'all cash-like holdings' : parts[0];\n  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;\n}\n\nfunction loHorizonPhrase(h) {\n  return { '<3': 'less than 3 years', '3-5': '3 to 5 years', '5-10': '5 to 10 years', '10-20': '10 to 20 years', '20+': '20 years or more' }[h] || 'an unknown time';\n}\n\nfunction loStabilityPhrase(v) {\n  return { very: 'very stable income', somewhat: 'somewhat stable income', not: 'income that is not stable' }[v] || 'your income';\n}\n\nfunction loFundPhrase(v) {\n  return {\n    0: 'no emergency savings yet', '<1': 'less than a month of emergency savings', '1-3': '1 to 3 months of emergency savings',\n    '3-6': '3 to 6 months of emergency savings', '6+': '6 or more months of emergency savings',\n  }[v] || 'your emergency savings';\n}\n\n// §19.5 fallback: the explanation used whenever the LLM is missing, fails, or\n// returns something that breaks the rules in checkExplanation(). 3-4 sentences,\n// general language, never names a security.\nfunction templateExplanation(result, answers) {\n  const s = [];\n  s.push(`Your answers point to the ${result.tier_label} mix: ${mixPhrase(result.allocation)}.`);\n  if (result.limited_by === 'horizon') {\n    s.push('You said you may need this money within 3 years, and money needed that soon is usually kept in cash-like holdings rather than exposed to market swings.');\n  } else {\n    if (result.tier !== 'cash') {\n      s.push(result.home_bias === 'more_canada'\n        ? 'The stock part leans more toward Canada, as you asked.'\n        : 'The stock part follows global market weights.');\n    }\n    const drop = answers.max_drop === '40+' ? '40% or more' : `${answers.max_drop}%`;\n    const horizon = `a horizon of ${loHorizonPhrase(answers.horizon)}`;\n    if (result.limited_by === 'willingness') {\n      s.push(`Your situation (${horizon} and ${loStabilityPhrase(answers.income_stability)}) leaves room for more growth, but you said a ${drop} drop in a year is about the most you would want to sit through, so the mix follows your comfort level.`);\n    } else if (result.limited_by === 'capacity') {\n      s.push(`You are comfortable with bigger swings, but your situation (${horizon}, ${loStabilityPhrase(answers.income_stability)} and ${loFundPhrase(answers.emergency_fund_months)}) leaves less room for risk, so the mix follows that.`);\n    } else {\n      s.push(`Your situation (${horizon}) and your comfort with market swings point to the same level of risk.`);\n    }\n  }\n  s.push('This is a general asset mix based on your own answers, not a recommendation to buy, sell or hold any specific security, and you can change it anytime.');\n  return s.join(' ');\n}\n\n// What the LLM node gets (spec §10 WF01): 3-4 sentences, plain language, general.\nfunction explanationPrompt(result, answers) {\n  const pct = allocationToPercents(result.allocation);\n  const system = [\n    'You write short, plain-language explanations for an educational budgeting prototype that uses simulated (paper) trading.',\n    'Rules: 3 to 4 sentences, under 90 words, no headings, no lists, no greeting.',\n    'Talk only about the general asset mix (stocks, bonds, cash) and why the answers lead to it.',\n    'Never name, recommend or rank any specific security, fund or ticker, and never tell the reader to buy, sell or hold anything.',\n    'End by saying it is a general mix based on their own answers and that they can change it anytime.',\n  ].join(' ');\n  const user = [\n    `Result: ${result.tier_label} mix (${mixPhrase(result.allocation)}; US ${pct.equity_us}%, international ${pct.equity_intl}%, Canada ${pct.equity_ca}%, bonds ${pct.bonds}%, cash ${pct.cash}%).`,\n    `Capacity for risk: ${result.capacity_score}/100 (time horizon ${loHorizonPhrase(answers.horizon)}, ${loStabilityPhrase(answers.income_stability)}, ${loFundPhrase(answers.emergency_fund_months)}).`,\n    `Willingness to take risk: ${result.willingness_score}/100 (after a 30% drop they would: ${answerLabel('drop_reaction', answers.drop_reaction).toLowerCase()}; largest one-year drop they could live with: ${answerLabel('max_drop', answers.max_drop)}; experience: ${answerLabel('experience', answers.experience).toLowerCase()}).`,\n    result.forced_cash\n      ? 'They may need the money within 3 years, which always means the cash mix.'\n      : `The final mix is the lower of the two (${result.limited_by === 'both' ? 'both point to the same level' : `limited by ${result.limited_by}`}).`,\n    `Stock split preference: ${result.home_bias === 'more_canada' ? 'more Canada' : 'global market weight'}.`,\n    'Write the explanation.',\n  ].join('\\n');\n  return { system, user };\n}\n\n// The text out of whatever the LLM node returned (Anthropic or OpenAI node,\n// simplified or raw). null when there is none, e.g. while the node is disabled\n// and simply passes its input through.\nfunction extractLlmText(json) {\n  if (!json || typeof json !== 'object') return null;\n  const fromParts = (parts) => {\n    if (!Array.isArray(parts)) return null;\n    const texts = [];\n    for (const p of parts) {\n      if (typeof p === 'string') texts.push(p);\n      else if (p && typeof p.text === 'string') texts.push(p.text);\n      else if (p && Array.isArray(p.content)) {\n        const inner = fromParts(p.content);\n        if (inner) texts.push(inner);\n      }\n    }\n    return texts.length ? texts.join('\\n').trim() : null;\n  };\n  if (typeof json.text === 'string' && json.text.trim()) return json.text.trim();\n  if (typeof json.content === 'string' && json.content.trim()) return json.content.trim();\n  if (typeof json.output === 'string' && json.output.trim()) return json.output.trim();\n  if (typeof json.output_text === 'string' && json.output_text.trim()) return json.output_text.trim();\n  if (json.message && typeof json.message.content === 'string' && json.message.content.trim()) return json.message.content.trim();\n  if (Array.isArray(json.choices) && json.choices[0] && json.choices[0].message && typeof json.choices[0].message.content === 'string') {\n    return json.choices[0].message.content.trim() || null;\n  }\n  return fromParts(json.content) || fromParts(json.output) || null;\n}\n\n// LLM text -> cleaned text, or null when it breaks the rules (then use the template).\nfunction checkExplanation(text, symbols) {\n  if (typeof text !== 'string') return null;\n  const t = text.trim().replace(/^[\"'“]+|[\"'”]+$/g, '').replace(/\\s+/g, ' ').trim();\n  if (t.length < 80 || t.length > 900) return null;\n  const sentences = t.split(/[.!?](\\s|$)/).filter((x) => x && x.trim().length > 1).length;\n  if (sentences < 2 || sentences > 6) return null;\n  const tickers = symbols && symbols.length ? symbols : ['VTI', 'VXUS', 'EWC', 'BND', 'SGOV'];\n  if (tickers.some((sym) => new RegExp(`\\\\b${sym}\\\\b`).test(t))) return null;\n  if (/\\b(you should|we recommend|i recommend|we suggest)\\b[^.]*\\b(buy|sell|hold)\\b/i.test(t)) return null;\n  if (/\\bguarantee/i.test(t)) return null;\n  return t;\n}\n\nfunction normalizeEmail(email) {\n  return String(email || '').trim().toLowerCase();\n}\n\nfunction isEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizeEmail(email));\n}\n\nfunction slugify(s) {\n  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32).replace(/-+$/g, '');\n}\n\n// FNV-1a, 6 hex chars: a short, stable suffix for colliding user_ids.\nfunction shortHash(s) {\n  let h = 0x811c9dc5;\n  for (let i = 0; i < s.length; i += 1) {\n    h ^= s.charCodeAt(i);\n    h = Math.imul(h, 0x01000193) >>> 0;\n  }\n  return h.toString(16).padStart(8, '0').slice(0, 6);\n}\n\n// email -> user_id (spec §19.3: lowercase, URL-safe slug).\n// 1. An existing user with this email keeps their user_id (retaking the quiz updates them).\n// 2. Otherwise the slug of the email's local part: test-d@example.com -> test-d.\n// 3. If that id is taken by someone else or protected (maya), add a hash of the email.\n// `users` are rows from the users table ({user_id, email}).\nfunction resolveUserId(email, users, protectedIds) {\n  const prot = protectedIds || LO_PROTECTED_USER_IDS;\n  const e = normalizeEmail(email);\n  if (!isEmail(e)) throw new Error(`resolveUserId: invalid email ${email}`);\n  const rows = Array.isArray(users) ? users : [];\n  const match = rows.find((u) => u && u.user_id && normalizeEmail(u.email) === e && !prot.includes(u.user_id));\n  if (match) return { user_id: match.user_id, is_new: false };\n  const taken = new Set(rows.filter((u) => u && u.user_id).map((u) => u.user_id));\n  let base = slugify(e.split('@')[0]) || 'user';\n  if (prot.includes(base) || taken.has(base)) base = `${base}-${shortHash(e)}`;\n  let id = base;\n  for (let n = 2; taken.has(id); n += 1) id = `${base}-${n}`;\n  return { user_id: id, is_new: true };\n}\n\n// Budget prefill: the user's current budgets if they have any, else the defaults.\nfunction budgetDefaults(existing) {\n  const rows = Array.isArray(existing) ? existing : [];\n  return LO_DEFAULT_BUDGETS.map((d) => {\n    const row = rows.find((r) => r && r.category_key === d.category_key);\n    const amount = row ? Number(row.weekly_amount) : NaN;\n    return {\n      category_key: d.category_key,\n      label: d.label,\n      weekly_amount: Number.isFinite(amount) && amount >= 0 ? amount : d.weekly_amount,\n      active: row && row.active !== undefined && row.active !== null ? Boolean(row.active) : true,\n    };\n  });\n}\n\n// Budgets page values (budget_<key>) -> budgets rows. Invalid or negative -> the prefill.\nfunction parseBudgets(formJson, userId, prefill) {\n  const base = prefill || budgetDefaults([]);\n  return base.map((b) => {\n    const raw = formJson ? formJson[`budget_${b.category_key}`] : undefined;\n    const n = raw === '' || raw === null || raw === undefined ? NaN : Number(raw);\n    const amount = Number.isFinite(n) && n >= 0 ? loRound2(Math.min(n, LO_MAX_WEEKLY_BUDGET)) : b.weekly_amount;\n    return { user_id: userId, category_key: b.category_key, label: b.label, weekly_amount: amount, active: b.active !== false };\n  });\n}\n\nfunction parseBufferTarget(raw, fallback) {\n  const n = raw === '' || raw === null || raw === undefined ? NaN : Number(raw);\n  return Number.isFinite(n) && n >= 0 ? loRound2(Math.min(n, LO_MAX_BUFFER_TARGET)) : fallback;\n}\n\n// The consent checkbox comes back as an array of the ticked labels.\nfunction consentGiven(raw) {\n  if (Array.isArray(raw)) return raw.length > 0;\n  return raw === true || raw === 'true';\n}\n\n// ---- n8n form pages (JSON-defined Form nodes) ----\n// Field objects use the keys n8n accepts in a JSON-defined page; fieldName is the\n// key the page returns.\n\nfunction loEscapeHtml(s) {\n  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\n}\n\nfunction questionField(q) {\n  return {\n    fieldLabel: q.label,\n    fieldName: q.key,\n    fieldType: q.type,\n    requiredField: true,\n    fieldOptions: { values: q.options.map(([, label]) => ({ option: label })) },\n  };\n}\n\nfunction questionFields(page) {\n  return LO_QUESTIONS.filter((q) => q.page === page).map(questionField);\n}\n\nfunction budgetFields(prefill) {\n  return prefill.map((b) => ({\n    fieldLabel: `${b.label} (CAD per week)`,\n    fieldName: `budget_${b.category_key}`,\n    fieldType: 'number',\n    requiredField: true,\n    defaultValue: b.weekly_amount,\n  }));\n}\n\nfunction resultFields(result, explanation, isNew) {\n  const pct = allocationToPercents(result.allocation);\n  const warnings = result.warning_messages.length\n    ? `<p><strong>Worth knowing</strong></p><ul>${result.warning_messages.map((w) => `<li>${loEscapeHtml(w)}</li>`).join('')}</ul>`\n    : '';\n  const mixRows = LO_SLEEVES.map((s) => `<tr><td>${LO_SLEEVE_LABELS[s]}</td><td>${pct[s]}%</td></tr>`).join('');\n  const html = [\n    `<h3>Your mix: ${loEscapeHtml(result.tier_label)}</h3>`,\n    `<p>${loEscapeHtml(explanation)}</p>`,\n    `<p>Capacity for risk: <strong>${result.capacity_score}/100</strong> (${LO_TIER_INFO[result.capacity_tier].label}). Willingness: <strong>${result.willingness_score}/100</strong> (${LO_TIER_INFO[result.willingness_tier].label}). The mix uses the lower of the two${result.forced_cash ? ', and money needed within 3 years always stays in cash' : ''}.</p>`,\n    `<table><thead><tr><th>Suggested mix</th><th></th></tr></thead><tbody>${mixRows}</tbody></table>`,\n    warnings,\n    `<p><em>${loEscapeHtml(LO_RESULT_NOTE)}</em></p>`,\n  ].join('');\n  const fields = [{ fieldType: 'html', elementName: 'result_summary', html }];\n  for (const s of LO_SLEEVES) {\n    fields.push({ fieldLabel: `${LO_SLEEVE_LABELS[s]} (%)`, fieldName: `alloc_${s}`, fieldType: 'number', requiredField: true, defaultValue: pct[s] });\n  }\n  fields.push({\n    fieldLabel: result.warnings.includes('low_emergency_fund')\n      ? 'Cash cushion target (CAD). Kept as cash before anything is invested; we suggest a bigger one for you.'\n      : 'Cash cushion target (CAD). Kept as cash before anything is invested.',\n    fieldName: 'buffer_target',\n    fieldType: 'number',\n    requiredField: true,\n    defaultValue: result.suggested_buffer_target,\n  });\n  fields.push({\n    fieldLabel: 'Standing consent',\n    fieldName: 'consent',\n    fieldType: 'checkbox',\n    requiredField: false,\n    fieldOptions: { values: [{ option: 'Invest my weekly leftover automatically (simulated paper trading). I can pause anytime.' }] },\n  });\n  fields.push({ fieldType: 'html', elementName: 'result_disclaimer', html: `<p><em>${isNew ? 'Percentages that do not add up to 100 are scaled to 100. ' : 'Saving replaces your previous profile and budgets. Percentages that do not add up to 100 are scaled to 100. '}${loEscapeHtml(LO_DISCLAIMER)}</em></p>` });\n  return fields;\n}\n\n// ---- rows LO-01 writes ----\n// New users get every column; an existing user (retaking the quiz) only gets the\n// columns onboarding owns, so buffer_balance, carries and created_at survive.\nfunction buildRows(input) {\n  const { userId, isNew, name, email, consent, bufferTarget, answers, result, allocation, explanation, budgets, now } = input;\n  const nowIso = (now instanceof Date ? now : new Date(now || Date.now())).toISOString();\n  const user = {\n    user_id: userId,\n    email: normalizeEmail(email),\n    name: String(name || '').trim(),\n    status: consent ? 'active' : 'paused',\n    buffer_target: bufferTarget,\n  };\n  if (consent) user.consent_at = nowIso;\n  if (isNew) Object.assign(user, { created_at: nowIso }, LO_NEW_USER_DEFAULTS, { buffer_target: bufferTarget });\n  const profile = {\n    user_id: userId,\n    answers_json: JSON.stringify(answers),\n    capacity_score: result.capacity_score,\n    willingness_score: result.willingness_score,\n    tier: result.tier,\n    home_bias: result.home_bias,\n    allocation_json: JSON.stringify(allocation),\n    explanation,\n    updated_at: nowIso,\n    warnings_json: JSON.stringify(result.warnings),\n  };\n  return { user, profile, budgets: budgets.map((b) => ({ ...b, user_id: userId })) };\n}\n// ===== end lib/scoring.mjs =====\n\nreturn main();\n"
+      },
+      "name": "Identify user",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        320,
+        780,
         0
       ]
     },
     {
       "parameters": {
-        "content": "## LO-01 Onboarding Form: stub\nOwned by its lane in BUILD-PLAN.md. Answers {ok:true, stub:true} until the lane replaces it.\nRoutes: n8n Form (own URL)"
+        "operation": "page",
+        "defineForm": "json",
+        "jsonOutput": "={{ JSON.stringify($json.budget_fields) }}",
+        "options": {
+          "formTitle": "Page 2: Weekly budgets",
+          "formDescription": "How much you plan to spend each week on everyday, variable things (CAD). Rent, bills and transfers are left out. Every Sunday, whatever you did not spend in a category can be invested, after your cash cushion.",
+          "buttonLabel": "Next"
+        }
       },
-      "name": "About this stub",
+      "name": "Page 2: Weekly budgets",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1040,
+        0
+      ],
+      "webhookId": "b0d1a5e2-0102-4d00-8000-000000000002"
+    },
+    {
+      "parameters": {
+        "operation": "page",
+        "defineForm": "json",
+        "jsonOutput": "={{ JSON.stringify($('Identify user').first().json.quiz_fields) }}",
+        "options": {
+          "formTitle": "Page 3: Investor quiz",
+          "formDescription": "Seven questions about your goals and how you feel about ups and downs. There are no right answers.",
+          "buttonLabel": "See my result"
+        }
+      },
+      "name": "Page 3: Investor quiz",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1300,
+        0
+      ],
+      "webhookId": "b0d1a5e2-0103-4d00-8000-000000000003"
+    },
+    {
+      "parameters": {
+        "jsCode": "// LO-01 · Score answers (spec §11.3-§11.5): capacity + willingness scores, tier for\n// each, final tier = the lower one (horizon under 3 years forces cash), allocation,\n// warnings, the template explanation, and the prompt for the LLM node.\nfunction main() {\n  const who = $('Identify user').first().json;\n  const quiz = answersFromForm($('Page 3: Investor quiz').first().json, 'quiz');\n  if (quiz.missing.length) throw new Error(`Missing answers on page 3: ${quiz.missing.join(', ')}`);\n  const merged = { ...who.profile_answers, ...quiz.answers };\n  const answers = {};\n  for (const q of LO_QUESTIONS) answers[q.key] = merged[q.key];\n  const result = scoreProfile(answers);\n  const prompt = explanationPrompt(result, answers);\n  return [{ json: {\n    user_id: who.user_id,\n    answers,\n    result,\n    template_explanation: templateExplanation(result, answers),\n    llm_system: prompt.system,\n    llm_prompt: prompt.user,\n  } }];\n}\n\n// ===== lib/scoring.mjs (pasted verbatim: edit the lib, then LO_UPDATE_WF01=1 npm test) =====\n// lib/scoring.mjs: onboarding logic for LO-01 (spec §7 F1, §10 WF01, §11, §14).\n//\n//   quiz answers -> capacity + willingness scores (0-100) -> a tier for each\n//   -> final tier = the lower one (horizon under 3 years forces cash)\n//   -> allocation (§11.5 + home bias), warnings (§11.4), explanation.\n//\n// It also holds the small pieces LO-01 needs around the quiz: the questions and\n// their form labels, default budgets, email -> user_id, the editable allocation,\n// the explanation prompt + template fallback (§19.5), and the rows LO-01 writes.\n//\n// Plain functions, no imports, so this pastes straight into an n8n Code node:\n// LO-01's Code nodes embed everything above the `export` line verbatim, and\n// lib/scoring.test.mjs fails if they drift (LO_UPDATE_WF01=1 re-pastes them).\n\nconst LO_TIERS = ['cash', 'conservative', 'balanced', 'growth', 'all_equity'];\n\n// §11.5: percent of the portfolio per asset class, by tier.\nconst LO_TIER_INFO = {\n  cash: { label: 'Cash', equity: 0, bonds: 0, cash: 100 },\n  conservative: { label: 'Conservative', equity: 20, bonds: 60, cash: 20 },\n  balanced: { label: 'Balanced', equity: 60, bonds: 40, cash: 0 },\n  growth: { label: 'Growth', equity: 80, bonds: 20, cash: 0 },\n  all_equity: { label: 'All equity', equity: 100, bonds: 0, cash: 0 },\n};\n\n// §11.5: how the equity part splits, by home bias (percent of the equity part).\nconst LO_EQUITY_SPLIT = {\n  global: { equity_us: 60, equity_intl: 35, equity_ca: 5 },\n  more_canada: { equity_us: 45, equity_intl: 25, equity_ca: 30 },\n};\n\nconst LO_SLEEVES = ['equity_us', 'equity_intl', 'equity_ca', 'bonds', 'cash'];\nconst LO_SLEEVE_LABELS = {\n  equity_us: 'US stocks',\n  equity_intl: 'International stocks',\n  equity_ca: 'Canadian stocks',\n  bonds: 'Bonds',\n  cash: 'Cash (short-term T-bills)',\n};\n\n// §6.2 default weekly budgets (CAD).\nconst LO_DEFAULT_BUDGETS = [\n  { category_key: 'groceries', label: 'Groceries', weekly_amount: 80 },\n  { category_key: 'eating_out', label: 'Eating out and coffee', weekly_amount: 50 },\n  { category_key: 'transport', label: 'Transport', weekly_amount: 30 },\n  { category_key: 'entertainment', label: 'Fun and entertainment', weekly_amount: 40 },\n  { category_key: 'shopping', label: 'Shopping', weekly_amount: 40 },\n  { category_key: 'personal_care', label: 'Personal care', weekly_amount: 20 },\n  { category_key: 'other', label: 'Other variable', weekly_amount: 20 },\n];\nconst LO_MAX_WEEKLY_BUDGET = 10000;\n\n// Defaults for a new users row (contracts/data-tables.md, spec §18 D2/D5).\nconst LO_NEW_USER_DEFAULTS = {\n  timezone: 'America/Vancouver',\n  buffer_balance: 0,\n  buffer_target: 100,\n  cushion_rate: 0.5,\n  absorb_overspend: true,\n  min_invest: 5,\n  max_weekly_invest: 200,\n  pending_carry: 0,\n  deficit_carry: 0,\n};\n// §11.4: with little or no emergency fund, the result page suggests a bigger cushion.\nconst LO_LOW_EF_BUFFER_TARGET = 200;\nconst LO_MAX_BUFFER_TARGET = 5000;\n\n// The demo user is never touched by the form (BUILD-PLAN ground rule 5).\nconst LO_PROTECTED_USER_IDS = ['maya'];\n\n// §11.1 + §11.2. `value` is what answers_json stores (same keys and values as\n// the seed's profile.answers); `label` is what the form shows and sends back.\n// Labels avoid < and > because n8n escapes them in JSON-defined form pages.\nconst LO_QUESTIONS = [\n  // Page 1: financial profile (§11.1)\n  { key: 'age_range', page: 'profile', type: 'dropdown', label: 'Age range', options: [\n    ['18-24', '18 to 24'], ['25-34', '25 to 34'], ['35-44', '35 to 44'],\n    ['45-54', '45 to 54'], ['55-64', '55 to 64'], ['65+', '65 or older']] },\n  { key: 'income_type', page: 'profile', type: 'radio', label: 'Income type', options: [\n    ['salaried', 'Salaried'], ['hourly', 'Hourly'], ['freelance', 'Freelance or variable'], ['student', 'Student']] },\n  { key: 'monthly_take_home', page: 'profile', type: 'dropdown', label: 'Monthly take-home pay (CAD)', options: [\n    ['under-2000', 'Under $2,000'], ['2000-3000', '$2,000 to $3,000'], ['3000-4000', '$3,000 to $4,000'],\n    ['4000-6000', '$4,000 to $6,000'], ['6000+', '$6,000 or more']] },\n  { key: 'pay_frequency', page: 'profile', type: 'dropdown', label: 'How often are you paid?', options: [\n    ['weekly', 'Weekly'], ['biweekly', 'Every two weeks'], ['semimonthly', 'Twice a month'],\n    ['monthly', 'Monthly'], ['irregular', 'Irregularly']] },\n  { key: 'emergency_fund_months', page: 'profile', type: 'radio', label: 'Emergency fund: how many months of expenses do you have saved?', options: [\n    ['0', 'None yet'], ['<1', 'Less than 1 month'], ['1-3', '1 to 3 months'], ['3-6', '3 to 6 months'], ['6+', '6 months or more']] },\n  { key: 'high_interest_debt', page: 'profile', type: 'radio', label: 'Any debt with interest above 8% (a credit card balance, for example)?', options: [\n    [true, 'Yes'], [false, 'No']] },\n  { key: 'account_type', page: 'profile', type: 'radio', label: 'Account you would hold this in (for your reference only)', options: [\n    ['TFSA', 'TFSA'], ['RRSP', 'RRSP'], ['FHSA', 'FHSA'], ['non_registered', 'Non-registered'], ['not_sure', 'Not sure yet']] },\n  // Page 3: investor quiz (§11.2; Q15 ESG is P2 and not asked)\n  { key: 'goal', page: 'quiz', type: 'radio', label: 'Main goal', options: [\n    ['retirement', 'Retirement'], ['house', 'A home'], ['long_term_wealth', 'Long-term wealth'], ['no_specific_goal', 'No specific goal']] },\n  { key: 'horizon', page: 'quiz', type: 'radio', label: 'When might you need this money?', options: [\n    ['<3', 'In less than 3 years'], ['3-5', 'In 3 to 5 years'], ['5-10', 'In 5 to 10 years'],\n    ['10-20', 'In 10 to 20 years'], ['20+', 'In 20 years or more']] },\n  { key: 'drop_reaction', page: 'quiz', type: 'radio', label: 'Your portfolio drops 30% in a year. You:', options: [\n    ['sell_all', 'Sell everything'], ['sell_some', 'Sell some'], ['hold', 'Hold'], ['buy_more', 'Buy more']] },\n  { key: 'max_drop', page: 'quiz', type: 'radio', label: 'Largest one-year drop you could live with', options: [\n    ['5', '5%'], ['10', '10%'], ['20', '20%'], ['30', '30%'], ['40+', '40% or more']] },\n  { key: 'experience', page: 'quiz', type: 'radio', label: 'Investing experience', options: [\n    ['none', 'None'], ['some', 'Some'], ['experienced', 'Experienced']] },\n  { key: 'income_stability', page: 'quiz', type: 'radio', label: 'How stable is your income?', options: [\n    ['very', 'Very stable'], ['somewhat', 'Somewhat stable'], ['not', 'Not stable']] },\n  { key: 'geo_preference', page: 'quiz', type: 'radio', label: 'For the stock part: geographic preference', options: [\n    ['global', 'Global market weight'], ['more_canada', 'More Canada'], ['no_preference', 'No preference']] },\n];\n\n// §11.3 scoring. Each answer maps to 0-100 points; a score is the weighted sum.\n// Capacity: horizon heaviest, then income stability and emergency fund.\n// Willingness: reaction to a drop, the largest drop you could live with, experience.\nconst LO_CAPACITY = {\n  horizon: { weight: 0.6, points: { '<3': 0, '3-5': 20, '5-10': 40, '10-20': 60, '20+': 100 } },\n  income_stability: { weight: 0.2, points: { not: 0, somewhat: 50, very: 100 } },\n  emergency_fund_months: { weight: 0.2, points: { 0: 0, '<1': 20, '1-3': 40, '3-6': 70, '6+': 100 } },\n};\nconst LO_WILLINGNESS = {\n  drop_reaction: { weight: 0.4, points: { sell_all: 0, sell_some: 30, hold: 60, buy_more: 100 } },\n  max_drop: { weight: 0.4, points: { 5: 0, 10: 20, 20: 40, 30: 70, '40+': 100 } },\n  experience: { weight: 0.2, points: { none: 0, some: 40, experienced: 100 } },\n};\n\n// §11.4 warning codes (warnings_json) and their text, word for word from the spec.\nconst LO_WARNINGS = {\n  low_emergency_fund: 'Many people build a cash cushion first.',\n  high_interest_debt: 'Paying off debt above 8% is a guaranteed return many people prioritize.',\n};\n\n// §14 wording shown with every result.\nconst LO_DISCLAIMER = 'Educational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.';\nconst LO_RESULT_NOTE = 'This is a general asset mix based on your own answers, not a recommendation to buy, sell or hold any specific security. You can change it below, and anytime later.';\n\nfunction loRound2(x) {\n  return Math.round((Number(x) + Number.EPSILON) * 100) / 100;\n}\n\nfunction loQuestion(key) {\n  const q = LO_QUESTIONS.find((x) => x.key === key);\n  if (!q) throw new Error(`unknown question ${key}`);\n  return q;\n}\n\n// Form value (label, or already a stored value) -> stored value. Unknown -> undefined.\nfunction answerValue(key, raw) {\n  const q = loQuestion(key);\n  if (Array.isArray(raw)) raw = raw[0];\n  if (raw === undefined || raw === null) return undefined;\n  const s = String(raw).trim();\n  const hit = q.options.find(([value, label]) => label === s || String(value) === s);\n  return hit ? hit[0] : undefined;\n}\n\nfunction answerLabel(key, value) {\n  const hit = loQuestion(key).options.find(([v]) => String(v) === String(value));\n  return hit ? hit[1] : String(value);\n}\n\n// Every answer the form returned, as stored values. `missing` lists the keys\n// with no valid answer (the form marks them all required, so this should be empty).\nfunction answersFromForm(formJson, page) {\n  const answers = {};\n  const missing = [];\n  for (const q of LO_QUESTIONS) {\n    if (page && q.page !== page) continue;\n    const v = answerValue(q.key, formJson ? formJson[q.key] : undefined);\n    if (v === undefined) missing.push(q.key);\n    else answers[q.key] = v;\n  }\n  return { answers, missing };\n}\n\nfunction loWeightedScore(table, answers) {\n  let total = 0;\n  for (const [key, { weight, points }] of Object.entries(table)) {\n    const p = points[String(answers[key])];\n    if (p === undefined) throw new Error(`score: missing or invalid answer for ${key}: ${answers[key]}`);\n    total += weight * p;\n  }\n  return Math.max(0, Math.min(100, Math.round(total)));\n}\n\nfunction capacityScore(answers) {\n  return loWeightedScore(LO_CAPACITY, answers);\n}\n\nfunction willingnessScore(answers) {\n  return loWeightedScore(LO_WILLINGNESS, answers);\n}\n\n// §11.3: 0-19 cash, 20-39 conservative, 40-59 balanced, 60-79 growth, 80+ all_equity.\nfunction tierForScore(score) {\n  const s = Number(score);\n  if (!Number.isFinite(s)) throw new Error(`tierForScore: not a number ${score}`);\n  if (s < 20) return 'cash';\n  if (s < 40) return 'conservative';\n  if (s < 60) return 'balanced';\n  if (s < 80) return 'growth';\n  return 'all_equity';\n}\n\nfunction lowerTier(a, b) {\n  const ia = LO_TIERS.indexOf(a);\n  const ib = LO_TIERS.indexOf(b);\n  if (ia < 0 || ib < 0) throw new Error(`lowerTier: unknown tier ${ia < 0 ? a : b}`);\n  return LO_TIERS[Math.min(ia, ib)];\n}\n\nfunction homeBias(geoPreference) {\n  return geoPreference === 'more_canada' ? 'more_canada' : 'global';\n}\n\n// §11.4 warning codes, in a fixed order.\nfunction warningsFor(answers) {\n  const out = [];\n  if (answers.emergency_fund_months === '0' || answers.emergency_fund_months === '<1') out.push('low_emergency_fund');\n  if (answers.high_interest_debt === true || answers.high_interest_debt === 'true') out.push('high_interest_debt');\n  return out;\n}\n\n// §11.5: sleeve weights (fractions summing to exactly 1) for a tier and home bias.\nfunction allocationFor(tier, bias) {\n  const t = LO_TIER_INFO[tier];\n  const split = LO_EQUITY_SPLIT[bias];\n  if (!t) throw new Error(`allocationFor: unknown tier ${tier}`);\n  if (!split) throw new Error(`allocationFor: unknown home bias ${bias}`);\n  // Percent * percent / 100 is a whole percent for every tier and split in §11.5.\n  return {\n    equity_us: (t.equity * split.equity_us) / 10000,\n    equity_intl: (t.equity * split.equity_intl) / 10000,\n    equity_ca: (t.equity * split.equity_ca) / 10000,\n    bonds: t.bonds / 100,\n    cash: t.cash / 100,\n  };\n}\n\n// Fractions -> whole percents (for the form), summing to 100.\nfunction allocationToPercents(allocation) {\n  const pct = {};\n  for (const s of LO_SLEEVES) pct[s] = Math.round((Number(allocation[s]) || 0) * 100);\n  const drift = 100 - LO_SLEEVES.reduce((a, s) => a + pct[s], 0);\n  if (drift !== 0) {\n    const biggest = LO_SLEEVES.reduce((a, s) => (pct[s] > pct[a] ? s : a), LO_SLEEVES[0]);\n    pct[biggest] += drift;\n  }\n  return pct;\n}\n\n// The user's edited percents -> fractions summing to exactly 1 (4 decimals).\n// Blank or negative entries count as 0. If the total isn't 100 the entries are\n// scaled to it; if everything is 0 or invalid, `fallback` (the suggested mix) is kept.\n// Returns { allocation, edited, scaled }.\nfunction normalizeAllocation(percents, fallback) {\n  const raw = {};\n  let total = 0;\n  for (const s of LO_SLEEVES) {\n    const n = Number(percents ? percents[s] : undefined);\n    raw[s] = Number.isFinite(n) && n > 0 ? n : 0;\n    total += raw[s];\n  }\n  if (!(total > 0)) return { allocation: { ...fallback }, edited: false, scaled: false };\n  const allocation = {};\n  for (const s of LO_SLEEVES) allocation[s] = Math.round((raw[s] / total) * 10000) / 10000;\n  const drift = Math.round((1 - LO_SLEEVES.reduce((a, s) => a + allocation[s], 0)) * 10000) / 10000;\n  if (drift !== 0) {\n    const biggest = LO_SLEEVES.reduce((a, s) => (allocation[s] > allocation[a] ? s : a), LO_SLEEVES[0]);\n    allocation[biggest] = Math.round((allocation[biggest] + drift) * 10000) / 10000;\n  }\n  const edited = LO_SLEEVES.some((s) => Math.abs(allocation[s] - (Number(fallback[s]) || 0)) > 0.00005);\n  return { allocation, edited, scaled: Math.abs(total - 100) > 1e-9 };\n}\n\n// Everything §11.3-§11.5 derive from the answers.\nfunction scoreProfile(answers) {\n  const capacity = capacityScore(answers);\n  const willingness = willingnessScore(answers);\n  const capacityTier = tierForScore(capacity);\n  const willingnessTier = tierForScore(willingness);\n  const forcedCash = answers.horizon === '<3';\n  const tier = forcedCash ? 'cash' : lowerTier(capacityTier, willingnessTier);\n  const bias = homeBias(answers.geo_preference);\n  const warnings = warningsFor(answers);\n  let limitedBy = 'both';\n  if (forcedCash) limitedBy = 'horizon';\n  else if (LO_TIERS.indexOf(capacityTier) < LO_TIERS.indexOf(willingnessTier)) limitedBy = 'capacity';\n  else if (LO_TIERS.indexOf(willingnessTier) < LO_TIERS.indexOf(capacityTier)) limitedBy = 'willingness';\n  return {\n    capacity_score: capacity,\n    willingness_score: willingness,\n    capacity_tier: capacityTier,\n    willingness_tier: willingnessTier,\n    tier,\n    tier_label: LO_TIER_INFO[tier].label,\n    forced_cash: forcedCash,\n    limited_by: limitedBy,\n    home_bias: bias,\n    allocation: allocationFor(tier, bias),\n    warnings,\n    warning_messages: warnings.map((code) => LO_WARNINGS[code]),\n    suggested_buffer_target: warnings.includes('low_emergency_fund') ? LO_LOW_EF_BUFFER_TARGET : LO_NEW_USER_DEFAULTS.buffer_target,\n  };\n}\n\n// \"about 60% stocks and 40% bonds\", from an allocation (fractions).\nfunction mixPhrase(allocation) {\n  const pct = allocationToPercents(allocation);\n  const stocks = pct.equity_us + pct.equity_intl + pct.equity_ca;\n  const parts = [];\n  if (stocks) parts.push(`${stocks}% stocks`);\n  if (pct.bonds) parts.push(`${pct.bonds}% bonds`);\n  if (pct.cash) parts.push(`${pct.cash}% cash-like holdings`);\n  if (parts.length === 1) return stocks === 100 ? 'all stocks' : pct.cash === 100 ? 'all cash-like holdings' : parts[0];\n  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;\n}\n\nfunction loHorizonPhrase(h) {\n  return { '<3': 'less than 3 years', '3-5': '3 to 5 years', '5-10': '5 to 10 years', '10-20': '10 to 20 years', '20+': '20 years or more' }[h] || 'an unknown time';\n}\n\nfunction loStabilityPhrase(v) {\n  return { very: 'very stable income', somewhat: 'somewhat stable income', not: 'income that is not stable' }[v] || 'your income';\n}\n\nfunction loFundPhrase(v) {\n  return {\n    0: 'no emergency savings yet', '<1': 'less than a month of emergency savings', '1-3': '1 to 3 months of emergency savings',\n    '3-6': '3 to 6 months of emergency savings', '6+': '6 or more months of emergency savings',\n  }[v] || 'your emergency savings';\n}\n\n// §19.5 fallback: the explanation used whenever the LLM is missing, fails, or\n// returns something that breaks the rules in checkExplanation(). 3-4 sentences,\n// general language, never names a security.\nfunction templateExplanation(result, answers) {\n  const s = [];\n  s.push(`Your answers point to the ${result.tier_label} mix: ${mixPhrase(result.allocation)}.`);\n  if (result.limited_by === 'horizon') {\n    s.push('You said you may need this money within 3 years, and money needed that soon is usually kept in cash-like holdings rather than exposed to market swings.');\n  } else {\n    if (result.tier !== 'cash') {\n      s.push(result.home_bias === 'more_canada'\n        ? 'The stock part leans more toward Canada, as you asked.'\n        : 'The stock part follows global market weights.');\n    }\n    const drop = answers.max_drop === '40+' ? '40% or more' : `${answers.max_drop}%`;\n    const horizon = `a horizon of ${loHorizonPhrase(answers.horizon)}`;\n    if (result.limited_by === 'willingness') {\n      s.push(`Your situation (${horizon} and ${loStabilityPhrase(answers.income_stability)}) leaves room for more growth, but you said a ${drop} drop in a year is about the most you would want to sit through, so the mix follows your comfort level.`);\n    } else if (result.limited_by === 'capacity') {\n      s.push(`You are comfortable with bigger swings, but your situation (${horizon}, ${loStabilityPhrase(answers.income_stability)} and ${loFundPhrase(answers.emergency_fund_months)}) leaves less room for risk, so the mix follows that.`);\n    } else {\n      s.push(`Your situation (${horizon}) and your comfort with market swings point to the same level of risk.`);\n    }\n  }\n  s.push('This is a general asset mix based on your own answers, not a recommendation to buy, sell or hold any specific security, and you can change it anytime.');\n  return s.join(' ');\n}\n\n// What the LLM node gets (spec §10 WF01): 3-4 sentences, plain language, general.\nfunction explanationPrompt(result, answers) {\n  const pct = allocationToPercents(result.allocation);\n  const system = [\n    'You write short, plain-language explanations for an educational budgeting prototype that uses simulated (paper) trading.',\n    'Rules: 3 to 4 sentences, under 90 words, no headings, no lists, no greeting.',\n    'Talk only about the general asset mix (stocks, bonds, cash) and why the answers lead to it.',\n    'Never name, recommend or rank any specific security, fund or ticker, and never tell the reader to buy, sell or hold anything.',\n    'End by saying it is a general mix based on their own answers and that they can change it anytime.',\n  ].join(' ');\n  const user = [\n    `Result: ${result.tier_label} mix (${mixPhrase(result.allocation)}; US ${pct.equity_us}%, international ${pct.equity_intl}%, Canada ${pct.equity_ca}%, bonds ${pct.bonds}%, cash ${pct.cash}%).`,\n    `Capacity for risk: ${result.capacity_score}/100 (time horizon ${loHorizonPhrase(answers.horizon)}, ${loStabilityPhrase(answers.income_stability)}, ${loFundPhrase(answers.emergency_fund_months)}).`,\n    `Willingness to take risk: ${result.willingness_score}/100 (after a 30% drop they would: ${answerLabel('drop_reaction', answers.drop_reaction).toLowerCase()}; largest one-year drop they could live with: ${answerLabel('max_drop', answers.max_drop)}; experience: ${answerLabel('experience', answers.experience).toLowerCase()}).`,\n    result.forced_cash\n      ? 'They may need the money within 3 years, which always means the cash mix.'\n      : `The final mix is the lower of the two (${result.limited_by === 'both' ? 'both point to the same level' : `limited by ${result.limited_by}`}).`,\n    `Stock split preference: ${result.home_bias === 'more_canada' ? 'more Canada' : 'global market weight'}.`,\n    'Write the explanation.',\n  ].join('\\n');\n  return { system, user };\n}\n\n// The text out of whatever the LLM node returned (Anthropic or OpenAI node,\n// simplified or raw). null when there is none, e.g. while the node is disabled\n// and simply passes its input through.\nfunction extractLlmText(json) {\n  if (!json || typeof json !== 'object') return null;\n  const fromParts = (parts) => {\n    if (!Array.isArray(parts)) return null;\n    const texts = [];\n    for (const p of parts) {\n      if (typeof p === 'string') texts.push(p);\n      else if (p && typeof p.text === 'string') texts.push(p.text);\n      else if (p && Array.isArray(p.content)) {\n        const inner = fromParts(p.content);\n        if (inner) texts.push(inner);\n      }\n    }\n    return texts.length ? texts.join('\\n').trim() : null;\n  };\n  if (typeof json.text === 'string' && json.text.trim()) return json.text.trim();\n  if (typeof json.content === 'string' && json.content.trim()) return json.content.trim();\n  if (typeof json.output === 'string' && json.output.trim()) return json.output.trim();\n  if (typeof json.output_text === 'string' && json.output_text.trim()) return json.output_text.trim();\n  if (json.message && typeof json.message.content === 'string' && json.message.content.trim()) return json.message.content.trim();\n  if (Array.isArray(json.choices) && json.choices[0] && json.choices[0].message && typeof json.choices[0].message.content === 'string') {\n    return json.choices[0].message.content.trim() || null;\n  }\n  return fromParts(json.content) || fromParts(json.output) || null;\n}\n\n// LLM text -> cleaned text, or null when it breaks the rules (then use the template).\nfunction checkExplanation(text, symbols) {\n  if (typeof text !== 'string') return null;\n  const t = text.trim().replace(/^[\"'“]+|[\"'”]+$/g, '').replace(/\\s+/g, ' ').trim();\n  if (t.length < 80 || t.length > 900) return null;\n  const sentences = t.split(/[.!?](\\s|$)/).filter((x) => x && x.trim().length > 1).length;\n  if (sentences < 2 || sentences > 6) return null;\n  const tickers = symbols && symbols.length ? symbols : ['VTI', 'VXUS', 'EWC', 'BND', 'SGOV'];\n  if (tickers.some((sym) => new RegExp(`\\\\b${sym}\\\\b`).test(t))) return null;\n  if (/\\b(you should|we recommend|i recommend|we suggest)\\b[^.]*\\b(buy|sell|hold)\\b/i.test(t)) return null;\n  if (/\\bguarantee/i.test(t)) return null;\n  return t;\n}\n\nfunction normalizeEmail(email) {\n  return String(email || '').trim().toLowerCase();\n}\n\nfunction isEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizeEmail(email));\n}\n\nfunction slugify(s) {\n  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32).replace(/-+$/g, '');\n}\n\n// FNV-1a, 6 hex chars: a short, stable suffix for colliding user_ids.\nfunction shortHash(s) {\n  let h = 0x811c9dc5;\n  for (let i = 0; i < s.length; i += 1) {\n    h ^= s.charCodeAt(i);\n    h = Math.imul(h, 0x01000193) >>> 0;\n  }\n  return h.toString(16).padStart(8, '0').slice(0, 6);\n}\n\n// email -> user_id (spec §19.3: lowercase, URL-safe slug).\n// 1. An existing user with this email keeps their user_id (retaking the quiz updates them).\n// 2. Otherwise the slug of the email's local part: test-d@example.com -> test-d.\n// 3. If that id is taken by someone else or protected (maya), add a hash of the email.\n// `users` are rows from the users table ({user_id, email}).\nfunction resolveUserId(email, users, protectedIds) {\n  const prot = protectedIds || LO_PROTECTED_USER_IDS;\n  const e = normalizeEmail(email);\n  if (!isEmail(e)) throw new Error(`resolveUserId: invalid email ${email}`);\n  const rows = Array.isArray(users) ? users : [];\n  const match = rows.find((u) => u && u.user_id && normalizeEmail(u.email) === e && !prot.includes(u.user_id));\n  if (match) return { user_id: match.user_id, is_new: false };\n  const taken = new Set(rows.filter((u) => u && u.user_id).map((u) => u.user_id));\n  let base = slugify(e.split('@')[0]) || 'user';\n  if (prot.includes(base) || taken.has(base)) base = `${base}-${shortHash(e)}`;\n  let id = base;\n  for (let n = 2; taken.has(id); n += 1) id = `${base}-${n}`;\n  return { user_id: id, is_new: true };\n}\n\n// Budget prefill: the user's current budgets if they have any, else the defaults.\nfunction budgetDefaults(existing) {\n  const rows = Array.isArray(existing) ? existing : [];\n  return LO_DEFAULT_BUDGETS.map((d) => {\n    const row = rows.find((r) => r && r.category_key === d.category_key);\n    const amount = row ? Number(row.weekly_amount) : NaN;\n    return {\n      category_key: d.category_key,\n      label: d.label,\n      weekly_amount: Number.isFinite(amount) && amount >= 0 ? amount : d.weekly_amount,\n      active: row && row.active !== undefined && row.active !== null ? Boolean(row.active) : true,\n    };\n  });\n}\n\n// Budgets page values (budget_<key>) -> budgets rows. Invalid or negative -> the prefill.\nfunction parseBudgets(formJson, userId, prefill) {\n  const base = prefill || budgetDefaults([]);\n  return base.map((b) => {\n    const raw = formJson ? formJson[`budget_${b.category_key}`] : undefined;\n    const n = raw === '' || raw === null || raw === undefined ? NaN : Number(raw);\n    const amount = Number.isFinite(n) && n >= 0 ? loRound2(Math.min(n, LO_MAX_WEEKLY_BUDGET)) : b.weekly_amount;\n    return { user_id: userId, category_key: b.category_key, label: b.label, weekly_amount: amount, active: b.active !== false };\n  });\n}\n\nfunction parseBufferTarget(raw, fallback) {\n  const n = raw === '' || raw === null || raw === undefined ? NaN : Number(raw);\n  return Number.isFinite(n) && n >= 0 ? loRound2(Math.min(n, LO_MAX_BUFFER_TARGET)) : fallback;\n}\n\n// The consent checkbox comes back as an array of the ticked labels.\nfunction consentGiven(raw) {\n  if (Array.isArray(raw)) return raw.length > 0;\n  return raw === true || raw === 'true';\n}\n\n// ---- n8n form pages (JSON-defined Form nodes) ----\n// Field objects use the keys n8n accepts in a JSON-defined page; fieldName is the\n// key the page returns.\n\nfunction loEscapeHtml(s) {\n  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\n}\n\nfunction questionField(q) {\n  return {\n    fieldLabel: q.label,\n    fieldName: q.key,\n    fieldType: q.type,\n    requiredField: true,\n    fieldOptions: { values: q.options.map(([, label]) => ({ option: label })) },\n  };\n}\n\nfunction questionFields(page) {\n  return LO_QUESTIONS.filter((q) => q.page === page).map(questionField);\n}\n\nfunction budgetFields(prefill) {\n  return prefill.map((b) => ({\n    fieldLabel: `${b.label} (CAD per week)`,\n    fieldName: `budget_${b.category_key}`,\n    fieldType: 'number',\n    requiredField: true,\n    defaultValue: b.weekly_amount,\n  }));\n}\n\nfunction resultFields(result, explanation, isNew) {\n  const pct = allocationToPercents(result.allocation);\n  const warnings = result.warning_messages.length\n    ? `<p><strong>Worth knowing</strong></p><ul>${result.warning_messages.map((w) => `<li>${loEscapeHtml(w)}</li>`).join('')}</ul>`\n    : '';\n  const mixRows = LO_SLEEVES.map((s) => `<tr><td>${LO_SLEEVE_LABELS[s]}</td><td>${pct[s]}%</td></tr>`).join('');\n  const html = [\n    `<h3>Your mix: ${loEscapeHtml(result.tier_label)}</h3>`,\n    `<p>${loEscapeHtml(explanation)}</p>`,\n    `<p>Capacity for risk: <strong>${result.capacity_score}/100</strong> (${LO_TIER_INFO[result.capacity_tier].label}). Willingness: <strong>${result.willingness_score}/100</strong> (${LO_TIER_INFO[result.willingness_tier].label}). The mix uses the lower of the two${result.forced_cash ? ', and money needed within 3 years always stays in cash' : ''}.</p>`,\n    `<table><thead><tr><th>Suggested mix</th><th></th></tr></thead><tbody>${mixRows}</tbody></table>`,\n    warnings,\n    `<p><em>${loEscapeHtml(LO_RESULT_NOTE)}</em></p>`,\n  ].join('');\n  const fields = [{ fieldType: 'html', elementName: 'result_summary', html }];\n  for (const s of LO_SLEEVES) {\n    fields.push({ fieldLabel: `${LO_SLEEVE_LABELS[s]} (%)`, fieldName: `alloc_${s}`, fieldType: 'number', requiredField: true, defaultValue: pct[s] });\n  }\n  fields.push({\n    fieldLabel: result.warnings.includes('low_emergency_fund')\n      ? 'Cash cushion target (CAD). Kept as cash before anything is invested; we suggest a bigger one for you.'\n      : 'Cash cushion target (CAD). Kept as cash before anything is invested.',\n    fieldName: 'buffer_target',\n    fieldType: 'number',\n    requiredField: true,\n    defaultValue: result.suggested_buffer_target,\n  });\n  fields.push({\n    fieldLabel: 'Standing consent',\n    fieldName: 'consent',\n    fieldType: 'checkbox',\n    requiredField: false,\n    fieldOptions: { values: [{ option: 'Invest my weekly leftover automatically (simulated paper trading). I can pause anytime.' }] },\n  });\n  fields.push({ fieldType: 'html', elementName: 'result_disclaimer', html: `<p><em>${isNew ? 'Percentages that do not add up to 100 are scaled to 100. ' : 'Saving replaces your previous profile and budgets. Percentages that do not add up to 100 are scaled to 100. '}${loEscapeHtml(LO_DISCLAIMER)}</em></p>` });\n  return fields;\n}\n\n// ---- rows LO-01 writes ----\n// New users get every column; an existing user (retaking the quiz) only gets the\n// columns onboarding owns, so buffer_balance, carries and created_at survive.\nfunction buildRows(input) {\n  const { userId, isNew, name, email, consent, bufferTarget, answers, result, allocation, explanation, budgets, now } = input;\n  const nowIso = (now instanceof Date ? now : new Date(now || Date.now())).toISOString();\n  const user = {\n    user_id: userId,\n    email: normalizeEmail(email),\n    name: String(name || '').trim(),\n    status: consent ? 'active' : 'paused',\n    buffer_target: bufferTarget,\n  };\n  if (consent) user.consent_at = nowIso;\n  if (isNew) Object.assign(user, { created_at: nowIso }, LO_NEW_USER_DEFAULTS, { buffer_target: bufferTarget });\n  const profile = {\n    user_id: userId,\n    answers_json: JSON.stringify(answers),\n    capacity_score: result.capacity_score,\n    willingness_score: result.willingness_score,\n    tier: result.tier,\n    home_bias: result.home_bias,\n    allocation_json: JSON.stringify(allocation),\n    explanation,\n    updated_at: nowIso,\n    warnings_json: JSON.stringify(result.warnings),\n  };\n  return { user, profile, budgets: budgets.map((b) => ({ ...b, user_id: userId })) };\n}\n// ===== end lib/scoring.mjs =====\n\nreturn main();\n"
+      },
+      "name": "Score answers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "claude-opus-5-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.llm_prompt }}",
+              "role": "user"
+            }
+          ]
+        },
+        "options": {
+          "system": "={{ $json.llm_system }}",
+          "maxTokens": 4000
+        }
+      },
+      "name": "Explain (LLM)",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        1820,
+        0
+      ],
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// LO-01 · Pick explanation (spec §19.5): use the LLM's text when it exists and\n// passes checkExplanation() (length, no tickers, no buy/sell advice); otherwise the\n// template. Works whatever the LLM node returns, and when it is disabled or fails.\nfunction main() {\n  const scored = $('Score answers').first().json;\n  const who = $('Identify user').first().json;\n  const llm = $input.first().json;\n  const fromLlm = llm && !llm.error ? checkExplanation(extractLlmText(llm)) : null;\n  const explanation = fromLlm || scored.template_explanation;\n  return [{ json: {\n    ...scored,\n    explanation,\n    explanation_source: fromLlm ? 'llm' : 'template',\n    result_fields: resultFields(scored.result, explanation, who.is_new),\n  } }];\n}\n\n// ===== lib/scoring.mjs (pasted verbatim: edit the lib, then LO_UPDATE_WF01=1 npm test) =====\n// lib/scoring.mjs: onboarding logic for LO-01 (spec §7 F1, §10 WF01, §11, §14).\n//\n//   quiz answers -> capacity + willingness scores (0-100) -> a tier for each\n//   -> final tier = the lower one (horizon under 3 years forces cash)\n//   -> allocation (§11.5 + home bias), warnings (§11.4), explanation.\n//\n// It also holds the small pieces LO-01 needs around the quiz: the questions and\n// their form labels, default budgets, email -> user_id, the editable allocation,\n// the explanation prompt + template fallback (§19.5), and the rows LO-01 writes.\n//\n// Plain functions, no imports, so this pastes straight into an n8n Code node:\n// LO-01's Code nodes embed everything above the `export` line verbatim, and\n// lib/scoring.test.mjs fails if they drift (LO_UPDATE_WF01=1 re-pastes them).\n\nconst LO_TIERS = ['cash', 'conservative', 'balanced', 'growth', 'all_equity'];\n\n// §11.5: percent of the portfolio per asset class, by tier.\nconst LO_TIER_INFO = {\n  cash: { label: 'Cash', equity: 0, bonds: 0, cash: 100 },\n  conservative: { label: 'Conservative', equity: 20, bonds: 60, cash: 20 },\n  balanced: { label: 'Balanced', equity: 60, bonds: 40, cash: 0 },\n  growth: { label: 'Growth', equity: 80, bonds: 20, cash: 0 },\n  all_equity: { label: 'All equity', equity: 100, bonds: 0, cash: 0 },\n};\n\n// §11.5: how the equity part splits, by home bias (percent of the equity part).\nconst LO_EQUITY_SPLIT = {\n  global: { equity_us: 60, equity_intl: 35, equity_ca: 5 },\n  more_canada: { equity_us: 45, equity_intl: 25, equity_ca: 30 },\n};\n\nconst LO_SLEEVES = ['equity_us', 'equity_intl', 'equity_ca', 'bonds', 'cash'];\nconst LO_SLEEVE_LABELS = {\n  equity_us: 'US stocks',\n  equity_intl: 'International stocks',\n  equity_ca: 'Canadian stocks',\n  bonds: 'Bonds',\n  cash: 'Cash (short-term T-bills)',\n};\n\n// §6.2 default weekly budgets (CAD).\nconst LO_DEFAULT_BUDGETS = [\n  { category_key: 'groceries', label: 'Groceries', weekly_amount: 80 },\n  { category_key: 'eating_out', label: 'Eating out and coffee', weekly_amount: 50 },\n  { category_key: 'transport', label: 'Transport', weekly_amount: 30 },\n  { category_key: 'entertainment', label: 'Fun and entertainment', weekly_amount: 40 },\n  { category_key: 'shopping', label: 'Shopping', weekly_amount: 40 },\n  { category_key: 'personal_care', label: 'Personal care', weekly_amount: 20 },\n  { category_key: 'other', label: 'Other variable', weekly_amount: 20 },\n];\nconst LO_MAX_WEEKLY_BUDGET = 10000;\n\n// Defaults for a new users row (contracts/data-tables.md, spec §18 D2/D5).\nconst LO_NEW_USER_DEFAULTS = {\n  timezone: 'America/Vancouver',\n  buffer_balance: 0,\n  buffer_target: 100,\n  cushion_rate: 0.5,\n  absorb_overspend: true,\n  min_invest: 5,\n  max_weekly_invest: 200,\n  pending_carry: 0,\n  deficit_carry: 0,\n};\n// §11.4: with little or no emergency fund, the result page suggests a bigger cushion.\nconst LO_LOW_EF_BUFFER_TARGET = 200;\nconst LO_MAX_BUFFER_TARGET = 5000;\n\n// The demo user is never touched by the form (BUILD-PLAN ground rule 5).\nconst LO_PROTECTED_USER_IDS = ['maya'];\n\n// §11.1 + §11.2. `value` is what answers_json stores (same keys and values as\n// the seed's profile.answers); `label` is what the form shows and sends back.\n// Labels avoid < and > because n8n escapes them in JSON-defined form pages.\nconst LO_QUESTIONS = [\n  // Page 1: financial profile (§11.1)\n  { key: 'age_range', page: 'profile', type: 'dropdown', label: 'Age range', options: [\n    ['18-24', '18 to 24'], ['25-34', '25 to 34'], ['35-44', '35 to 44'],\n    ['45-54', '45 to 54'], ['55-64', '55 to 64'], ['65+', '65 or older']] },\n  { key: 'income_type', page: 'profile', type: 'radio', label: 'Income type', options: [\n    ['salaried', 'Salaried'], ['hourly', 'Hourly'], ['freelance', 'Freelance or variable'], ['student', 'Student']] },\n  { key: 'monthly_take_home', page: 'profile', type: 'dropdown', label: 'Monthly take-home pay (CAD)', options: [\n    ['under-2000', 'Under $2,000'], ['2000-3000', '$2,000 to $3,000'], ['3000-4000', '$3,000 to $4,000'],\n    ['4000-6000', '$4,000 to $6,000'], ['6000+', '$6,000 or more']] },\n  { key: 'pay_frequency', page: 'profile', type: 'dropdown', label: 'How often are you paid?', options: [\n    ['weekly', 'Weekly'], ['biweekly', 'Every two weeks'], ['semimonthly', 'Twice a month'],\n    ['monthly', 'Monthly'], ['irregular', 'Irregularly']] },\n  { key: 'emergency_fund_months', page: 'profile', type: 'radio', label: 'Emergency fund: how many months of expenses do you have saved?', options: [\n    ['0', 'None yet'], ['<1', 'Less than 1 month'], ['1-3', '1 to 3 months'], ['3-6', '3 to 6 months'], ['6+', '6 months or more']] },\n  { key: 'high_interest_debt', page: 'profile', type: 'radio', label: 'Any debt with interest above 8% (a credit card balance, for example)?', options: [\n    [true, 'Yes'], [false, 'No']] },\n  { key: 'account_type', page: 'profile', type: 'radio', label: 'Account you would hold this in (for your reference only)', options: [\n    ['TFSA', 'TFSA'], ['RRSP', 'RRSP'], ['FHSA', 'FHSA'], ['non_registered', 'Non-registered'], ['not_sure', 'Not sure yet']] },\n  // Page 3: investor quiz (§11.2; Q15 ESG is P2 and not asked)\n  { key: 'goal', page: 'quiz', type: 'radio', label: 'Main goal', options: [\n    ['retirement', 'Retirement'], ['house', 'A home'], ['long_term_wealth', 'Long-term wealth'], ['no_specific_goal', 'No specific goal']] },\n  { key: 'horizon', page: 'quiz', type: 'radio', label: 'When might you need this money?', options: [\n    ['<3', 'In less than 3 years'], ['3-5', 'In 3 to 5 years'], ['5-10', 'In 5 to 10 years'],\n    ['10-20', 'In 10 to 20 years'], ['20+', 'In 20 years or more']] },\n  { key: 'drop_reaction', page: 'quiz', type: 'radio', label: 'Your portfolio drops 30% in a year. You:', options: [\n    ['sell_all', 'Sell everything'], ['sell_some', 'Sell some'], ['hold', 'Hold'], ['buy_more', 'Buy more']] },\n  { key: 'max_drop', page: 'quiz', type: 'radio', label: 'Largest one-year drop you could live with', options: [\n    ['5', '5%'], ['10', '10%'], ['20', '20%'], ['30', '30%'], ['40+', '40% or more']] },\n  { key: 'experience', page: 'quiz', type: 'radio', label: 'Investing experience', options: [\n    ['none', 'None'], ['some', 'Some'], ['experienced', 'Experienced']] },\n  { key: 'income_stability', page: 'quiz', type: 'radio', label: 'How stable is your income?', options: [\n    ['very', 'Very stable'], ['somewhat', 'Somewhat stable'], ['not', 'Not stable']] },\n  { key: 'geo_preference', page: 'quiz', type: 'radio', label: 'For the stock part: geographic preference', options: [\n    ['global', 'Global market weight'], ['more_canada', 'More Canada'], ['no_preference', 'No preference']] },\n];\n\n// §11.3 scoring. Each answer maps to 0-100 points; a score is the weighted sum.\n// Capacity: horizon heaviest, then income stability and emergency fund.\n// Willingness: reaction to a drop, the largest drop you could live with, experience.\nconst LO_CAPACITY = {\n  horizon: { weight: 0.6, points: { '<3': 0, '3-5': 20, '5-10': 40, '10-20': 60, '20+': 100 } },\n  income_stability: { weight: 0.2, points: { not: 0, somewhat: 50, very: 100 } },\n  emergency_fund_months: { weight: 0.2, points: { 0: 0, '<1': 20, '1-3': 40, '3-6': 70, '6+': 100 } },\n};\nconst LO_WILLINGNESS = {\n  drop_reaction: { weight: 0.4, points: { sell_all: 0, sell_some: 30, hold: 60, buy_more: 100 } },\n  max_drop: { weight: 0.4, points: { 5: 0, 10: 20, 20: 40, 30: 70, '40+': 100 } },\n  experience: { weight: 0.2, points: { none: 0, some: 40, experienced: 100 } },\n};\n\n// §11.4 warning codes (warnings_json) and their text, word for word from the spec.\nconst LO_WARNINGS = {\n  low_emergency_fund: 'Many people build a cash cushion first.',\n  high_interest_debt: 'Paying off debt above 8% is a guaranteed return many people prioritize.',\n};\n\n// §14 wording shown with every result.\nconst LO_DISCLAIMER = 'Educational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.';\nconst LO_RESULT_NOTE = 'This is a general asset mix based on your own answers, not a recommendation to buy, sell or hold any specific security. You can change it below, and anytime later.';\n\nfunction loRound2(x) {\n  return Math.round((Number(x) + Number.EPSILON) * 100) / 100;\n}\n\nfunction loQuestion(key) {\n  const q = LO_QUESTIONS.find((x) => x.key === key);\n  if (!q) throw new Error(`unknown question ${key}`);\n  return q;\n}\n\n// Form value (label, or already a stored value) -> stored value. Unknown -> undefined.\nfunction answerValue(key, raw) {\n  const q = loQuestion(key);\n  if (Array.isArray(raw)) raw = raw[0];\n  if (raw === undefined || raw === null) return undefined;\n  const s = String(raw).trim();\n  const hit = q.options.find(([value, label]) => label === s || String(value) === s);\n  return hit ? hit[0] : undefined;\n}\n\nfunction answerLabel(key, value) {\n  const hit = loQuestion(key).options.find(([v]) => String(v) === String(value));\n  return hit ? hit[1] : String(value);\n}\n\n// Every answer the form returned, as stored values. `missing` lists the keys\n// with no valid answer (the form marks them all required, so this should be empty).\nfunction answersFromForm(formJson, page) {\n  const answers = {};\n  const missing = [];\n  for (const q of LO_QUESTIONS) {\n    if (page && q.page !== page) continue;\n    const v = answerValue(q.key, formJson ? formJson[q.key] : undefined);\n    if (v === undefined) missing.push(q.key);\n    else answers[q.key] = v;\n  }\n  return { answers, missing };\n}\n\nfunction loWeightedScore(table, answers) {\n  let total = 0;\n  for (const [key, { weight, points }] of Object.entries(table)) {\n    const p = points[String(answers[key])];\n    if (p === undefined) throw new Error(`score: missing or invalid answer for ${key}: ${answers[key]}`);\n    total += weight * p;\n  }\n  return Math.max(0, Math.min(100, Math.round(total)));\n}\n\nfunction capacityScore(answers) {\n  return loWeightedScore(LO_CAPACITY, answers);\n}\n\nfunction willingnessScore(answers) {\n  return loWeightedScore(LO_WILLINGNESS, answers);\n}\n\n// §11.3: 0-19 cash, 20-39 conservative, 40-59 balanced, 60-79 growth, 80+ all_equity.\nfunction tierForScore(score) {\n  const s = Number(score);\n  if (!Number.isFinite(s)) throw new Error(`tierForScore: not a number ${score}`);\n  if (s < 20) return 'cash';\n  if (s < 40) return 'conservative';\n  if (s < 60) return 'balanced';\n  if (s < 80) return 'growth';\n  return 'all_equity';\n}\n\nfunction lowerTier(a, b) {\n  const ia = LO_TIERS.indexOf(a);\n  const ib = LO_TIERS.indexOf(b);\n  if (ia < 0 || ib < 0) throw new Error(`lowerTier: unknown tier ${ia < 0 ? a : b}`);\n  return LO_TIERS[Math.min(ia, ib)];\n}\n\nfunction homeBias(geoPreference) {\n  return geoPreference === 'more_canada' ? 'more_canada' : 'global';\n}\n\n// §11.4 warning codes, in a fixed order.\nfunction warningsFor(answers) {\n  const out = [];\n  if (answers.emergency_fund_months === '0' || answers.emergency_fund_months === '<1') out.push('low_emergency_fund');\n  if (answers.high_interest_debt === true || answers.high_interest_debt === 'true') out.push('high_interest_debt');\n  return out;\n}\n\n// §11.5: sleeve weights (fractions summing to exactly 1) for a tier and home bias.\nfunction allocationFor(tier, bias) {\n  const t = LO_TIER_INFO[tier];\n  const split = LO_EQUITY_SPLIT[bias];\n  if (!t) throw new Error(`allocationFor: unknown tier ${tier}`);\n  if (!split) throw new Error(`allocationFor: unknown home bias ${bias}`);\n  // Percent * percent / 100 is a whole percent for every tier and split in §11.5.\n  return {\n    equity_us: (t.equity * split.equity_us) / 10000,\n    equity_intl: (t.equity * split.equity_intl) / 10000,\n    equity_ca: (t.equity * split.equity_ca) / 10000,\n    bonds: t.bonds / 100,\n    cash: t.cash / 100,\n  };\n}\n\n// Fractions -> whole percents (for the form), summing to 100.\nfunction allocationToPercents(allocation) {\n  const pct = {};\n  for (const s of LO_SLEEVES) pct[s] = Math.round((Number(allocation[s]) || 0) * 100);\n  const drift = 100 - LO_SLEEVES.reduce((a, s) => a + pct[s], 0);\n  if (drift !== 0) {\n    const biggest = LO_SLEEVES.reduce((a, s) => (pct[s] > pct[a] ? s : a), LO_SLEEVES[0]);\n    pct[biggest] += drift;\n  }\n  return pct;\n}\n\n// The user's edited percents -> fractions summing to exactly 1 (4 decimals).\n// Blank or negative entries count as 0. If the total isn't 100 the entries are\n// scaled to it; if everything is 0 or invalid, `fallback` (the suggested mix) is kept.\n// Returns { allocation, edited, scaled }.\nfunction normalizeAllocation(percents, fallback) {\n  const raw = {};\n  let total = 0;\n  for (const s of LO_SLEEVES) {\n    const n = Number(percents ? percents[s] : undefined);\n    raw[s] = Number.isFinite(n) && n > 0 ? n : 0;\n    total += raw[s];\n  }\n  if (!(total > 0)) return { allocation: { ...fallback }, edited: false, scaled: false };\n  const allocation = {};\n  for (const s of LO_SLEEVES) allocation[s] = Math.round((raw[s] / total) * 10000) / 10000;\n  const drift = Math.round((1 - LO_SLEEVES.reduce((a, s) => a + allocation[s], 0)) * 10000) / 10000;\n  if (drift !== 0) {\n    const biggest = LO_SLEEVES.reduce((a, s) => (allocation[s] > allocation[a] ? s : a), LO_SLEEVES[0]);\n    allocation[biggest] = Math.round((allocation[biggest] + drift) * 10000) / 10000;\n  }\n  const edited = LO_SLEEVES.some((s) => Math.abs(allocation[s] - (Number(fallback[s]) || 0)) > 0.00005);\n  return { allocation, edited, scaled: Math.abs(total - 100) > 1e-9 };\n}\n\n// Everything §11.3-§11.5 derive from the answers.\nfunction scoreProfile(answers) {\n  const capacity = capacityScore(answers);\n  const willingness = willingnessScore(answers);\n  const capacityTier = tierForScore(capacity);\n  const willingnessTier = tierForScore(willingness);\n  const forcedCash = answers.horizon === '<3';\n  const tier = forcedCash ? 'cash' : lowerTier(capacityTier, willingnessTier);\n  const bias = homeBias(answers.geo_preference);\n  const warnings = warningsFor(answers);\n  let limitedBy = 'both';\n  if (forcedCash) limitedBy = 'horizon';\n  else if (LO_TIERS.indexOf(capacityTier) < LO_TIERS.indexOf(willingnessTier)) limitedBy = 'capacity';\n  else if (LO_TIERS.indexOf(willingnessTier) < LO_TIERS.indexOf(capacityTier)) limitedBy = 'willingness';\n  return {\n    capacity_score: capacity,\n    willingness_score: willingness,\n    capacity_tier: capacityTier,\n    willingness_tier: willingnessTier,\n    tier,\n    tier_label: LO_TIER_INFO[tier].label,\n    forced_cash: forcedCash,\n    limited_by: limitedBy,\n    home_bias: bias,\n    allocation: allocationFor(tier, bias),\n    warnings,\n    warning_messages: warnings.map((code) => LO_WARNINGS[code]),\n    suggested_buffer_target: warnings.includes('low_emergency_fund') ? LO_LOW_EF_BUFFER_TARGET : LO_NEW_USER_DEFAULTS.buffer_target,\n  };\n}\n\n// \"about 60% stocks and 40% bonds\", from an allocation (fractions).\nfunction mixPhrase(allocation) {\n  const pct = allocationToPercents(allocation);\n  const stocks = pct.equity_us + pct.equity_intl + pct.equity_ca;\n  const parts = [];\n  if (stocks) parts.push(`${stocks}% stocks`);\n  if (pct.bonds) parts.push(`${pct.bonds}% bonds`);\n  if (pct.cash) parts.push(`${pct.cash}% cash-like holdings`);\n  if (parts.length === 1) return stocks === 100 ? 'all stocks' : pct.cash === 100 ? 'all cash-like holdings' : parts[0];\n  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;\n}\n\nfunction loHorizonPhrase(h) {\n  return { '<3': 'less than 3 years', '3-5': '3 to 5 years', '5-10': '5 to 10 years', '10-20': '10 to 20 years', '20+': '20 years or more' }[h] || 'an unknown time';\n}\n\nfunction loStabilityPhrase(v) {\n  return { very: 'very stable income', somewhat: 'somewhat stable income', not: 'income that is not stable' }[v] || 'your income';\n}\n\nfunction loFundPhrase(v) {\n  return {\n    0: 'no emergency savings yet', '<1': 'less than a month of emergency savings', '1-3': '1 to 3 months of emergency savings',\n    '3-6': '3 to 6 months of emergency savings', '6+': '6 or more months of emergency savings',\n  }[v] || 'your emergency savings';\n}\n\n// §19.5 fallback: the explanation used whenever the LLM is missing, fails, or\n// returns something that breaks the rules in checkExplanation(). 3-4 sentences,\n// general language, never names a security.\nfunction templateExplanation(result, answers) {\n  const s = [];\n  s.push(`Your answers point to the ${result.tier_label} mix: ${mixPhrase(result.allocation)}.`);\n  if (result.limited_by === 'horizon') {\n    s.push('You said you may need this money within 3 years, and money needed that soon is usually kept in cash-like holdings rather than exposed to market swings.');\n  } else {\n    if (result.tier !== 'cash') {\n      s.push(result.home_bias === 'more_canada'\n        ? 'The stock part leans more toward Canada, as you asked.'\n        : 'The stock part follows global market weights.');\n    }\n    const drop = answers.max_drop === '40+' ? '40% or more' : `${answers.max_drop}%`;\n    const horizon = `a horizon of ${loHorizonPhrase(answers.horizon)}`;\n    if (result.limited_by === 'willingness') {\n      s.push(`Your situation (${horizon} and ${loStabilityPhrase(answers.income_stability)}) leaves room for more growth, but you said a ${drop} drop in a year is about the most you would want to sit through, so the mix follows your comfort level.`);\n    } else if (result.limited_by === 'capacity') {\n      s.push(`You are comfortable with bigger swings, but your situation (${horizon}, ${loStabilityPhrase(answers.income_stability)} and ${loFundPhrase(answers.emergency_fund_months)}) leaves less room for risk, so the mix follows that.`);\n    } else {\n      s.push(`Your situation (${horizon}) and your comfort with market swings point to the same level of risk.`);\n    }\n  }\n  s.push('This is a general asset mix based on your own answers, not a recommendation to buy, sell or hold any specific security, and you can change it anytime.');\n  return s.join(' ');\n}\n\n// What the LLM node gets (spec §10 WF01): 3-4 sentences, plain language, general.\nfunction explanationPrompt(result, answers) {\n  const pct = allocationToPercents(result.allocation);\n  const system = [\n    'You write short, plain-language explanations for an educational budgeting prototype that uses simulated (paper) trading.',\n    'Rules: 3 to 4 sentences, under 90 words, no headings, no lists, no greeting.',\n    'Talk only about the general asset mix (stocks, bonds, cash) and why the answers lead to it.',\n    'Never name, recommend or rank any specific security, fund or ticker, and never tell the reader to buy, sell or hold anything.',\n    'End by saying it is a general mix based on their own answers and that they can change it anytime.',\n  ].join(' ');\n  const user = [\n    `Result: ${result.tier_label} mix (${mixPhrase(result.allocation)}; US ${pct.equity_us}%, international ${pct.equity_intl}%, Canada ${pct.equity_ca}%, bonds ${pct.bonds}%, cash ${pct.cash}%).`,\n    `Capacity for risk: ${result.capacity_score}/100 (time horizon ${loHorizonPhrase(answers.horizon)}, ${loStabilityPhrase(answers.income_stability)}, ${loFundPhrase(answers.emergency_fund_months)}).`,\n    `Willingness to take risk: ${result.willingness_score}/100 (after a 30% drop they would: ${answerLabel('drop_reaction', answers.drop_reaction).toLowerCase()}; largest one-year drop they could live with: ${answerLabel('max_drop', answers.max_drop)}; experience: ${answerLabel('experience', answers.experience).toLowerCase()}).`,\n    result.forced_cash\n      ? 'They may need the money within 3 years, which always means the cash mix.'\n      : `The final mix is the lower of the two (${result.limited_by === 'both' ? 'both point to the same level' : `limited by ${result.limited_by}`}).`,\n    `Stock split preference: ${result.home_bias === 'more_canada' ? 'more Canada' : 'global market weight'}.`,\n    'Write the explanation.',\n  ].join('\\n');\n  return { system, user };\n}\n\n// The text out of whatever the LLM node returned (Anthropic or OpenAI node,\n// simplified or raw). null when there is none, e.g. while the node is disabled\n// and simply passes its input through.\nfunction extractLlmText(json) {\n  if (!json || typeof json !== 'object') return null;\n  const fromParts = (parts) => {\n    if (!Array.isArray(parts)) return null;\n    const texts = [];\n    for (const p of parts) {\n      if (typeof p === 'string') texts.push(p);\n      else if (p && typeof p.text === 'string') texts.push(p.text);\n      else if (p && Array.isArray(p.content)) {\n        const inner = fromParts(p.content);\n        if (inner) texts.push(inner);\n      }\n    }\n    return texts.length ? texts.join('\\n').trim() : null;\n  };\n  if (typeof json.text === 'string' && json.text.trim()) return json.text.trim();\n  if (typeof json.content === 'string' && json.content.trim()) return json.content.trim();\n  if (typeof json.output === 'string' && json.output.trim()) return json.output.trim();\n  if (typeof json.output_text === 'string' && json.output_text.trim()) return json.output_text.trim();\n  if (json.message && typeof json.message.content === 'string' && json.message.content.trim()) return json.message.content.trim();\n  if (Array.isArray(json.choices) && json.choices[0] && json.choices[0].message && typeof json.choices[0].message.content === 'string') {\n    return json.choices[0].message.content.trim() || null;\n  }\n  return fromParts(json.content) || fromParts(json.output) || null;\n}\n\n// LLM text -> cleaned text, or null when it breaks the rules (then use the template).\nfunction checkExplanation(text, symbols) {\n  if (typeof text !== 'string') return null;\n  const t = text.trim().replace(/^[\"'“]+|[\"'”]+$/g, '').replace(/\\s+/g, ' ').trim();\n  if (t.length < 80 || t.length > 900) return null;\n  const sentences = t.split(/[.!?](\\s|$)/).filter((x) => x && x.trim().length > 1).length;\n  if (sentences < 2 || sentences > 6) return null;\n  const tickers = symbols && symbols.length ? symbols : ['VTI', 'VXUS', 'EWC', 'BND', 'SGOV'];\n  if (tickers.some((sym) => new RegExp(`\\\\b${sym}\\\\b`).test(t))) return null;\n  if (/\\b(you should|we recommend|i recommend|we suggest)\\b[^.]*\\b(buy|sell|hold)\\b/i.test(t)) return null;\n  if (/\\bguarantee/i.test(t)) return null;\n  return t;\n}\n\nfunction normalizeEmail(email) {\n  return String(email || '').trim().toLowerCase();\n}\n\nfunction isEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizeEmail(email));\n}\n\nfunction slugify(s) {\n  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32).replace(/-+$/g, '');\n}\n\n// FNV-1a, 6 hex chars: a short, stable suffix for colliding user_ids.\nfunction shortHash(s) {\n  let h = 0x811c9dc5;\n  for (let i = 0; i < s.length; i += 1) {\n    h ^= s.charCodeAt(i);\n    h = Math.imul(h, 0x01000193) >>> 0;\n  }\n  return h.toString(16).padStart(8, '0').slice(0, 6);\n}\n\n// email -> user_id (spec §19.3: lowercase, URL-safe slug).\n// 1. An existing user with this email keeps their user_id (retaking the quiz updates them).\n// 2. Otherwise the slug of the email's local part: test-d@example.com -> test-d.\n// 3. If that id is taken by someone else or protected (maya), add a hash of the email.\n// `users` are rows from the users table ({user_id, email}).\nfunction resolveUserId(email, users, protectedIds) {\n  const prot = protectedIds || LO_PROTECTED_USER_IDS;\n  const e = normalizeEmail(email);\n  if (!isEmail(e)) throw new Error(`resolveUserId: invalid email ${email}`);\n  const rows = Array.isArray(users) ? users : [];\n  const match = rows.find((u) => u && u.user_id && normalizeEmail(u.email) === e && !prot.includes(u.user_id));\n  if (match) return { user_id: match.user_id, is_new: false };\n  const taken = new Set(rows.filter((u) => u && u.user_id).map((u) => u.user_id));\n  let base = slugify(e.split('@')[0]) || 'user';\n  if (prot.includes(base) || taken.has(base)) base = `${base}-${shortHash(e)}`;\n  let id = base;\n  for (let n = 2; taken.has(id); n += 1) id = `${base}-${n}`;\n  return { user_id: id, is_new: true };\n}\n\n// Budget prefill: the user's current budgets if they have any, else the defaults.\nfunction budgetDefaults(existing) {\n  const rows = Array.isArray(existing) ? existing : [];\n  return LO_DEFAULT_BUDGETS.map((d) => {\n    const row = rows.find((r) => r && r.category_key === d.category_key);\n    const amount = row ? Number(row.weekly_amount) : NaN;\n    return {\n      category_key: d.category_key,\n      label: d.label,\n      weekly_amount: Number.isFinite(amount) && amount >= 0 ? amount : d.weekly_amount,\n      active: row && row.active !== undefined && row.active !== null ? Boolean(row.active) : true,\n    };\n  });\n}\n\n// Budgets page values (budget_<key>) -> budgets rows. Invalid or negative -> the prefill.\nfunction parseBudgets(formJson, userId, prefill) {\n  const base = prefill || budgetDefaults([]);\n  return base.map((b) => {\n    const raw = formJson ? formJson[`budget_${b.category_key}`] : undefined;\n    const n = raw === '' || raw === null || raw === undefined ? NaN : Number(raw);\n    const amount = Number.isFinite(n) && n >= 0 ? loRound2(Math.min(n, LO_MAX_WEEKLY_BUDGET)) : b.weekly_amount;\n    return { user_id: userId, category_key: b.category_key, label: b.label, weekly_amount: amount, active: b.active !== false };\n  });\n}\n\nfunction parseBufferTarget(raw, fallback) {\n  const n = raw === '' || raw === null || raw === undefined ? NaN : Number(raw);\n  return Number.isFinite(n) && n >= 0 ? loRound2(Math.min(n, LO_MAX_BUFFER_TARGET)) : fallback;\n}\n\n// The consent checkbox comes back as an array of the ticked labels.\nfunction consentGiven(raw) {\n  if (Array.isArray(raw)) return raw.length > 0;\n  return raw === true || raw === 'true';\n}\n\n// ---- n8n form pages (JSON-defined Form nodes) ----\n// Field objects use the keys n8n accepts in a JSON-defined page; fieldName is the\n// key the page returns.\n\nfunction loEscapeHtml(s) {\n  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\n}\n\nfunction questionField(q) {\n  return {\n    fieldLabel: q.label,\n    fieldName: q.key,\n    fieldType: q.type,\n    requiredField: true,\n    fieldOptions: { values: q.options.map(([, label]) => ({ option: label })) },\n  };\n}\n\nfunction questionFields(page) {\n  return LO_QUESTIONS.filter((q) => q.page === page).map(questionField);\n}\n\nfunction budgetFields(prefill) {\n  return prefill.map((b) => ({\n    fieldLabel: `${b.label} (CAD per week)`,\n    fieldName: `budget_${b.category_key}`,\n    fieldType: 'number',\n    requiredField: true,\n    defaultValue: b.weekly_amount,\n  }));\n}\n\nfunction resultFields(result, explanation, isNew) {\n  const pct = allocationToPercents(result.allocation);\n  const warnings = result.warning_messages.length\n    ? `<p><strong>Worth knowing</strong></p><ul>${result.warning_messages.map((w) => `<li>${loEscapeHtml(w)}</li>`).join('')}</ul>`\n    : '';\n  const mixRows = LO_SLEEVES.map((s) => `<tr><td>${LO_SLEEVE_LABELS[s]}</td><td>${pct[s]}%</td></tr>`).join('');\n  const html = [\n    `<h3>Your mix: ${loEscapeHtml(result.tier_label)}</h3>`,\n    `<p>${loEscapeHtml(explanation)}</p>`,\n    `<p>Capacity for risk: <strong>${result.capacity_score}/100</strong> (${LO_TIER_INFO[result.capacity_tier].label}). Willingness: <strong>${result.willingness_score}/100</strong> (${LO_TIER_INFO[result.willingness_tier].label}). The mix uses the lower of the two${result.forced_cash ? ', and money needed within 3 years always stays in cash' : ''}.</p>`,\n    `<table><thead><tr><th>Suggested mix</th><th></th></tr></thead><tbody>${mixRows}</tbody></table>`,\n    warnings,\n    `<p><em>${loEscapeHtml(LO_RESULT_NOTE)}</em></p>`,\n  ].join('');\n  const fields = [{ fieldType: 'html', elementName: 'result_summary', html }];\n  for (const s of LO_SLEEVES) {\n    fields.push({ fieldLabel: `${LO_SLEEVE_LABELS[s]} (%)`, fieldName: `alloc_${s}`, fieldType: 'number', requiredField: true, defaultValue: pct[s] });\n  }\n  fields.push({\n    fieldLabel: result.warnings.includes('low_emergency_fund')\n      ? 'Cash cushion target (CAD). Kept as cash before anything is invested; we suggest a bigger one for you.'\n      : 'Cash cushion target (CAD). Kept as cash before anything is invested.',\n    fieldName: 'buffer_target',\n    fieldType: 'number',\n    requiredField: true,\n    defaultValue: result.suggested_buffer_target,\n  });\n  fields.push({\n    fieldLabel: 'Standing consent',\n    fieldName: 'consent',\n    fieldType: 'checkbox',\n    requiredField: false,\n    fieldOptions: { values: [{ option: 'Invest my weekly leftover automatically (simulated paper trading). I can pause anytime.' }] },\n  });\n  fields.push({ fieldType: 'html', elementName: 'result_disclaimer', html: `<p><em>${isNew ? 'Percentages that do not add up to 100 are scaled to 100. ' : 'Saving replaces your previous profile and budgets. Percentages that do not add up to 100 are scaled to 100. '}${loEscapeHtml(LO_DISCLAIMER)}</em></p>` });\n  return fields;\n}\n\n// ---- rows LO-01 writes ----\n// New users get every column; an existing user (retaking the quiz) only gets the\n// columns onboarding owns, so buffer_balance, carries and created_at survive.\nfunction buildRows(input) {\n  const { userId, isNew, name, email, consent, bufferTarget, answers, result, allocation, explanation, budgets, now } = input;\n  const nowIso = (now instanceof Date ? now : new Date(now || Date.now())).toISOString();\n  const user = {\n    user_id: userId,\n    email: normalizeEmail(email),\n    name: String(name || '').trim(),\n    status: consent ? 'active' : 'paused',\n    buffer_target: bufferTarget,\n  };\n  if (consent) user.consent_at = nowIso;\n  if (isNew) Object.assign(user, { created_at: nowIso }, LO_NEW_USER_DEFAULTS, { buffer_target: bufferTarget });\n  const profile = {\n    user_id: userId,\n    answers_json: JSON.stringify(answers),\n    capacity_score: result.capacity_score,\n    willingness_score: result.willingness_score,\n    tier: result.tier,\n    home_bias: result.home_bias,\n    allocation_json: JSON.stringify(allocation),\n    explanation,\n    updated_at: nowIso,\n    warnings_json: JSON.stringify(result.warnings),\n  };\n  return { user, profile, budgets: budgets.map((b) => ({ ...b, user_id: userId })) };\n}\n// ===== end lib/scoring.mjs =====\n\nreturn main();\n"
+      },
+      "name": "Pick explanation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "page",
+        "defineForm": "json",
+        "jsonOutput": "={{ JSON.stringify($json.result_fields) }}",
+        "options": {
+          "formTitle": "Page 4: Your result",
+          "buttonLabel": "Save and finish"
+        }
+      },
+      "name": "Page 4: Result and consent",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        2340,
+        0
+      ],
+      "webhookId": "b0d1a5e2-0104-4d00-8000-000000000004"
+    },
+    {
+      "parameters": {
+        "jsCode": "// LO-01 · Build rows: the users, profiles and budgets rows to write. Saves the\n// user's edited allocation (scaled to 100%), not just the suggested one.\n// No consent -> status \"paused\". An existing user keeps buffer_balance, carries, created_at.\nfunction main() {\n  const who = $('Identify user').first().json;\n  const picked = $('Pick explanation').first().json;\n  const page = $('Page 4: Result and consent').first().json;\n  const result = picked.result;\n  const percents = {};\n  for (const s of LO_SLEEVES) percents[s] = page[`alloc_${s}`];\n  const { allocation, edited, scaled } = normalizeAllocation(percents, result.allocation);\n  const consent = consentGiven(page.consent);\n  const bufferTarget = parseBufferTarget(page.buffer_target, result.suggested_buffer_target);\n  const budgets = parseBudgets($('Page 2: Weekly budgets').first().json, who.user_id, who.budget_prefill);\n  const rows = buildRows({\n    userId: who.user_id, isNew: who.is_new, name: who.name, email: who.email, consent, bufferTarget,\n    answers: picked.answers, result, allocation, explanation: picked.explanation, budgets, now: new Date(),\n  });\n  return [{ json: { ...rows, summary: {\n    user_id: who.user_id, is_new: who.is_new, name: who.name, tier: result.tier, tier_label: result.tier_label,\n    allocation, allocation_edited: edited, allocation_scaled: scaled, consent, buffer_target: bufferTarget,\n    weekly_budget_total: Math.round(budgets.reduce((a, b) => a + b.weekly_amount, 0) * 100) / 100,\n    explanation_source: picked.explanation_source, warnings: result.warnings,\n  } } }];\n}\n\n// ===== lib/scoring.mjs (pasted verbatim: edit the lib, then LO_UPDATE_WF01=1 npm test) =====\n// lib/scoring.mjs: onboarding logic for LO-01 (spec §7 F1, §10 WF01, §11, §14).\n//\n//   quiz answers -> capacity + willingness scores (0-100) -> a tier for each\n//   -> final tier = the lower one (horizon under 3 years forces cash)\n//   -> allocation (§11.5 + home bias), warnings (§11.4), explanation.\n//\n// It also holds the small pieces LO-01 needs around the quiz: the questions and\n// their form labels, default budgets, email -> user_id, the editable allocation,\n// the explanation prompt + template fallback (§19.5), and the rows LO-01 writes.\n//\n// Plain functions, no imports, so this pastes straight into an n8n Code node:\n// LO-01's Code nodes embed everything above the `export` line verbatim, and\n// lib/scoring.test.mjs fails if they drift (LO_UPDATE_WF01=1 re-pastes them).\n\nconst LO_TIERS = ['cash', 'conservative', 'balanced', 'growth', 'all_equity'];\n\n// §11.5: percent of the portfolio per asset class, by tier.\nconst LO_TIER_INFO = {\n  cash: { label: 'Cash', equity: 0, bonds: 0, cash: 100 },\n  conservative: { label: 'Conservative', equity: 20, bonds: 60, cash: 20 },\n  balanced: { label: 'Balanced', equity: 60, bonds: 40, cash: 0 },\n  growth: { label: 'Growth', equity: 80, bonds: 20, cash: 0 },\n  all_equity: { label: 'All equity', equity: 100, bonds: 0, cash: 0 },\n};\n\n// §11.5: how the equity part splits, by home bias (percent of the equity part).\nconst LO_EQUITY_SPLIT = {\n  global: { equity_us: 60, equity_intl: 35, equity_ca: 5 },\n  more_canada: { equity_us: 45, equity_intl: 25, equity_ca: 30 },\n};\n\nconst LO_SLEEVES = ['equity_us', 'equity_intl', 'equity_ca', 'bonds', 'cash'];\nconst LO_SLEEVE_LABELS = {\n  equity_us: 'US stocks',\n  equity_intl: 'International stocks',\n  equity_ca: 'Canadian stocks',\n  bonds: 'Bonds',\n  cash: 'Cash (short-term T-bills)',\n};\n\n// §6.2 default weekly budgets (CAD).\nconst LO_DEFAULT_BUDGETS = [\n  { category_key: 'groceries', label: 'Groceries', weekly_amount: 80 },\n  { category_key: 'eating_out', label: 'Eating out and coffee', weekly_amount: 50 },\n  { category_key: 'transport', label: 'Transport', weekly_amount: 30 },\n  { category_key: 'entertainment', label: 'Fun and entertainment', weekly_amount: 40 },\n  { category_key: 'shopping', label: 'Shopping', weekly_amount: 40 },\n  { category_key: 'personal_care', label: 'Personal care', weekly_amount: 20 },\n  { category_key: 'other', label: 'Other variable', weekly_amount: 20 },\n];\nconst LO_MAX_WEEKLY_BUDGET = 10000;\n\n// Defaults for a new users row (contracts/data-tables.md, spec §18 D2/D5).\nconst LO_NEW_USER_DEFAULTS = {\n  timezone: 'America/Vancouver',\n  buffer_balance: 0,\n  buffer_target: 100,\n  cushion_rate: 0.5,\n  absorb_overspend: true,\n  min_invest: 5,\n  max_weekly_invest: 200,\n  pending_carry: 0,\n  deficit_carry: 0,\n};\n// §11.4: with little or no emergency fund, the result page suggests a bigger cushion.\nconst LO_LOW_EF_BUFFER_TARGET = 200;\nconst LO_MAX_BUFFER_TARGET = 5000;\n\n// The demo user is never touched by the form (BUILD-PLAN ground rule 5).\nconst LO_PROTECTED_USER_IDS = ['maya'];\n\n// §11.1 + §11.2. `value` is what answers_json stores (same keys and values as\n// the seed's profile.answers); `label` is what the form shows and sends back.\n// Labels avoid < and > because n8n escapes them in JSON-defined form pages.\nconst LO_QUESTIONS = [\n  // Page 1: financial profile (§11.1)\n  { key: 'age_range', page: 'profile', type: 'dropdown', label: 'Age range', options: [\n    ['18-24', '18 to 24'], ['25-34', '25 to 34'], ['35-44', '35 to 44'],\n    ['45-54', '45 to 54'], ['55-64', '55 to 64'], ['65+', '65 or older']] },\n  { key: 'income_type', page: 'profile', type: 'radio', label: 'Income type', options: [\n    ['salaried', 'Salaried'], ['hourly', 'Hourly'], ['freelance', 'Freelance or variable'], ['student', 'Student']] },\n  { key: 'monthly_take_home', page: 'profile', type: 'dropdown', label: 'Monthly take-home pay (CAD)', options: [\n    ['under-2000', 'Under $2,000'], ['2000-3000', '$2,000 to $3,000'], ['3000-4000', '$3,000 to $4,000'],\n    ['4000-6000', '$4,000 to $6,000'], ['6000+', '$6,000 or more']] },\n  { key: 'pay_frequency', page: 'profile', type: 'dropdown', label: 'How often are you paid?', options: [\n    ['weekly', 'Weekly'], ['biweekly', 'Every two weeks'], ['semimonthly', 'Twice a month'],\n    ['monthly', 'Monthly'], ['irregular', 'Irregularly']] },\n  { key: 'emergency_fund_months', page: 'profile', type: 'radio', label: 'Emergency fund: how many months of expenses do you have saved?', options: [\n    ['0', 'None yet'], ['<1', 'Less than 1 month'], ['1-3', '1 to 3 months'], ['3-6', '3 to 6 months'], ['6+', '6 months or more']] },\n  { key: 'high_interest_debt', page: 'profile', type: 'radio', label: 'Any debt with interest above 8% (a credit card balance, for example)?', options: [\n    [true, 'Yes'], [false, 'No']] },\n  { key: 'account_type', page: 'profile', type: 'radio', label: 'Account you would hold this in (for your reference only)', options: [\n    ['TFSA', 'TFSA'], ['RRSP', 'RRSP'], ['FHSA', 'FHSA'], ['non_registered', 'Non-registered'], ['not_sure', 'Not sure yet']] },\n  // Page 3: investor quiz (§11.2; Q15 ESG is P2 and not asked)\n  { key: 'goal', page: 'quiz', type: 'radio', label: 'Main goal', options: [\n    ['retirement', 'Retirement'], ['house', 'A home'], ['long_term_wealth', 'Long-term wealth'], ['no_specific_goal', 'No specific goal']] },\n  { key: 'horizon', page: 'quiz', type: 'radio', label: 'When might you need this money?', options: [\n    ['<3', 'In less than 3 years'], ['3-5', 'In 3 to 5 years'], ['5-10', 'In 5 to 10 years'],\n    ['10-20', 'In 10 to 20 years'], ['20+', 'In 20 years or more']] },\n  { key: 'drop_reaction', page: 'quiz', type: 'radio', label: 'Your portfolio drops 30% in a year. You:', options: [\n    ['sell_all', 'Sell everything'], ['sell_some', 'Sell some'], ['hold', 'Hold'], ['buy_more', 'Buy more']] },\n  { key: 'max_drop', page: 'quiz', type: 'radio', label: 'Largest one-year drop you could live with', options: [\n    ['5', '5%'], ['10', '10%'], ['20', '20%'], ['30', '30%'], ['40+', '40% or more']] },\n  { key: 'experience', page: 'quiz', type: 'radio', label: 'Investing experience', options: [\n    ['none', 'None'], ['some', 'Some'], ['experienced', 'Experienced']] },\n  { key: 'income_stability', page: 'quiz', type: 'radio', label: 'How stable is your income?', options: [\n    ['very', 'Very stable'], ['somewhat', 'Somewhat stable'], ['not', 'Not stable']] },\n  { key: 'geo_preference', page: 'quiz', type: 'radio', label: 'For the stock part: geographic preference', options: [\n    ['global', 'Global market weight'], ['more_canada', 'More Canada'], ['no_preference', 'No preference']] },\n];\n\n// §11.3 scoring. Each answer maps to 0-100 points; a score is the weighted sum.\n// Capacity: horizon heaviest, then income stability and emergency fund.\n// Willingness: reaction to a drop, the largest drop you could live with, experience.\nconst LO_CAPACITY = {\n  horizon: { weight: 0.6, points: { '<3': 0, '3-5': 20, '5-10': 40, '10-20': 60, '20+': 100 } },\n  income_stability: { weight: 0.2, points: { not: 0, somewhat: 50, very: 100 } },\n  emergency_fund_months: { weight: 0.2, points: { 0: 0, '<1': 20, '1-3': 40, '3-6': 70, '6+': 100 } },\n};\nconst LO_WILLINGNESS = {\n  drop_reaction: { weight: 0.4, points: { sell_all: 0, sell_some: 30, hold: 60, buy_more: 100 } },\n  max_drop: { weight: 0.4, points: { 5: 0, 10: 20, 20: 40, 30: 70, '40+': 100 } },\n  experience: { weight: 0.2, points: { none: 0, some: 40, experienced: 100 } },\n};\n\n// §11.4 warning codes (warnings_json) and their text, word for word from the spec.\nconst LO_WARNINGS = {\n  low_emergency_fund: 'Many people build a cash cushion first.',\n  high_interest_debt: 'Paying off debt above 8% is a guaranteed return many people prioritize.',\n};\n\n// §14 wording shown with every result.\nconst LO_DISCLAIMER = 'Educational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.';\nconst LO_RESULT_NOTE = 'This is a general asset mix based on your own answers, not a recommendation to buy, sell or hold any specific security. You can change it below, and anytime later.';\n\nfunction loRound2(x) {\n  return Math.round((Number(x) + Number.EPSILON) * 100) / 100;\n}\n\nfunction loQuestion(key) {\n  const q = LO_QUESTIONS.find((x) => x.key === key);\n  if (!q) throw new Error(`unknown question ${key}`);\n  return q;\n}\n\n// Form value (label, or already a stored value) -> stored value. Unknown -> undefined.\nfunction answerValue(key, raw) {\n  const q = loQuestion(key);\n  if (Array.isArray(raw)) raw = raw[0];\n  if (raw === undefined || raw === null) return undefined;\n  const s = String(raw).trim();\n  const hit = q.options.find(([value, label]) => label === s || String(value) === s);\n  return hit ? hit[0] : undefined;\n}\n\nfunction answerLabel(key, value) {\n  const hit = loQuestion(key).options.find(([v]) => String(v) === String(value));\n  return hit ? hit[1] : String(value);\n}\n\n// Every answer the form returned, as stored values. `missing` lists the keys\n// with no valid answer (the form marks them all required, so this should be empty).\nfunction answersFromForm(formJson, page) {\n  const answers = {};\n  const missing = [];\n  for (const q of LO_QUESTIONS) {\n    if (page && q.page !== page) continue;\n    const v = answerValue(q.key, formJson ? formJson[q.key] : undefined);\n    if (v === undefined) missing.push(q.key);\n    else answers[q.key] = v;\n  }\n  return { answers, missing };\n}\n\nfunction loWeightedScore(table, answers) {\n  let total = 0;\n  for (const [key, { weight, points }] of Object.entries(table)) {\n    const p = points[String(answers[key])];\n    if (p === undefined) throw new Error(`score: missing or invalid answer for ${key}: ${answers[key]}`);\n    total += weight * p;\n  }\n  return Math.max(0, Math.min(100, Math.round(total)));\n}\n\nfunction capacityScore(answers) {\n  return loWeightedScore(LO_CAPACITY, answers);\n}\n\nfunction willingnessScore(answers) {\n  return loWeightedScore(LO_WILLINGNESS, answers);\n}\n\n// §11.3: 0-19 cash, 20-39 conservative, 40-59 balanced, 60-79 growth, 80+ all_equity.\nfunction tierForScore(score) {\n  const s = Number(score);\n  if (!Number.isFinite(s)) throw new Error(`tierForScore: not a number ${score}`);\n  if (s < 20) return 'cash';\n  if (s < 40) return 'conservative';\n  if (s < 60) return 'balanced';\n  if (s < 80) return 'growth';\n  return 'all_equity';\n}\n\nfunction lowerTier(a, b) {\n  const ia = LO_TIERS.indexOf(a);\n  const ib = LO_TIERS.indexOf(b);\n  if (ia < 0 || ib < 0) throw new Error(`lowerTier: unknown tier ${ia < 0 ? a : b}`);\n  return LO_TIERS[Math.min(ia, ib)];\n}\n\nfunction homeBias(geoPreference) {\n  return geoPreference === 'more_canada' ? 'more_canada' : 'global';\n}\n\n// §11.4 warning codes, in a fixed order.\nfunction warningsFor(answers) {\n  const out = [];\n  if (answers.emergency_fund_months === '0' || answers.emergency_fund_months === '<1') out.push('low_emergency_fund');\n  if (answers.high_interest_debt === true || answers.high_interest_debt === 'true') out.push('high_interest_debt');\n  return out;\n}\n\n// §11.5: sleeve weights (fractions summing to exactly 1) for a tier and home bias.\nfunction allocationFor(tier, bias) {\n  const t = LO_TIER_INFO[tier];\n  const split = LO_EQUITY_SPLIT[bias];\n  if (!t) throw new Error(`allocationFor: unknown tier ${tier}`);\n  if (!split) throw new Error(`allocationFor: unknown home bias ${bias}`);\n  // Percent * percent / 100 is a whole percent for every tier and split in §11.5.\n  return {\n    equity_us: (t.equity * split.equity_us) / 10000,\n    equity_intl: (t.equity * split.equity_intl) / 10000,\n    equity_ca: (t.equity * split.equity_ca) / 10000,\n    bonds: t.bonds / 100,\n    cash: t.cash / 100,\n  };\n}\n\n// Fractions -> whole percents (for the form), summing to 100.\nfunction allocationToPercents(allocation) {\n  const pct = {};\n  for (const s of LO_SLEEVES) pct[s] = Math.round((Number(allocation[s]) || 0) * 100);\n  const drift = 100 - LO_SLEEVES.reduce((a, s) => a + pct[s], 0);\n  if (drift !== 0) {\n    const biggest = LO_SLEEVES.reduce((a, s) => (pct[s] > pct[a] ? s : a), LO_SLEEVES[0]);\n    pct[biggest] += drift;\n  }\n  return pct;\n}\n\n// The user's edited percents -> fractions summing to exactly 1 (4 decimals).\n// Blank or negative entries count as 0. If the total isn't 100 the entries are\n// scaled to it; if everything is 0 or invalid, `fallback` (the suggested mix) is kept.\n// Returns { allocation, edited, scaled }.\nfunction normalizeAllocation(percents, fallback) {\n  const raw = {};\n  let total = 0;\n  for (const s of LO_SLEEVES) {\n    const n = Number(percents ? percents[s] : undefined);\n    raw[s] = Number.isFinite(n) && n > 0 ? n : 0;\n    total += raw[s];\n  }\n  if (!(total > 0)) return { allocation: { ...fallback }, edited: false, scaled: false };\n  const allocation = {};\n  for (const s of LO_SLEEVES) allocation[s] = Math.round((raw[s] / total) * 10000) / 10000;\n  const drift = Math.round((1 - LO_SLEEVES.reduce((a, s) => a + allocation[s], 0)) * 10000) / 10000;\n  if (drift !== 0) {\n    const biggest = LO_SLEEVES.reduce((a, s) => (allocation[s] > allocation[a] ? s : a), LO_SLEEVES[0]);\n    allocation[biggest] = Math.round((allocation[biggest] + drift) * 10000) / 10000;\n  }\n  const edited = LO_SLEEVES.some((s) => Math.abs(allocation[s] - (Number(fallback[s]) || 0)) > 0.00005);\n  return { allocation, edited, scaled: Math.abs(total - 100) > 1e-9 };\n}\n\n// Everything §11.3-§11.5 derive from the answers.\nfunction scoreProfile(answers) {\n  const capacity = capacityScore(answers);\n  const willingness = willingnessScore(answers);\n  const capacityTier = tierForScore(capacity);\n  const willingnessTier = tierForScore(willingness);\n  const forcedCash = answers.horizon === '<3';\n  const tier = forcedCash ? 'cash' : lowerTier(capacityTier, willingnessTier);\n  const bias = homeBias(answers.geo_preference);\n  const warnings = warningsFor(answers);\n  let limitedBy = 'both';\n  if (forcedCash) limitedBy = 'horizon';\n  else if (LO_TIERS.indexOf(capacityTier) < LO_TIERS.indexOf(willingnessTier)) limitedBy = 'capacity';\n  else if (LO_TIERS.indexOf(willingnessTier) < LO_TIERS.indexOf(capacityTier)) limitedBy = 'willingness';\n  return {\n    capacity_score: capacity,\n    willingness_score: willingness,\n    capacity_tier: capacityTier,\n    willingness_tier: willingnessTier,\n    tier,\n    tier_label: LO_TIER_INFO[tier].label,\n    forced_cash: forcedCash,\n    limited_by: limitedBy,\n    home_bias: bias,\n    allocation: allocationFor(tier, bias),\n    warnings,\n    warning_messages: warnings.map((code) => LO_WARNINGS[code]),\n    suggested_buffer_target: warnings.includes('low_emergency_fund') ? LO_LOW_EF_BUFFER_TARGET : LO_NEW_USER_DEFAULTS.buffer_target,\n  };\n}\n\n// \"about 60% stocks and 40% bonds\", from an allocation (fractions).\nfunction mixPhrase(allocation) {\n  const pct = allocationToPercents(allocation);\n  const stocks = pct.equity_us + pct.equity_intl + pct.equity_ca;\n  const parts = [];\n  if (stocks) parts.push(`${stocks}% stocks`);\n  if (pct.bonds) parts.push(`${pct.bonds}% bonds`);\n  if (pct.cash) parts.push(`${pct.cash}% cash-like holdings`);\n  if (parts.length === 1) return stocks === 100 ? 'all stocks' : pct.cash === 100 ? 'all cash-like holdings' : parts[0];\n  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;\n}\n\nfunction loHorizonPhrase(h) {\n  return { '<3': 'less than 3 years', '3-5': '3 to 5 years', '5-10': '5 to 10 years', '10-20': '10 to 20 years', '20+': '20 years or more' }[h] || 'an unknown time';\n}\n\nfunction loStabilityPhrase(v) {\n  return { very: 'very stable income', somewhat: 'somewhat stable income', not: 'income that is not stable' }[v] || 'your income';\n}\n\nfunction loFundPhrase(v) {\n  return {\n    0: 'no emergency savings yet', '<1': 'less than a month of emergency savings', '1-3': '1 to 3 months of emergency savings',\n    '3-6': '3 to 6 months of emergency savings', '6+': '6 or more months of emergency savings',\n  }[v] || 'your emergency savings';\n}\n\n// §19.5 fallback: the explanation used whenever the LLM is missing, fails, or\n// returns something that breaks the rules in checkExplanation(). 3-4 sentences,\n// general language, never names a security.\nfunction templateExplanation(result, answers) {\n  const s = [];\n  s.push(`Your answers point to the ${result.tier_label} mix: ${mixPhrase(result.allocation)}.`);\n  if (result.limited_by === 'horizon') {\n    s.push('You said you may need this money within 3 years, and money needed that soon is usually kept in cash-like holdings rather than exposed to market swings.');\n  } else {\n    if (result.tier !== 'cash') {\n      s.push(result.home_bias === 'more_canada'\n        ? 'The stock part leans more toward Canada, as you asked.'\n        : 'The stock part follows global market weights.');\n    }\n    const drop = answers.max_drop === '40+' ? '40% or more' : `${answers.max_drop}%`;\n    const horizon = `a horizon of ${loHorizonPhrase(answers.horizon)}`;\n    if (result.limited_by === 'willingness') {\n      s.push(`Your situation (${horizon} and ${loStabilityPhrase(answers.income_stability)}) leaves room for more growth, but you said a ${drop} drop in a year is about the most you would want to sit through, so the mix follows your comfort level.`);\n    } else if (result.limited_by === 'capacity') {\n      s.push(`You are comfortable with bigger swings, but your situation (${horizon}, ${loStabilityPhrase(answers.income_stability)} and ${loFundPhrase(answers.emergency_fund_months)}) leaves less room for risk, so the mix follows that.`);\n    } else {\n      s.push(`Your situation (${horizon}) and your comfort with market swings point to the same level of risk.`);\n    }\n  }\n  s.push('This is a general asset mix based on your own answers, not a recommendation to buy, sell or hold any specific security, and you can change it anytime.');\n  return s.join(' ');\n}\n\n// What the LLM node gets (spec §10 WF01): 3-4 sentences, plain language, general.\nfunction explanationPrompt(result, answers) {\n  const pct = allocationToPercents(result.allocation);\n  const system = [\n    'You write short, plain-language explanations for an educational budgeting prototype that uses simulated (paper) trading.',\n    'Rules: 3 to 4 sentences, under 90 words, no headings, no lists, no greeting.',\n    'Talk only about the general asset mix (stocks, bonds, cash) and why the answers lead to it.',\n    'Never name, recommend or rank any specific security, fund or ticker, and never tell the reader to buy, sell or hold anything.',\n    'End by saying it is a general mix based on their own answers and that they can change it anytime.',\n  ].join(' ');\n  const user = [\n    `Result: ${result.tier_label} mix (${mixPhrase(result.allocation)}; US ${pct.equity_us}%, international ${pct.equity_intl}%, Canada ${pct.equity_ca}%, bonds ${pct.bonds}%, cash ${pct.cash}%).`,\n    `Capacity for risk: ${result.capacity_score}/100 (time horizon ${loHorizonPhrase(answers.horizon)}, ${loStabilityPhrase(answers.income_stability)}, ${loFundPhrase(answers.emergency_fund_months)}).`,\n    `Willingness to take risk: ${result.willingness_score}/100 (after a 30% drop they would: ${answerLabel('drop_reaction', answers.drop_reaction).toLowerCase()}; largest one-year drop they could live with: ${answerLabel('max_drop', answers.max_drop)}; experience: ${answerLabel('experience', answers.experience).toLowerCase()}).`,\n    result.forced_cash\n      ? 'They may need the money within 3 years, which always means the cash mix.'\n      : `The final mix is the lower of the two (${result.limited_by === 'both' ? 'both point to the same level' : `limited by ${result.limited_by}`}).`,\n    `Stock split preference: ${result.home_bias === 'more_canada' ? 'more Canada' : 'global market weight'}.`,\n    'Write the explanation.',\n  ].join('\\n');\n  return { system, user };\n}\n\n// The text out of whatever the LLM node returned (Anthropic or OpenAI node,\n// simplified or raw). null when there is none, e.g. while the node is disabled\n// and simply passes its input through.\nfunction extractLlmText(json) {\n  if (!json || typeof json !== 'object') return null;\n  const fromParts = (parts) => {\n    if (!Array.isArray(parts)) return null;\n    const texts = [];\n    for (const p of parts) {\n      if (typeof p === 'string') texts.push(p);\n      else if (p && typeof p.text === 'string') texts.push(p.text);\n      else if (p && Array.isArray(p.content)) {\n        const inner = fromParts(p.content);\n        if (inner) texts.push(inner);\n      }\n    }\n    return texts.length ? texts.join('\\n').trim() : null;\n  };\n  if (typeof json.text === 'string' && json.text.trim()) return json.text.trim();\n  if (typeof json.content === 'string' && json.content.trim()) return json.content.trim();\n  if (typeof json.output === 'string' && json.output.trim()) return json.output.trim();\n  if (typeof json.output_text === 'string' && json.output_text.trim()) return json.output_text.trim();\n  if (json.message && typeof json.message.content === 'string' && json.message.content.trim()) return json.message.content.trim();\n  if (Array.isArray(json.choices) && json.choices[0] && json.choices[0].message && typeof json.choices[0].message.content === 'string') {\n    return json.choices[0].message.content.trim() || null;\n  }\n  return fromParts(json.content) || fromParts(json.output) || null;\n}\n\n// LLM text -> cleaned text, or null when it breaks the rules (then use the template).\nfunction checkExplanation(text, symbols) {\n  if (typeof text !== 'string') return null;\n  const t = text.trim().replace(/^[\"'“]+|[\"'”]+$/g, '').replace(/\\s+/g, ' ').trim();\n  if (t.length < 80 || t.length > 900) return null;\n  const sentences = t.split(/[.!?](\\s|$)/).filter((x) => x && x.trim().length > 1).length;\n  if (sentences < 2 || sentences > 6) return null;\n  const tickers = symbols && symbols.length ? symbols : ['VTI', 'VXUS', 'EWC', 'BND', 'SGOV'];\n  if (tickers.some((sym) => new RegExp(`\\\\b${sym}\\\\b`).test(t))) return null;\n  if (/\\b(you should|we recommend|i recommend|we suggest)\\b[^.]*\\b(buy|sell|hold)\\b/i.test(t)) return null;\n  if (/\\bguarantee/i.test(t)) return null;\n  return t;\n}\n\nfunction normalizeEmail(email) {\n  return String(email || '').trim().toLowerCase();\n}\n\nfunction isEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizeEmail(email));\n}\n\nfunction slugify(s) {\n  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32).replace(/-+$/g, '');\n}\n\n// FNV-1a, 6 hex chars: a short, stable suffix for colliding user_ids.\nfunction shortHash(s) {\n  let h = 0x811c9dc5;\n  for (let i = 0; i < s.length; i += 1) {\n    h ^= s.charCodeAt(i);\n    h = Math.imul(h, 0x01000193) >>> 0;\n  }\n  return h.toString(16).padStart(8, '0').slice(0, 6);\n}\n\n// email -> user_id (spec §19.3: lowercase, URL-safe slug).\n// 1. An existing user with this email keeps their user_id (retaking the quiz updates them).\n// 2. Otherwise the slug of the email's local part: test-d@example.com -> test-d.\n// 3. If that id is taken by someone else or protected (maya), add a hash of the email.\n// `users` are rows from the users table ({user_id, email}).\nfunction resolveUserId(email, users, protectedIds) {\n  const prot = protectedIds || LO_PROTECTED_USER_IDS;\n  const e = normalizeEmail(email);\n  if (!isEmail(e)) throw new Error(`resolveUserId: invalid email ${email}`);\n  const rows = Array.isArray(users) ? users : [];\n  const match = rows.find((u) => u && u.user_id && normalizeEmail(u.email) === e && !prot.includes(u.user_id));\n  if (match) return { user_id: match.user_id, is_new: false };\n  const taken = new Set(rows.filter((u) => u && u.user_id).map((u) => u.user_id));\n  let base = slugify(e.split('@')[0]) || 'user';\n  if (prot.includes(base) || taken.has(base)) base = `${base}-${shortHash(e)}`;\n  let id = base;\n  for (let n = 2; taken.has(id); n += 1) id = `${base}-${n}`;\n  return { user_id: id, is_new: true };\n}\n\n// Budget prefill: the user's current budgets if they have any, else the defaults.\nfunction budgetDefaults(existing) {\n  const rows = Array.isArray(existing) ? existing : [];\n  return LO_DEFAULT_BUDGETS.map((d) => {\n    const row = rows.find((r) => r && r.category_key === d.category_key);\n    const amount = row ? Number(row.weekly_amount) : NaN;\n    return {\n      category_key: d.category_key,\n      label: d.label,\n      weekly_amount: Number.isFinite(amount) && amount >= 0 ? amount : d.weekly_amount,\n      active: row && row.active !== undefined && row.active !== null ? Boolean(row.active) : true,\n    };\n  });\n}\n\n// Budgets page values (budget_<key>) -> budgets rows. Invalid or negative -> the prefill.\nfunction parseBudgets(formJson, userId, prefill) {\n  const base = prefill || budgetDefaults([]);\n  return base.map((b) => {\n    const raw = formJson ? formJson[`budget_${b.category_key}`] : undefined;\n    const n = raw === '' || raw === null || raw === undefined ? NaN : Number(raw);\n    const amount = Number.isFinite(n) && n >= 0 ? loRound2(Math.min(n, LO_MAX_WEEKLY_BUDGET)) : b.weekly_amount;\n    return { user_id: userId, category_key: b.category_key, label: b.label, weekly_amount: amount, active: b.active !== false };\n  });\n}\n\nfunction parseBufferTarget(raw, fallback) {\n  const n = raw === '' || raw === null || raw === undefined ? NaN : Number(raw);\n  return Number.isFinite(n) && n >= 0 ? loRound2(Math.min(n, LO_MAX_BUFFER_TARGET)) : fallback;\n}\n\n// The consent checkbox comes back as an array of the ticked labels.\nfunction consentGiven(raw) {\n  if (Array.isArray(raw)) return raw.length > 0;\n  return raw === true || raw === 'true';\n}\n\n// ---- n8n form pages (JSON-defined Form nodes) ----\n// Field objects use the keys n8n accepts in a JSON-defined page; fieldName is the\n// key the page returns.\n\nfunction loEscapeHtml(s) {\n  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\n}\n\nfunction questionField(q) {\n  return {\n    fieldLabel: q.label,\n    fieldName: q.key,\n    fieldType: q.type,\n    requiredField: true,\n    fieldOptions: { values: q.options.map(([, label]) => ({ option: label })) },\n  };\n}\n\nfunction questionFields(page) {\n  return LO_QUESTIONS.filter((q) => q.page === page).map(questionField);\n}\n\nfunction budgetFields(prefill) {\n  return prefill.map((b) => ({\n    fieldLabel: `${b.label} (CAD per week)`,\n    fieldName: `budget_${b.category_key}`,\n    fieldType: 'number',\n    requiredField: true,\n    defaultValue: b.weekly_amount,\n  }));\n}\n\nfunction resultFields(result, explanation, isNew) {\n  const pct = allocationToPercents(result.allocation);\n  const warnings = result.warning_messages.length\n    ? `<p><strong>Worth knowing</strong></p><ul>${result.warning_messages.map((w) => `<li>${loEscapeHtml(w)}</li>`).join('')}</ul>`\n    : '';\n  const mixRows = LO_SLEEVES.map((s) => `<tr><td>${LO_SLEEVE_LABELS[s]}</td><td>${pct[s]}%</td></tr>`).join('');\n  const html = [\n    `<h3>Your mix: ${loEscapeHtml(result.tier_label)}</h3>`,\n    `<p>${loEscapeHtml(explanation)}</p>`,\n    `<p>Capacity for risk: <strong>${result.capacity_score}/100</strong> (${LO_TIER_INFO[result.capacity_tier].label}). Willingness: <strong>${result.willingness_score}/100</strong> (${LO_TIER_INFO[result.willingness_tier].label}). The mix uses the lower of the two${result.forced_cash ? ', and money needed within 3 years always stays in cash' : ''}.</p>`,\n    `<table><thead><tr><th>Suggested mix</th><th></th></tr></thead><tbody>${mixRows}</tbody></table>`,\n    warnings,\n    `<p><em>${loEscapeHtml(LO_RESULT_NOTE)}</em></p>`,\n  ].join('');\n  const fields = [{ fieldType: 'html', elementName: 'result_summary', html }];\n  for (const s of LO_SLEEVES) {\n    fields.push({ fieldLabel: `${LO_SLEEVE_LABELS[s]} (%)`, fieldName: `alloc_${s}`, fieldType: 'number', requiredField: true, defaultValue: pct[s] });\n  }\n  fields.push({\n    fieldLabel: result.warnings.includes('low_emergency_fund')\n      ? 'Cash cushion target (CAD). Kept as cash before anything is invested; we suggest a bigger one for you.'\n      : 'Cash cushion target (CAD). Kept as cash before anything is invested.',\n    fieldName: 'buffer_target',\n    fieldType: 'number',\n    requiredField: true,\n    defaultValue: result.suggested_buffer_target,\n  });\n  fields.push({\n    fieldLabel: 'Standing consent',\n    fieldName: 'consent',\n    fieldType: 'checkbox',\n    requiredField: false,\n    fieldOptions: { values: [{ option: 'Invest my weekly leftover automatically (simulated paper trading). I can pause anytime.' }] },\n  });\n  fields.push({ fieldType: 'html', elementName: 'result_disclaimer', html: `<p><em>${isNew ? 'Percentages that do not add up to 100 are scaled to 100. ' : 'Saving replaces your previous profile and budgets. Percentages that do not add up to 100 are scaled to 100. '}${loEscapeHtml(LO_DISCLAIMER)}</em></p>` });\n  return fields;\n}\n\n// ---- rows LO-01 writes ----\n// New users get every column; an existing user (retaking the quiz) only gets the\n// columns onboarding owns, so buffer_balance, carries and created_at survive.\nfunction buildRows(input) {\n  const { userId, isNew, name, email, consent, bufferTarget, answers, result, allocation, explanation, budgets, now } = input;\n  const nowIso = (now instanceof Date ? now : new Date(now || Date.now())).toISOString();\n  const user = {\n    user_id: userId,\n    email: normalizeEmail(email),\n    name: String(name || '').trim(),\n    status: consent ? 'active' : 'paused',\n    buffer_target: bufferTarget,\n  };\n  if (consent) user.consent_at = nowIso;\n  if (isNew) Object.assign(user, { created_at: nowIso }, LO_NEW_USER_DEFAULTS, { buffer_target: bufferTarget });\n  const profile = {\n    user_id: userId,\n    answers_json: JSON.stringify(answers),\n    capacity_score: result.capacity_score,\n    willingness_score: result.willingness_score,\n    tier: result.tier,\n    home_bias: result.home_bias,\n    allocation_json: JSON.stringify(allocation),\n    explanation,\n    updated_at: nowIso,\n    warnings_json: JSON.stringify(result.warnings),\n  };\n  return { user, profile, budgets: budgets.map((b) => ({ ...b, user_id: userId })) };\n}\n// ===== end lib/scoring.mjs =====\n\nreturn main();\n"
+      },
+      "name": "Build rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2600,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// LO-01 · the users row (keys = columns, for the upsert).\nreturn [{ json: $('Build rows').first().json.user }];"
+      },
+      "name": "User row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "users"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "name": "Save user",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// LO-01 · the profiles row.\nreturn [{ json: $('Build rows').first().json.profile }];"
+      },
+      "name": "Profile row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "profiles"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "name": "Save profile",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1820,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// LO-01 · one budgets row per category.\nreturn $('Build rows').first().json.budgets.map((b) => ({ json: b }));"
+      },
+      "name": "Budget rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "budgets"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            },
+            {
+              "keyName": "category_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.category_key }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "name": "Save budgets",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2340,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "config"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "condition": "eq",
+              "keyValue": "dashboard_url"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "name": "Read dashboard URL",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2600,
+        300
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// LO-01 · Done page text: what was saved, and the dashboard link (config dashboard_url).\nconst s = $('Build rows').first().json.summary;\nconst url = String(($input.first().json || {}).value || '').trim();\nconst pct = (x) => Math.round(x * 100);\nconst a = s.allocation;\nconst lines = [\n  `<p>Saved for <strong>${s.name || s.user_id}</strong> (user id <code>${s.user_id}</code>).</p>`,\n  '<ul>',\n  `<li>Mix: ${s.tier_label}${s.allocation_edited ? ' (edited by you)' : ''}: stocks ${pct(a.equity_us + a.equity_intl + a.equity_ca)}%, bonds ${pct(a.bonds)}%, cash ${pct(a.cash)}%</li>`,\n  `<li>Weekly budgets: $${s.weekly_budget_total.toFixed(2)} across 7 categories</li>`,\n  `<li>Cash cushion target: $${Number(s.buffer_target).toFixed(2)}</li>`,\n  `<li>${s.consent ? 'Weekly investing is on. You can pause anytime.' : 'Weekly investing is paused until you give consent (Settings).'}</li>`,\n  '</ul>',\n  url ? `<p><a href=\"${url}\">Open your dashboard</a></p>` : '<p>Your dashboard link will appear here once it is set up.</p>',\n  '<p><em>Educational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.</em></p>',\n];\nreturn [{ json: { title: s.is_new ? \"You're all set\" : 'Your profile is updated', message: lines.join('') } }];"
+      },
+      "name": "Done page text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "text",
+        "completionTitle": "={{ $json.title }}",
+        "completionMessage": "={{ $json.message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Done",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        3120,
+        300
+      ],
+      "webhookId": "b0d1a5e2-0105-4d00-8000-000000000005"
+    },
+    {
+      "parameters": {
+        "content": "## LO-01 Onboarding Form (spec §7 F1, §10 WF01, §11)\nForm URL: `/form/lo-onboarding`. Four pages, then the rows land in `users`, `profiles`, `budgets`.\nThe email identifies the user: an existing email updates that user (retake the quiz); a new one gets `user_id` = slug of its local part (`test-d@…` → `test-d`), with a hash suffix on collision. `maya` is never touched.\nScoring, tiers, allocation, warnings, explanation fallback: `lib/scoring.mjs` (pasted in the Code nodes).",
+        "width": 760,
+        "height": 280
+      },
+      "name": "About LO-01",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
         -40,
-        -220
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Explanation (spec §19.5)\n**Explain (LLM)** is disabled until the `LLM` credential exists; disabled, it passes its input through and **Pick explanation** uses the template.\nTo turn it on: attach the credential and enable this one node. For OpenAI, replace it with the OpenAI node, same name, same prompt expressions. Don't set temperature/top_p/top_k.",
+        "width": 560,
+        "height": 280
+      },
+      "name": "LLM slot",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1780,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Writes (upsert on the contract keys)\nusers (user_id) · profiles (user_id) · budgets (user_id + category_key).\nA returning user keeps buffer_balance, carries and created_at.",
+        "width": 620,
+        "height": 160
+      },
+      "name": "Writes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        480
       ]
     }
   ],
   "connections": {
-    "Run manually": {
+    "Page 1: Financial profile": {
       "main": [
         [
           {
-            "node": "Stub response",
+            "node": "Read users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read users": {
+      "main": [
+        [
+          {
+            "node": "Read budgets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read budgets": {
+      "main": [
+        [
+          {
+            "node": "Identify user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identify user": {
+      "main": [
+        [
+          {
+            "node": "Page 2: Weekly budgets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Page 2: Weekly budgets": {
+      "main": [
+        [
+          {
+            "node": "Page 3: Investor quiz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Page 3: Investor quiz": {
+      "main": [
+        [
+          {
+            "node": "Score answers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score answers": {
+      "main": [
+        [
+          {
+            "node": "Explain (LLM)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explain (LLM)": {
+      "main": [
+        [
+          {
+            "node": "Pick explanation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick explanation": {
+      "main": [
+        [
+          {
+            "node": "Page 4: Result and consent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Page 4: Result and consent": {
+      "main": [
+        [
+          {
+            "node": "Build rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build rows": {
+      "main": [
+        [
+          {
+            "node": "User row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User row": {
+      "main": [
+        [
+          {
+            "node": "Save user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save user": {
+      "main": [
+        [
+          {
+            "node": "Profile row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Profile row": {
+      "main": [
+        [
+          {
+            "node": "Save profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save profile": {
+      "main": [
+        [
+          {
+            "node": "Budget rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Budget rows": {
+      "main": [
+        [
+          {
+            "node": "Save budgets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save budgets": {
+      "main": [
+        [
+          {
+            "node": "Read dashboard URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read dashboard URL": {
+      "main": [
+        [
+          {
+            "node": "Done page text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Done page text": {
+      "main": [
+        [
+          {
+            "node": "Done",
             "type": "main",
             "index": 0
           }
