@@ -158,7 +158,7 @@ The transaction date is Plaid's `authorized_date` when present, else `date` (the
 ### 6.4 Underspend (gross, per category, no cross-category netting)
 Per Sergio's decision, categories are **not** netted against each other.
 ```
-under_c = max(planned_c - actual_c, 0)
+under_c = min(max(planned_c - actual_c, 0), planned_c)   # capped: a refund bigger than the week's spend can't push the leftover past the budget (decided 2026-11-15)
 over_c  = max(actual_c - planned_c, 0)
 gross_surplus = sum(under_c)
 ```
@@ -511,6 +511,10 @@ If time runs short, cut in this order: ESG option, Telegram, debt mode, Plaid (f
 - D3 Digest channel: **email only**. Telegram stays P1.
 - D4 LLM: **none for the demo** (decided 2026-11-15). LO-01 and LO-07 use their fixed template text (§19.5). The Anthropic nodes stay in both workflows, switched off; turning them on needs an Anthropic credential named `LLM`.
 - D5 Cushion defaults: **$100 target, 50% rate**.
+- D6 Refund bigger than the week's spend: the leftover for that category is **capped at its budget** (§6.4). LO-04 and the dashboard's `remaining_cad` use the same cap. (2026-11-15)
+- D7 Plaid PFC v2 `OTHER`: **counted as variable spend** in `other`, the cautious choice: it lowers the leftover instead of risking investing money that was spent. (2026-11-15)
+- D8 Backfilled past weeks: **stay `computed`** ("not invested" on History). A reset never places orders for past weeks, and they aren't invested later either. With the Alpaca keys, each new week is invested by its own audit. (2026-11-15)
+- D9 `fx_fallback_usdcad` = **1.42** (Frankfurter was 1.4258 on 2026-11-15). It's only used when the FX API is down. (2026-11-15)
 
 ---
 

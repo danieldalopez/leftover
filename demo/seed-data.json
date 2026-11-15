@@ -2,7 +2,7 @@
   "_about": "Demo seed for LO-00 (spec §19.4). Transaction dates are day_offset from the current week's Monday (0 = this Monday, -7 = last Monday); LO-00 converts them with seedDate() from lib/week.mjs, which clamps future dates to today. Amounts follow Plaid's sign convention: positive = money out, negative = money in (refunds, income). Maya starts with an empty buffer; Wave 3 backfills the 3 past weeks through LO-04 so History has data.",
   "version": 1,
   "config": [
-    { "key": "fx_fallback_usdcad", "value": "1.38", "_note": "CAD per 1 USD, used only when the FX API fails" },
+    { "key": "fx_fallback_usdcad", "value": "1.42", "_note": "CAD per 1 USD, used only when the FX API fails (Frankfurter was 1.4258 on 2026-11-15)" },
     { "key": "assumed_returns", "value": "0.04,0.06,0.08" },
     { "key": "demo_mode", "value": "true" },
     { "key": "alpaca_base_url", "value": "https://paper-api.alpaca.markets" },

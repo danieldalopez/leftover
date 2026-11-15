@@ -3,6 +3,7 @@
 Hackathon project (Loop Hackathon, eProjects x n8n). n8n workflows are the backend and the judged deliverable; `dashboard/` is a Next.js front end that only calls n8n webhooks.
 
 ## Read in this order
+0. `STATUS.md`: where things stand, what was done, next steps (the handoff page).
 1. `spec.md`: **the single source of truth.** If code and spec disagree, the spec wins. Change the spec first (Sergio approves), then the code.
 2. `BUILD-PLAN.md`: who builds what, in what order (Wave 1 P0 → Wave 2 lanes A–F in parallel → Wave 3 Z). If you were started as a lane, do only that lane.
 3. `contracts/`: exact JSON shapes (Data Tables, webhooks, API responses + fixtures).
