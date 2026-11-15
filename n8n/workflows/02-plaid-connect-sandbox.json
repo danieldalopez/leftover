@@ -1,5 +1,7 @@
 {
+  "id": "leftoverWF02plad",
   "name": "LO-02 Plaid Connect Sandbox",
+  "active": true,
   "nodes": [
     {
       "parameters": {
@@ -17,10 +19,10 @@
         0,
         0
       ],
-      "webhookId": "4a229cd7-a930-47c6-b1ac-2031682a21d4",
+      "webhookId": "0b3e6717-eab6-412f-a731-a38c1f33dcae",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "__LO_WEBHOOK_KEY_ID__",
+          "id": "leftoverCredHook",
           "name": "LO Webhook Key"
         }
       }

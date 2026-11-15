@@ -1,0 +1,19 @@
+{
+  "_about": "Fixed IDs for this project. Workflow files carry these ids, so imports (CLI or API) always land on the same workflow and Execute Workflow calls never need re-linking. Credential secrets are NOT here: only ids and names.",
+  "workflows": {
+    "LO-00": "leftoverWF00seed",
+    "LO-01": "leftoverWF01form",
+    "LO-02": "leftoverWF02plad",
+    "LO-03": "leftoverWF03sync",
+    "LO-03b": "leftoverWF03bexp",
+    "LO-04": "leftoverWF04audt",
+    "LO-05": "leftoverWF05invs",
+    "LO-06": "leftoverWF06recn",
+    "LO-07": "leftoverWF07dgst",
+    "LO-08": "leftoverWF08apis",
+    "LO-09": "leftoverWF09errh"
+  },
+  "credentials": {
+    "lo_webhook_key": "leftoverCredHook"
+  }
+}

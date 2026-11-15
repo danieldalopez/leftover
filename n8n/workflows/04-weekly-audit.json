@@ -1,5 +1,7 @@
 {
+  "id": "leftoverWF04audt",
   "name": "LO-04 Weekly Audit",
+  "active": true,
   "nodes": [
     {
       "parameters": {
@@ -17,10 +19,10 @@
         0,
         0
       ],
-      "webhookId": "3aac395e-f047-4e8c-aa50-95b0ddb29440",
+      "webhookId": "76122fd6-bcd7-45de-b855-2f9fbda72545",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "__LO_WEBHOOK_KEY_ID__",
+          "id": "leftoverCredHook",
           "name": "LO Webhook Key"
         }
       }

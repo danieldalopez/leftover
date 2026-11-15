@@ -1,5 +1,7 @@
 {
+  "id": "leftoverWF00seed",
   "name": "LO-00 Setup and Seed",
+  "active": true,
   "nodes": [
     {
       "parameters": {},
@@ -30,7 +32,7 @@
       "webhookId": "a1f7c0de-1000-4000-8000-000000000000",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "__LO_WEBHOOK_KEY_ID__",
+          "id": "leftoverCredHook",
           "name": "LO Webhook Key"
         }
       }

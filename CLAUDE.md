@@ -11,8 +11,9 @@ Hackathon project (Loop Hackathon, eProjects x n8n). n8n workflows are the backe
 ## Rules that bite
 - Own only your lane's files. Contract or seed changes go through Sergio.
 - Code nodes can't read Data Tables: Data Table node → Code → Data Table node.
-- Build workflow JSON from `n8n/templates/node-snippets.json`; never guess `typeVersion`s.
-- Push workflows with the n8n REST API (`N8N_BASE_URL`, `N8N_API_KEY` in `.env`); pull back after any UI fix.
+- Build workflow JSON from `n8n/templates/` (snippets that ran here, full node definitions, versions); never guess `typeVersion`s.
+- Push with `node scripts/n8n.mjs push <file>` (n8n CLI, no API key; live in ~10–15 s). Test with `node scripts/n8n.mjs call …`. Pull back after any UI fix. Keep each file's fixed `id` from `n8n/ids.json`.
+- n8n must be running: preview server `leftover-n8n` or the command in `n8n/CONVENTIONS.md`.
 - Test data only under your lane's test user (`test-a` … `test-f`). Only P0, Lane A and Z touch `maya` or call `/lo/demo/reset`.
 - Pure logic in `lib/*.mjs` (no imports, no npm), tested with `node --test`, pasted verbatim into Code nodes.
 - No secrets in the repo. Paper trading only (`https://paper-api.alpaca.markets`).

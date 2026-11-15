@@ -19,6 +19,7 @@ const OUT = join(root, 'n8n/workflows/00-setup-and-seed.json');
 const conventions = JSON.parse(readFileSync(join(root, 'n8n/templates/node-versions.json'), 'utf8')).nodes;
 const v = (k) => conventions[k].latest;
 const T = (k) => conventions[k].type;
+const ids = JSON.parse(readFileSync(join(root, 'n8n/ids.json'), 'utf8'));
 
 // contracts/data-tables.md. Order matters only for readability.
 const TABLES = {
@@ -115,7 +116,7 @@ add({
   },
   name: 'POST /lo/demo/reset', type: T('webhook'), typeVersion: v('webhook'), position: [0, 400],
   webhookId: 'a1f7c0de-1000-4000-8000-000000000000',
-  credentials: { httpHeaderAuth: { id: '__LO_WEBHOOK_KEY_ID__', name: 'LO Webhook Key' } },
+  credentials: { httpHeaderAuth: { id: ids.credentials.lo_webhook_key, name: 'LO Webhook Key' } },
 });
 
 for (const [table, spec] of Object.entries(TABLES)) {
@@ -156,14 +157,13 @@ link('Run manually', chain[0].name);
 link('POST /lo/demo/reset', chain[0].name);
 for (let i = 0; i < chain.length - 1; i++) link(chain[i].name, chain[i + 1].name);
 
-// Keep the n8n id and the real credential id if the file was already pushed.
+// Keep an errorWorkflow that Wave 3 may have added.
 const prev = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : {};
-const credId = prev.nodes?.find((n) => n.credentials?.httpHeaderAuth)?.credentials.httpHeaderAuth.id;
-if (credId) nodes.find((n) => n.credentials?.httpHeaderAuth).credentials.httpHeaderAuth.id = credId;
 
 const wf = {
-  ...(prev.id ? { id: prev.id } : {}),
+  id: ids.workflows['LO-00'],
   name: 'LO-00 Setup and Seed',
+  active: true,
   nodes,
   connections,
   settings: { executionOrder: 'v1', timezone: 'America/Vancouver', ...(prev.settings?.errorWorkflow ? { errorWorkflow: prev.settings.errorWorkflow } : {}) },

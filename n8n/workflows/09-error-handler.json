@@ -1,5 +1,7 @@
 {
+  "id": "leftoverWF09errh",
   "name": "LO-09 Error Handler",
+  "active": false,
   "nodes": [
     {
       "parameters": {},

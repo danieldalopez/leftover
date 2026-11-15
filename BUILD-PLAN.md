@@ -38,13 +38,11 @@ Recorded in `spec.md` §18. Adopted defaults: overspend drains the cushion (ON),
 
 ### What you do by hand (Claude can't create accounts or paste keys for you)
 
-**Needed during P0:**
-1. n8n running locally (P0 walks you through the Docker command in spec 16.1). Create the owner account at http://localhost:5678.
-2. n8n → Settings → n8n API → create an API key. Put it in `leftover/.env` (P0 creates the gitignored file):
-   `N8N_BASE_URL=http://localhost:5678` and `N8N_API_KEY=...`. This lets every session push and update workflows itself instead of you importing files by hand.
-3. n8n credential **`LO Webhook Key`**: Header Auth, name `x-lo-key`, value = any random 32 characters.
+**Nothing is needed to build the n8n side.** P0 runs n8n locally, and sessions push workflows with n8n's own CLI, so there's no n8n API key and no login. P0 also created the `LO Webhook Key` credential.
 
-**Needed before the lane that uses it** (do these while P0 runs):
+**Before the demo:** create the n8n owner account at http://localhost:5678 so you can show the canvas.
+
+**Only for the lanes that call outside services** (each lane builds everything up to that call without them):
 
 | Credential (exact name in n8n) | Type | Needed by | Get it at |
 |---|---|---|---|
@@ -59,23 +57,33 @@ Recorded in `spec.md` §18. Adopted defaults: overspend drains the cushion (ON),
 
 1. **Own your files only.** Each lane lists the files it owns. Don't edit anything else. Need a change outside your files (especially `contracts/` or the seed)? Stop and tell Sergio. Don't change it yourself.
 2. **One branch per lane.** Work in your own worktree on `lane/<letter>-<name>`. Commit often. Don't merge into `main` yourself; Sergio merges when your "Done when" passes.
-3. **Push workflows through the n8n API.** Update your stub with `PUT /api/v1/workflows/{id}` (IDs are in `n8n/CONVENTIONS.md`). The JSON in the repo must match what runs in n8n: after any fix made in the n8n UI, `GET` the workflow back into the repo.
-4. **Build JSON from the reference snippets** in `n8n/templates/node-snippets.json` (exported from this exact n8n version). Never guess a node's `typeVersion` or parameter shape.
+3. **Push with `node scripts/n8n.mjs push <your file>`.** No key needed: it imports and publishes through n8n's CLI, and the running n8n serves the new version in ~10–15 s. Keep the file's fixed `id` (`n8n/ids.json`). The JSON in the repo must match what runs in n8n: after any fix made in the n8n UI, `node scripts/n8n.mjs pull <id>`.
+4. **Build JSON from `n8n/templates/`**: `node-snippets.json` (node JSON that ran on this n8n), `node-types.json` (full parameter definitions) and `node-versions.json`. Never guess a node's `typeVersion` or parameter shape.
 5. **Shared runtime, so isolate your data.** All lanes share one n8n instance, one set of Data Tables and one Alpaca paper account.
    - Write test data only under your lane's test user: `test-a` … `test-f`.
    - `maya` (the demo user) is read-only, except for Lane A, P0 and Z.
    - Only Lane A, P0 and Z call `POST /lo/demo/reset` (it only touches Maya's rows).
 6. **Logic as pure functions first.** Put the math in `lib/<area>.mjs` as plain functions with no imports and no npm packages (so they paste straight into a Code node). Test with `node --test`. Then paste the same functions into the Code node, plus an inline self-test where the spec asks for one.
-7. **Test through webhooks.** Every workflow has a webhook trigger. Activate the workflow and `curl` the production URL `${N8N_BASE_URL}/webhook/<path>` with the `x-lo-key` header.
+7. **Test through webhooks.** Every workflow has a webhook trigger. Call it with `node scripts/n8n.mjs call POST lo/<route> '<json>'` (adds `x-lo-key`). To see what landed in a table, use the read-only `sqlite3` one-liner in `n8n/CONVENTIONS.md`.
 8. **Write down what Z needs** in `n8n/notes/<letter>.md`: credentials used, how to test, anything stubbed or skipped, known gaps. Z turns these into `n8n/README.md`.
 9. **No secrets in the repo.** Credentials are referenced by name and ID; keys live in n8n and `.env` (gitignored).
 10. **Paper trading only.** Never a live Alpaca URL.
 
 ---
 
-## Wave 1: P0 Foundation (one session, run first)
+## Wave 1: P0 Foundation (one session, run first) ✅ done 2026-11-14
 
 **Goal:** everything the six Wave 2 lanes need to start without waiting on each other. Ends at spec milestone M1.
+
+**Result:**
+- n8n 2.47.7 runs via `npx`; all 11 workflows are imported with fixed IDs, and 9 are published.
+- `POST /lo/demo/reset` creates every table and seeds Maya (1 user, 7 budgets, 43 transactions). Running it twice changes nothing.
+- All 13 stub routes answer; a wrong key gets 403.
+- Departures from the task list below:
+  - no Docker (`npx` instead);
+  - no API key (CLI push instead);
+  - tables are referenced by name, so no table IDs need recording;
+  - node snippets come from workflows that actually ran, plus full node definitions, instead of a throwaway export.
 
 **Owns:** `CLAUDE.md`, `.gitignore`, `.env.example`, `contracts/**`, `n8n/CONVENTIONS.md`, `n8n/templates/**`, `lib/week.mjs` (+ test), `demo/seed-data.json`, `n8n/workflows/00-setup-and-seed.json`, `n8n/workflows/09-error-handler.json`.
 

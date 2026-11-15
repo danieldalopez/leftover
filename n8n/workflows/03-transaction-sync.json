@@ -1,5 +1,7 @@
 {
+  "id": "leftoverWF03sync",
   "name": "LO-03 Transaction Sync",
+  "active": true,
   "nodes": [
     {
       "parameters": {
@@ -17,10 +19,10 @@
         0,
         0
       ],
-      "webhookId": "ebf783f0-7c33-49dc-b528-de5099dc6117",
+      "webhookId": "5467daa9-8340-4070-bc27-1d5c2230b3a8",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "__LO_WEBHOOK_KEY_ID__",
+          "id": "leftoverCredHook",
           "name": "LO Webhook Key"
         }
       }
@@ -41,10 +43,10 @@
         0,
         180
       ],
-      "webhookId": "ba1a2b83-e94b-4828-9260-ccead3f6b7c1",
+      "webhookId": "85ce6906-2dec-401c-8c57-54b12c26f426",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "__LO_WEBHOOK_KEY_ID__",
+          "id": "leftoverCredHook",
           "name": "LO Webhook Key"
         }
       }

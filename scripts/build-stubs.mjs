@@ -27,11 +27,15 @@ const STUBS = [
   { file: '08-dashboard-api', name: 'LO-08 Dashboard API', routes: [['GET', 'lo/api/summary'], ['GET', 'lo/api/audits'], ['GET', 'lo/api/portfolio'], ['GET', 'lo/api/projection'], ['POST', 'lo/api/settings']] },
 ];
 
+// A file is still a stub (safe to regenerate) if its Code node says so.
+const isStub = (file) => readFileSync(file, 'utf8').includes('// STUB: replaced by its lane');
+
 let wrote = 0;
 for (const s of STUBS) {
   const file = join(root, 'n8n/workflows', `${s.file}.json`);
-  if (existsSync(file)) { console.log(`skip ${s.file} (exists)`); continue; }
+  if (existsSync(file) && !isStub(file)) { console.log(`skip ${s.file} (lane has replaced the stub)`); continue; }
   const code = s.name.split(' ')[0];
+  if (!ids.workflows?.[code]) throw new Error(`no id for ${code} in n8n/ids.json`);
   const nodes = [];
   const triggers = [];
   s.routes.forEach(([method, path], i) => {
@@ -60,7 +64,8 @@ for (const s of STUBS) {
     name: 'About this stub', type: nv.stickyNote.type, typeVersion: nv.stickyNote.latest, position: [-40, -220],
   });
   const connections = Object.fromEntries(triggers.map((t) => [t.name, { main: [[{ node: 'Stub response', type: 'main', index: 0 }]] }]));
-  const wf = { name: s.name, nodes, connections, settings: { executionOrder: 'v1', timezone: 'America/Vancouver' }, staticData: null };
+  // Only workflows with a webhook can be active; a manual-trigger-only stub can't.
+  const wf = { id: ids.workflows[code], name: s.name, active: s.routes.length > 0, nodes, connections, settings: { executionOrder: 'v1', timezone: 'America/Vancouver' }, staticData: null };
   writeFileSync(file, `${JSON.stringify(wf, null, 2)}\n`);
   wrote++;
   console.log(`wrote ${s.file}.json`);

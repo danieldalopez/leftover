@@ -1,5 +1,7 @@
 {
+  "id": "leftoverWF05invs",
   "name": "LO-05 Invest Executor",
+  "active": true,
   "nodes": [
     {
       "parameters": {
@@ -17,10 +19,10 @@
         0,
         0
       ],
-      "webhookId": "2a8dfadf-2abb-4bc1-a535-c2947355b83f",
+      "webhookId": "67173222-2921-4272-a9e4-203f063f9d91",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "__LO_WEBHOOK_KEY_ID__",
+          "id": "leftoverCredHook",
           "name": "LO Webhook Key"
         }
       }

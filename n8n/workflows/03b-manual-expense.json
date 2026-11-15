@@ -1,5 +1,7 @@
 {
+  "id": "leftoverWF03bexp",
   "name": "LO-03b Manual Expense",
+  "active": true,
   "nodes": [
     {
       "parameters": {
@@ -17,10 +19,10 @@
         0,
         0
       ],
-      "webhookId": "249b279a-5bb1-4b94-85bf-955a0fdde7da",
+      "webhookId": "cd963e41-60a6-496e-95b3-9420219d687b",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "__LO_WEBHOOK_KEY_ID__",
+          "id": "leftoverCredHook",
           "name": "LO Webhook Key"
         }
       }

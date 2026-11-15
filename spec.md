@@ -467,8 +467,8 @@ Either way: set the instance timezone to America/Vancouver, set WF09 as the erro
 
 ### 16.4 Claude Code loop
 1. Wave 1 (P0) scaffolds the repo, locks `contracts/`, seeds data and creates a stub for every workflow. See `BUILD-PLAN.md`.
-2. Wave 2 runs one Claude Code session per lane in parallel. Each lane pushes its workflow JSON straight into n8n through the public REST API (`N8N_API_KEY` in `.env`), tests it through its webhook, and commits.
-3. After any fix made in the n8n UI, pull the workflow back into the repo through the API so the repo matches what runs.
+2. Wave 2 runs one Claude Code session per lane in parallel. Each lane pushes its workflow JSON into the running n8n with `scripts/n8n.mjs` (n8n's CLI: import + publish, no API key), tests it through its webhook, and commits. Workflows have fixed IDs (`n8n/ids.json`).
+3. After any fix made in the n8n UI, pull the workflow back into the repo (`scripts/n8n.mjs pull`) so the repo matches what runs.
 4. Wave 3 (Z) wires the workflows together, imports everything into a fresh instance and rehearses the demo.
 
 ---
