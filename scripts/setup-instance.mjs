@@ -6,7 +6,7 @@
 //
 // 1. Creates the `LO Webhook Key` credential (fixed id leftoverCredHook) from N8N_WEBHOOK_KEY in .env.
 //    The key goes through a temp file that is deleted right after the import. `Plaid Sandbox` and
-//    `Alpaca Paper` are created with placeholder values only if they don't exist yet.
+//    `Alpaca Paper` and `LLM` (Anthropic) are created with placeholder values only if they don't exist yet.
 // 2. Imports and publishes every workflow in IMPORT_ORDER. n8n 2.47 refuses to publish a workflow whose
 //    Execute Workflow node points at an unpublished one, so callees come first:
 //    LO-05 and LO-07 before LO-04, LO-04 before LO-00, LO-03 before LO-02.
@@ -81,6 +81,8 @@ const PLACEHOLDERS = [
     data: { json: JSON.stringify({ body: { client_id: 'PASTE_PLAID_CLIENT_ID', secret: 'PASTE_PLAID_SANDBOX_SECRET' } }) } },
   { id: ids.credentials.alpaca_paper, name: 'Alpaca Paper', type: 'httpCustomAuth',
     data: { json: JSON.stringify({ headers: { 'APCA-API-KEY-ID': 'PASTE_ALPACA_PAPER_KEY_ID', 'APCA-API-SECRET-KEY': 'PASTE_ALPACA_PAPER_SECRET' } }) } },
+  { id: ids.credentials.llm, name: 'LLM', type: 'anthropicApi',
+    data: { apiKey: 'PASTE_ANTHROPIC_API_KEY', url: 'https://api.anthropic.com', header: false } },
 ];
 
 function credentialExists(id) {

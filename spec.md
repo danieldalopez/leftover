@@ -508,7 +508,7 @@ If time runs short, cut in this order: ESG option, Telegram, debt mode, Plaid (f
 - D1 Product name: keep "Leftover" in code for now; rename user-facing strings in Wave 3.
 - D2 Overspend drains the cushion: **ON** (`absorb_overspend = true`).
 - D3 Digest channel: **email only**. Telegram stays P1.
-- D4 LLM provider: **open**, whichever the hackathon gives credits for. The credential is always named `LLM`; the chosen provider is recorded in `n8n/CONVENTIONS.md`.
+- D4 LLM provider: **Anthropic** (decided 2026-11-15; Lanes D and E built on it). The credential is always named `LLM` (fixed id `leftoverCredLLM`).
 - D5 Cushion defaults: **$100 target, 50% rate**.
 
 ---
