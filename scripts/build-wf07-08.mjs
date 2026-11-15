@@ -34,9 +34,10 @@ const T = (k) => versions[k].type;
 const V = (k) => versions[k].latest;
 const HOOK_CRED = { httpHeaderAuth: { id: ids.credentials.lo_webhook_key, name: 'LO Webhook Key' } };
 // Third-party credentials (spec §0.3): `n8n publish:workflow` rejects a credential that doesn't exist
-// ("uses invalid credential"), so a node gets its credential only once its id is in n8n/ids.json
-// (credentials.alpaca_paper / llm / gmail). Until then the node keeps its auth type with nothing
-// attached, fails fast at run time, and the flow falls back (spec §19.5).
+// ("uses invalid credential") and nodes whose credential is required but missing (Gmail, chat model),
+// so a node gets its credential only once its id is in n8n/ids.json (credentials.alpaca_paper / llm / gmail).
+// Until then: HTTP nodes keep their auth type with nothing attached and fail fast at run time; the Gmail
+// and LLM nodes are disabled (they pass items through). Either way the flow falls back (spec §19.5).
 const cred = (idKey, type, name) => (ids.credentials[idKey] ? { [type]: { id: ids.credentials[idKey], name } } : null);
 const ALPACA_CRED = cred('alpaca_paper', 'httpCustomAuth', 'Alpaca Paper');
 const LLM_CRED = cred('llm', 'anthropicApi', 'LLM');
@@ -334,7 +335,7 @@ return [{ json: res }];`), [X(12), y]),
     ].join('\n'), [-40, -420], 900, 340, 7),
   );
 
-  if (DEV) devSeed(nodes, g);
+  if (DEV) devSeed(nodes, g), devDigestCall(nodes, g);
 
   return {
     id: ids.workflows['LO-08'],
@@ -435,6 +436,22 @@ return [
     'DEV-E: audit rows', 'DEV-E: insert audits', 'DEV-E: order rows', 'DEV-E: insert orders', 'DEV-E: done');
 }
 
+// ---------- dev only: call LO-07 the way LO-04 does (Execute Workflow, passthrough items) ----------
+function devDigestCall(nodes, g) {
+  const y = 2000;
+  const H = 'POST /lo/dev-e/call-digest';
+  nodes.push(
+    webhook(H, 'POST', 'lo/dev-e/call-digest', 'd0e5eed0-7e57-4e00-8000-0000000000d7', [0, y], 'lastNode'),
+    code('DEV-E: digest input', `return [{ json: $('${H}').first().json.body || {} }];`, [260, y]),
+    {
+      parameters: { workflowId: { __rl: true, value: ids.workflows['LO-07'], mode: 'id', cachedResultName: 'LO-07 Weekly Digest' }, mode: 'each', options: { waitForSubWorkflow: true } },
+      name: 'DEV-E: run LO-07', type: T('executeWorkflow'), typeVersion: V('executeWorkflow'), position: [480, y], onError: 'continueRegularOutput',
+    },
+    code('DEV-E: digest output', 'return [{ json: { ok: true, data: { returned: $input.all().map((i) => i.json) } } }];', [700, y]),
+  );
+  g.chain(H, 'DEV-E: digest input', 'DEV-E: run LO-07', 'DEV-E: digest output');
+}
+
 // ======================= LO-07 Weekly Digest =======================
 function buildWf07() {
   const nodes = [];
@@ -485,11 +502,11 @@ return [{ json: { found: true, facts: r.facts, llm_system: p.system, llm_user: p
         batching: {},
       },
       name: 'Digest: LLM summary', type: '@n8n/n8n-nodes-langchain.chainLlm', typeVersion: 1.9, position: [X(10), y - 120],
-      onError: 'continueRegularOutput',
+      onError: 'continueRegularOutput', ...(LLM_CRED ? {} : { disabled: true }),
     },
     {
       parameters: { model: { __rl: true, mode: 'id', value: 'claude-sonnet-5-5' }, options: { maxTokensToSample: 400, temperature: 0.4 } },
-      name: 'LLM chat model', type: '@n8n/n8n-nodes-langchain.lmChatAnthropic', typeVersion: 1.6, position: [X(10), y + 100], ...(LLM_CRED ? { credentials: LLM_CRED } : {}),
+      name: 'LLM chat model', type: '@n8n/n8n-nodes-langchain.lmChatAnthropic', typeVersion: 1.6, position: [X(10), y + 100], ...(LLM_CRED ? { credentials: LLM_CRED } : { disabled: true }),
     },
     code('Digest: compose', glue(`
 const f = $('Digest: facts').first().json.facts;
@@ -505,7 +522,7 @@ return [{ json: {
     ifTrue('Digest: send email?', '={{ $json.send }}', [X(12), y - 120]),
     {
       parameters: { sendTo: '={{ $json.sent_to }}', subject: '={{ $json.subject }}', emailType: 'text', message: '={{ $json.body }}', options: { appendAttribution: false } },
-      name: 'Digest: send email', type: T('gmail'), typeVersion: V('gmail'), position: [X(13), y - 240], ...(GMAIL_CRED ? { credentials: GMAIL_CRED } : {}), onError: 'continueRegularOutput',
+      name: 'Digest: send email', type: T('gmail'), typeVersion: V('gmail'), position: [X(13), y - 240], ...(GMAIL_CRED ? { credentials: GMAIL_CRED } : { disabled: true }), onError: 'continueRegularOutput',
     },
     code('Digest: result', glue(`
 const req = ${REQ};
@@ -522,7 +539,9 @@ if (!facts.found) {
     const sent = $('Digest: send email').isExecuted ? $('Digest: send email').first().json : null;
     if (sent && sent.id && !sent.error) res = ok({ ...data, sent_to: c.sent_to });
     else {
-      const why = sent && sent.error ? (sent.error.message || JSON.stringify(sent.error)) : 'not sent';
+      // A disabled Gmail node (no credential yet) passes the compose item straight through.
+      const why = sent && sent.error ? (sent.error.message || JSON.stringify(sent.error))
+        : sent && sent.subject !== undefined ? 'the Gmail credential is not connected yet' : 'not sent';
       res = fail(502, 'UPSTREAM_ERROR', \`Gmail send failed: \${why}\`);
       res.body.data = data;
     }
