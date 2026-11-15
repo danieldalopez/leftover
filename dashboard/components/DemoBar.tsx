@@ -94,6 +94,14 @@ export default function DemoBar({ userId, canReset, mockMode }: { userId: string
                 Log it as a manual expense instead
               </button>
             )}
+            {result?.email && (
+              <div className="email">
+                <div className="email-subject">{result.email.subject}</div>
+                {result.email.body.split('\n\n').map((block, i) =>
+                  i === 0 ? <p key={i}>{block}</p> : <pre key={i}>{block}</pre>,
+                )}
+              </div>
+            )}
             {result?.raw !== undefined && (
               <details>
                 <summary className="small">Response</summary>

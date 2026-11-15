@@ -5,7 +5,7 @@
 Built for the Loop Hackathon (eProjects × n8n). The n8n workflows are the whole backend; the dashboard only reads and triggers them.
 
 - **Dashboard:** https://leftover-rosy.vercel.app (live while the n8n host and tunnel are running; sample data otherwise)
-- **Demo video (3 min):** [`demo/leftover-demo.mp4`](demo/leftover-demo.mp4)
+- **Demo video (under 3 min, narrated):** [`demo/leftover-demo.mp4`](demo/leftover-demo.mp4)
 - **Status and next steps:** [`STATUS.md`](STATUS.md)
 
 > Educational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.
@@ -15,6 +15,12 @@ Built for the Loop Hackathon (eProjects × n8n). The n8n workflows are the whole
 1. **Onboarding** (n8n form): a financial profile, weekly budgets and an investor quiz produce a risk tier and a suggested ETF mix, which stays editable. Nothing is invested without standing consent.
 2. **During the week**: transactions arrive from Plaid's sandbox, or are logged by hand, and are mapped to budget categories.
 3. **Sunday audit**: each category's unspent budget is added up (categories aren't netted against each other). Overspending comes out of the cushion, a share of the leftover refills it, and the rest becomes paper orders on Alpaca. A digest email follows.
+
+## Built with AI, on rules
+
+The whole project was built with AI from a written spec: `spec.md` and the frozen `contracts/` came first, then six Claude Code sessions built the workflows in parallel, one lane each (`BUILD-PLAN.md`, `n8n/notes/`).
+
+Anything that decides how much is invested is deterministic JavaScript with tests. The language-model steps (the risk explanation and the digest summary) sit in the workflows behind a validator, with a template as the default.
 
 ## The workflows
 

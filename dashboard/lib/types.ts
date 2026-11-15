@@ -194,6 +194,8 @@ export interface ActionResult {
   /** true when nothing changed: MOCK=1, or a step that took its fallback */
   simulated: boolean;
   message: string;
+  /** the digest email, shown as a preview */
+  email?: { subject: string; body: string };
   /** offer the manual-expense fallback (spec §15 backup) */
   offerManual?: boolean;
   raw?: unknown;

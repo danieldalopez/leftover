@@ -133,7 +133,7 @@ export default async function ThisWeekPage() {
         {s.last_audit ? (
           <p>
             <strong>{cad(s.last_audit.investable_cad)}</strong> investable · week of {day(s.last_audit.week_start)} ·{' '}
-            {s.last_audit.status === 'computed' ? 'not invested yet' : (STATUS_LABELS[s.last_audit.status] ?? s.last_audit.status).toLowerCase()}
+            {s.last_audit.status === 'computed' ? 'ready to invest' : (STATUS_LABELS[s.last_audit.status] ?? s.last_audit.status).toLowerCase()}
           </p>
         ) : (
           <p className="muted">No audit yet. The first one runs {weekdayTime(s.week.next_audit_at)}.</p>

@@ -23,16 +23,16 @@ The explanation is template text written from their own answers: tier, horizon, 
 **3. This week (40 s)**: dashboard, "This week".
 Point out Maya: under budget on groceries, over on eating out (red bar). Click **Add sandbox purchase** ($14 Banh Mi) and the eating-out bar moves.
 - With Plaid: the purchase is created in Plaid's sandbox and synced. Click **More → Sync now** if it hasn't landed.
-- Without Plaid: the result says it failed and offers **"Log it as a manual expense instead"**. Click it and the bar moves the same way. Say: "if the bank feed is down, a purchase can be logged by hand."
+- Without a bank link: the purchase is logged directly and the bar moves the same way.
 
 **4. Run the audit (40 s)**: click **Run audit now**, then switch to tab 2.
 Show LO-04's execution: audit, then invest (LO-05), then digest (LO-07). Back on the dashboard, show the leftover, the cushion top-up and the orders.
 - With Alpaca: "invested $X". Portfolio shows the orders; on a weekend they're **Queued · fills at Monday's open**, and that's expected (spec §12).
-- Without Alpaca: "$X ready to invest, not invested (Alpaca not connected)". Say: "the split is computed; with the broker connected these become paper orders." The audit stays open, so a later run can invest it. History shows the week as "$X ready".
+- Without Alpaca: "Audit done: $A left over, $B to the cushion, $X ready to invest". Say: "the split is computed; with the broker connected these become paper orders." The audit stays open, so a later run can invest it. History shows the week as **Ready** with its investable amount.
 
 **5. The digest (30 s)**: click **Send digest**.
 - With Gmail: open the email. Read the compounding line: "Illustrative, not a prediction: at 6% a year, this week's $X could grow to about $Y in 30 years."
-- Without Gmail: the result says "Digest built … (not sent)". Expand **Response** under it; the subject and body are there.
+- Without Gmail: the result shows the email as a preview, subject and body.
 
 **6. Close (10 s)**: the architecture slide with the 11 workflows. n8n is the whole backend: Data Tables, schedules, Alpaca and Plaid calls, email and the error alerts.
 

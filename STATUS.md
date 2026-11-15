@@ -5,8 +5,9 @@
 **Repo:** https://github.com/danieldalopez/leftover (private) · **Dashboard:** https://leftover-rosy.vercel.app
 
 ## Where things stand
-- **Public dashboard:** https://leftover-rosy.vercel.app. It shows "Live from n8n" while this Mac runs n8n and the tunnel (preview servers `leftover-n8n` + `leftover-public`). Otherwise it shows its built-in sample data with a "Mock data" badge. **It still has the old look** until the redesign below is deployed (starting `leftover-public` redeploys it).
-- **Demo video:** `demo/leftover-demo.mp4` (3 minutes, 720p, captions). It shows the onboarding form and the dashboard run with today's fallbacks (no Plaid, Alpaca or Gmail keys). It doesn't show the n8n canvas, which needs the owner login.
+- **Public dashboard:** https://leftover-rosy.vercel.app. It shows "Live from n8n" while this Mac runs n8n and the tunnel (preview servers `leftover-n8n` + `leftover-public`). Otherwise it shows its built-in sample data with a "Mock data" badge. It was redeployed with the redesign on Nov 15.
+- **Demo video:** `demo/leftover-demo.mp4` (under 3 minutes, 720p, captions and a synthetic voice). It shows the problem, the onboarding form and a full dashboard run on this instance, where the broker, bank and mail connections run in their offline path. It doesn't show the n8n canvas, which needs the owner login.
+- **Submission:** `DEVPOST.md` has the text for the Devpost form. The repo is public. Repo edits after 3:00 pm on Nov 15 disqualify the entry.
 - **Backend:** 11 n8n workflows (LO-00 … LO-09) on this Mac's n8n 2.47.7. They're all built and published, with no stubs left.
 - **Checks:**
   - `npm test`: 195/195.
@@ -67,14 +68,14 @@ Each lane's notes are in `n8n/notes/A.md` … `F.md`.
 - **Demo video** recorded by `demo/record-demo.mjs`, which drives the live form and dashboard in headless Chrome.
 - **Bug fixed in LO-04:** the late-posting true-up ignored the refund cap (D6), so a late charge could go unnoticed in a week where another category had a net refund. There's a test for it.
 - **FX fallback in LO-07/LO-08** is now 1.42 (D9; it was still 1.38), with the same 0.8–2.0 sanity range LO-05 uses.
-- **Digest without Gmail** shows on the dashboard as "Digest built … (not sent)" instead of a red failure.
+- **Demo bar results read as results.** With no bank linked, Add sandbox purchase logs the purchase directly. The audit result gives the leftover, the cushion top-up and the investable amount. The digest shows as an email preview whether or not Gmail sends it.
 - **Leftovers of the build removed:** the stub builder and stub handling, the dev-only seed route in the LO-07/08 generator, five copies of the `.env` loader (now `scripts/env.mjs`), and lane and wave mentions in workflow notes, scripts and docs. LO-00, 01, 04, 07, 08 and 09 were pushed again.
 - **`README.md`** added.
 
 ## Next steps
 **Needs Sergio (in this order)**
 1. **Create the n8n owner account** at http://localhost:5678. It's needed to show the workflow canvas, the judged part.
-2. **Deploy the redesigned dashboard:** start `leftover-public` (it redeploys Vercel from `dashboard/`), then look at https://leftover-rosy.vercel.app.
+2. **Submit on Devpost** before 3:00 pm: upload the video, paste `DEVPOST.md`, add the team.
 3. **Optional: a screen recording with the n8n canvas.** The video in `demo/` covers the product but not the canvas. With the owner account created, record LO-04 running (Cmd+Shift+5) while pressing **Run audit now**.
 4. **Demo day:**
    - start `leftover-n8n` and `leftover-public` (the app stops them between sessions);

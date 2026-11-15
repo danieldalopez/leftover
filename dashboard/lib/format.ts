@@ -119,7 +119,7 @@ export const SLEEVE_SLOT: Record<string, number> = {
 };
 
 export const STATUS_LABELS: Record<string, string> = {
-  computed: 'Computed',
+  computed: 'Ready',
   invested: 'Invested',
   carried: 'Carried over',
   skipped_paused: 'Skipped (paused)',

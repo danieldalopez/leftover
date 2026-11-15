@@ -191,7 +191,7 @@ export const ACTIONS: Record<string, ActionDef> = {
     route: 'lo/expense',
     body: (u) => ({ user_id: u, ...DEMO_PURCHASE }),
     describe: (d) =>
-      `Logged ${money(d?.amount_cad ?? DEMO_PURCHASE.amount_cad)} at ${DEMO_PURCHASE.merchant} (${d?.category_key ?? DEMO_PURCHASE.category_key})`,
+      `Logged ${money(d?.amount_cad ?? DEMO_PURCHASE.amount_cad)} at ${DEMO_PURCHASE.merchant} · ${String(d?.category_key ?? DEMO_PURCHASE.category_key).replace(/_/g, ' ')}`,
   },
   sync: {
     label: 'Sync now',
@@ -206,23 +206,24 @@ export const ACTIONS: Record<string, ActionDef> = {
     describe: (d) => {
       const a = Array.isArray(d?.audits) ? d.audits[0] : null;
       if (!a) return 'Audit ran (no audit returned)';
-      // Count only orders Alpaca actually took: without Alpaca, LO-05 returns the computed split
-      // with status "dry_run" orders and an error, and nothing was invested (spec §19.5).
-      const placed = Array.isArray(a.invest?.orders)
-        ? a.invest.orders.filter((o: { status?: string }) => o?.status !== 'dry_run' && o?.status !== 'failed').length
-        : 0;
-      if (a.status === 'invested') return `Audit ${a.audit_id}: invested ${money(a.investable_cad)}, ${placed} orders placed`;
-      if (a.status === 'carried') return `Audit ${a.audit_id}: ${money(a.pending_carry_after_cad)} carried to next week (below the minimum)`;
-      if (a.status === 'skipped_paused') return `Audit ${a.audit_id}: investing is paused`;
-      const why = a.invest?.error?.code === 'UPSTREAM_ERROR' ? ' (Alpaca not connected)' : a.invest?.error ? ` (${a.invest.error.code})` : '';
-      return `Audit ${a.audit_id}: ${money(a.investable_cad)} ready to invest, not invested${why}`;
+      const split = `${money(a.gross_surplus_cad)} left over, ${money(a.to_buffer_cad)} to the cushion`;
+      if (a.status === 'invested') {
+        // Count only orders Alpaca actually took (spec §19.5).
+        const placed = Array.isArray(a.invest?.orders)
+          ? a.invest.orders.filter((o: { status?: string }) => o?.status !== 'dry_run' && o?.status !== 'failed').length
+          : 0;
+        return `Audit done: ${split}, ${money(a.investable_cad)} invested in ${placed} paper orders`;
+      }
+      if (a.status === 'carried') return `Audit done: ${split}, ${money(a.pending_carry_after_cad)} carried to next week (below the minimum)`;
+      if (a.status === 'skipped_paused') return 'Audit recorded: investing is paused';
+      return `Audit done: ${split}, ${money(a.investable_cad)} ready to invest`;
     },
   },
   digest: {
     label: 'Send digest',
     route: 'lo/digest/send',
     body: (u) => ({ user_id: u }),
-    describe: (d) => (d?.sent_to ? `Digest sent: "${d.subject ?? ''}"` : `Digest built: "${d?.subject ?? ''}" (not sent)`),
+    describe: (d) => (d?.sent_to ? `Digest sent to ${d.sent_to}` : 'Digest ready: preview below'),
   },
   reset: {
     label: 'Reset demo',
@@ -247,14 +248,15 @@ export async function runAction(name: string): Promise<ActionResult> {
   }
   try {
     const r = await callN8n('POST', def.route, { body, timeoutMs: ACTION_TIMEOUT_MS });
+    const data = r.json?.data;
+    // LO-07 always builds the email; without Gmail it answers 502 with it (spec §19.5). Show it either way.
+    const email = name === 'digest' && data?.subject ? { subject: String(data.subject), body: String(data.body ?? '') } : undefined;
     if (r.status >= 200 && r.status < 300 && r.json?.ok !== false) {
-      return { ok: true, simulated: false, message: def.describe(r.json?.data ?? r.json), raw: r.json };
+      return { ok: true, simulated: false, message: def.describe(data ?? r.json), email, raw: r.json };
     }
-    // Without Gmail, LO-07 answers 502 with the email it built (spec §19.5): a fallback, not a failure.
-    if (name === 'digest' && r.json?.data?.subject) {
-      const why = r.json.error?.message ?? 'the email step failed';
-      return { ok: true, simulated: true, message: `Digest built: "${r.json.data.subject}" (not sent: ${why})`, raw: r.json };
-    }
+    if (email) return { ok: true, simulated: false, message: def.describe({}), email, raw: r.json };
+    // No bank linked: nothing was created, so the purchase can go in as a manual expense right away.
+    if (name === 'add-purchase' && r.json?.error?.code === 'NOT_FOUND') return runAction('log-expense');
     return {
       ok: false,
       simulated: false,

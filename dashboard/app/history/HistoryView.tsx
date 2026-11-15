@@ -2,9 +2,11 @@
 import { useMemo, useState } from 'react';
 import ColumnChart, { type Group } from '@/components/ColumnChart';
 import { cad, day, weekRange, STATUS_LABELS } from '@/lib/format';
-import type { Audits } from '@/lib/types';
+import type { Audit, Audits } from '@/lib/types';
 
 const ALL = 'all';
+/** What the week sends to the portfolio: invested already, or ready for the next run. */
+const investable = (a: Audit) => (a.status === 'invested' || a.status === 'computed' ? a.investable_cad : 0);
 const tickCad = (n: number) => cad(n, { decimals: 0 });
 
 export default function HistoryView({ data }: { data: Audits }) {
@@ -19,6 +21,7 @@ export default function HistoryView({ data }: { data: Audits }) {
   }, [audits, data.streaks]);
   const catLabel = categories.find((c) => c.key === cat)?.label ?? '';
   const t = data.totals;
+  const investableTotal = audits.reduce((sum, a) => sum + investable(a), 0);
 
   if (audits.length === 0) {
     return (
@@ -35,7 +38,7 @@ export default function HistoryView({ data }: { data: Audits }) {
     key: a.audit_id,
     label: day(a.week_start),
     title: `Week of ${weekRange(a.week_start, a.week_end)}`,
-    values: { gross: a.gross_surplus_cad, buffer: a.to_buffer_cad, invested: a.status === 'invested' ? a.investable_cad : 0 },
+    values: { gross: a.gross_surplus_cad, buffer: a.to_buffer_cad, invested: investable(a) },
     extra: [{ label: 'Overspent', value: cad(a.total_over_cad) }],
   }));
 
@@ -75,10 +78,10 @@ export default function HistoryView({ data }: { data: Audits }) {
           <div className="tile-note">Kept as cash</div>
         </div>
         <div>
-          <div className="tile-label">Invested</div>
-          <div className="tile-value">{cad(t.invested_cad)}</div>
+          <div className="tile-label">{t.invested_cad > 0 ? 'Invested' : 'Ready to invest'}</div>
+          <div className="tile-value">{cad(t.invested_cad > 0 ? t.invested_cad : investableTotal)}</div>
           <div className="tile-note">
-            {t.weeks_invested} of {t.weeks_audited} weeks
+            {t.invested_cad > 0 ? `${t.weeks_invested} of ${t.weeks_audited} weeks` : `${t.weeks_audited} weeks audited`}
           </div>
         </div>
       </section>
@@ -91,11 +94,11 @@ export default function HistoryView({ data }: { data: Audits }) {
         {cat === ALL ? (
           <ColumnChart
             key="all"
-            ariaLabel="Weekly left over, to cushion and invested, oldest week first"
+            ariaLabel="Weekly left over, to cushion and investable, oldest week first"
             series={[
               { key: 'gross', label: 'Left over', color: 'var(--leftover)' },
               { key: 'buffer', label: 'To cushion', color: 'var(--cushion)' },
-              { key: 'invested', label: 'Invested', color: 'var(--invested)' },
+              { key: 'invested', label: 'Investable', color: 'var(--invested)' },
             ]}
             groups={allGroups}
             format={(n) => cad(n)}
@@ -120,7 +123,7 @@ export default function HistoryView({ data }: { data: Audits }) {
             ? [
                 ['Left over', 'var(--leftover)'],
                 ['To cushion', 'var(--cushion)'],
-                ['Invested', 'var(--invested)'],
+                ['Investable', 'var(--invested)'],
               ]
             : [
                 ['Under budget ↑', 'var(--under)'],
@@ -148,7 +151,7 @@ export default function HistoryView({ data }: { data: Audits }) {
                   <th>Status</th>
                   <th className="num">Left over</th>
                   <th className="num">To cushion</th>
-                  <th className="num">Invested</th>
+                  <th className="num">Investable</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,15 +167,7 @@ export default function HistoryView({ data }: { data: Audits }) {
                     <td className="num">{cad(a.gross_surplus_cad)}</td>
                     <td className="num">{cad(a.to_buffer_cad)}</td>
                     <td className="num">
-                      {a.status === 'invested' ? (
-                        <strong>{cad(a.investable_cad)}</strong>
-                      ) : a.status === 'computed' && a.investable_cad > 0 ? (
-                        <span className="muted" title="Computed by the audit but not sent to Alpaca">
-                          {cad(a.investable_cad)} ready
-                        </span>
-                      ) : (
-                        '—'
-                      )}
+                      {investable(a) > 0 ? cad(investable(a)) : '—'}
                       {a.pending_carry_after_cad > 0 && (
                         <div className="small muted">{cad(a.pending_carry_after_cad)} carried</div>
                       )}
@@ -186,7 +181,7 @@ export default function HistoryView({ data }: { data: Audits }) {
                   <td />
                   <td className="num">{cad(t.gross_surplus_cad)}</td>
                   <td className="num">{cad(t.to_buffer_cad)}</td>
-                  <td className="num">{cad(t.invested_cad)}</td>
+                  <td className="num">{cad(investableTotal)}</td>
                 </tr>
               </tfoot>
             </table>

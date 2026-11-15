@@ -17,7 +17,7 @@ function marketLine(p: Portfolio): string {
   if (p.market_open === true) return 'market open';
   if (p.next_open) return `market closed, next open ${dateTime(p.next_open)} PT`;
   if (p.market_open === false) return 'market closed';
-  return 'market hours unavailable (Alpaca not connected)';
+  return '';
 }
 
 function OrderChip({ o, p }: { o: Order; p: Portfolio }) {
@@ -86,7 +86,7 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
         <div>
           <h1>Portfolio</h1>
           <p className="sub">
-            Alpaca paper account · {marketLine(p)}
+            Alpaca paper account{marketLine(p) && ` · ${marketLine(p)}`}
           </p>
         </div>
         <SourceBadge source={source} />

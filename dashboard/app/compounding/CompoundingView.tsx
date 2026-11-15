@@ -49,6 +49,7 @@ export default function CompoundingView({ data }: { data: Projection }) {
         </div>
       </div>
 
+      {(data.lifetime.contributed_cad > 0 || data.last_week) && (
       <div className="grid-2">
         <section className="card" aria-labelledby="life-h">
           <div className="card-head">
@@ -85,6 +86,7 @@ export default function CompoundingView({ data }: { data: Projection }) {
           )}
         </section>
       </div>
+      )}
 
       <section className="card" aria-labelledby="choices-h">
         <div className="card-head">
