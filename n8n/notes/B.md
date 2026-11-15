@@ -48,7 +48,8 @@ Guards (all in `planInvest`):
 - Returns the `data` object.
   - `status: "invested"` means done; LO-05 has already set the audit to `invested`, so don't overwrite it.
   - Anything else (`dry_run`, `partial`, `failed`) comes with `error: {code, message}` and leaves the audit `computed`.
-- `pending_carry`: LO-05 subtracts what it invested (never below 0). This works whether LO-04 zeroes `pending_carry` itself or leaves it for LO-05. If LO-04 zeroes it and the invest then fails, the money lives only in the still-`computed` audit; decide in LO-04 whether next week re-invests that audit or re-carries it, so it isn't counted twice.
+- `pending_carry` (agreed with Lane A on 2026-11-14): LO-04 owns it. Its `investable_cad` already includes the old carry, and it sets `users.pending_carry = 0` before calling LO-05. LO-05 still applies spec step 6 with a clamp, `max(pending_carry − invested_cad, 0)`, so under LO-04 it reads 0 and writes 0, a no-op. If the invest fails, the audit stays `computed` and a later `POST /lo/audit/run` for that week retries LO-05 with the stored amount.
+- LO-04 calls once per audit (Execute Workflow mode "each", waits). Pushing LO-05 unpublishes it for ~15 s, and a push of LO-04 during that window fails ("publish all referenced sub-workflows first"). On a fresh instance, publish LO-05 before LO-04.
 
 ## LO-06 Order Reconcile
 Triggers: Schedule `0 6-14 * * 1-5` (hourly Mon–Fri 06:00–14:00 Vancouver, so 45 runs a week; outside market hours nothing changes, spec R3) and `POST /lo/reconcile/run {user_id?}`.
