@@ -2,6 +2,8 @@
 
 *Updated 2026-11-15. `spec.md` is still the source of truth; this page is the handoff: what exists, what was done, what's left.*
 
+**Repo:** https://github.com/danieldalopez/leftover (private) · **Dashboard:** https://leftover-rosy.vercel.app
+
 ## Where things stand
 - **Public dashboard:** https://leftover-rosy.vercel.app. It shows "Live from n8n" while this Mac runs n8n and the tunnel (preview servers `leftover-n8n` + `leftover-public`). Otherwise it shows its built-in sample data with a "Mock data" badge.
 - **Backend:** 11 n8n workflows (LO-00 … LO-09) on this Mac's n8n 2.47.7. They're all built and published, with no stubs left.
@@ -57,7 +59,11 @@ Each lane's notes are in `n8n/notes/A.md` … `F.md`.
 ## Next steps
 **Needs Sergio (in this order)**
 1. **Create the n8n owner account** at http://localhost:5678. It's needed to show the workflow canvas, the judged part.
-2. **Record the backup video** of one full run (`demo/demo-script.md`).
+2. **To do: record the backup video** of one full run. Not made yet; spec §15 asks for it in case anything fails live.
+   - [ ] Start `leftover-n8n` and `leftover-public`, then run `node scripts/demo-rehearsal.mjs` so Maya starts clean.
+   - [ ] Press Cmd+Shift+5 → "Record Selected Portion", then follow `demo/demo-script.md`: onboarding form, This week, add the $14 purchase, Run audit now (with the n8n canvas), Send digest. About 5 minutes.
+   - [ ] Save it in `demo/` (or a shared drive if it's too big for git) and note where it is here.
+   - Fallback: Claude can build a captioned screenshot video of the dashboard steps with ffmpeg (no mouse or n8n canvas).
 3. **Demo day:**
    - start `leftover-n8n` and `leftover-public` (the app stops them between sessions);
    - run `node scripts/demo-rehearsal.mjs` (it ends with a reset);
