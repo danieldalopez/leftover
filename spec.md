@@ -508,7 +508,7 @@ If time runs short, cut in this order: ESG option, Telegram, debt mode, Plaid (f
 - D1 Product name: keep "Leftover" in code for now; rename user-facing strings in Wave 3.
 - D2 Overspend drains the cushion: **ON** (`absorb_overspend = true`).
 - D3 Digest channel: **email only**. Telegram stays P1.
-- D4 LLM provider: **Anthropic** (decided 2026-11-15; Lanes D and E built on it). The credential is always named `LLM` (fixed id `leftoverCredLLM`).
+- D4 LLM: **none for the demo** (decided 2026-11-15). LO-01 and LO-07 use their fixed template text (§19.5). The Anthropic nodes stay in both workflows, switched off; turning them on needs an Anthropic credential named `LLM`.
 - D5 Cushion defaults: **$100 target, 50% rate**.
 
 ---

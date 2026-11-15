@@ -311,7 +311,8 @@
         2660,
         -120
       ],
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "disabled": true
     },
     {
       "parameters": {
@@ -332,12 +333,7 @@
         2660,
         100
       ],
-      "credentials": {
-        "anthropicApi": {
-          "id": "leftoverCredLLM",
-          "name": "LLM"
-        }
-      }
+      "disabled": true
     },
     {
       "parameters": {

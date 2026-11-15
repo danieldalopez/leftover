@@ -17,7 +17,7 @@ In the Claude desktop app this is the preview server `leftover-n8n` (port 5678).
 node scripts/setup-instance.mjs
 ```
 It does three things:
-1. **Credentials.** It creates `LO Webhook Key` from `.env`. It also creates `Plaid Sandbox`, `Alpaca Paper` and `LLM` with placeholder values if they don't exist yet; an existing credential is never overwritten.
+1. **Credentials.** It creates `LO Webhook Key` from `.env`. It also creates `Plaid Sandbox` and `Alpaca Paper` with placeholder values if they don't exist yet; an existing credential is never overwritten.
 2. **Workflows.** It imports all 11 and publishes them in this order: LO-09, LO-05, LO-07, LO-04, LO-00, LO-03, LO-02, LO-03b, LO-01, LO-06, LO-08. A workflow that calls another can only be published after it (n8n 2.47: "publish all referenced sub-workflows first").
 3. **IDs.** Every workflow and credential keeps its fixed ID from `n8n/ids.json`, so sub-workflow calls and credentials never need re-linking.
 
@@ -36,12 +36,12 @@ To push a single workflow after a change: `node scripts/n8n.mjs push n8n/workflo
 | `LO Webhook Key` (`leftoverCredHook`) | ready | nothing |
 | `Plaid Sandbox` (`leftoverCredPlad`) | placeholder | n8n → Credentials → Plaid Sandbox → replace the JSON with `{"body":{"client_id":"…","secret":"…"}}` (sandbox keys) |
 | `Alpaca Paper` (`leftoverCredAlpc`) | placeholder | replace the JSON with `{"headers":{"APCA-API-KEY-ID":"…","APCA-API-SECRET-KEY":"…"}}` (paper keys) |
-| `LLM` (`leftoverCredLLM`) | placeholder (Anthropic) | replace the API key with yours. LO-01 "Explain (LLM)" and LO-07 "LLM chat model" already use it |
+| `LLM` | not used (spec D4) | the onboarding explanation and the digest summary use fixed template text. To switch to Claude-written text later: create an Anthropic credential named `LLM`, then tell Claude to record its ID in `n8n/ids.json` and turn on LO-01 "Explain (LLM)" and LO-07 "Digest: LLM summary" + "LLM chat model" |
 | `Gmail` | missing | self-hosted n8n needs your own Google Cloud OAuth client (Client ID + Secret, redirect `http://localhost:5678/rest/oauth2-credential/callback`). Create a Gmail OAuth2 credential named `Gmail`, then tell Claude: it turns on LO-07 "Digest: send email" and LO-09 "Send alert email" |
 
 Until a key exists, that step falls back (spec §19.5):
 - **No Alpaca:** the audit stays `computed` and nothing is invested. The dashboard prices positions at the last fill price.
-- **No LLM:** fixed template texts are used instead.
+- **No LLM (the current choice, D4):** fixed template texts are used.
 - **No Gmail:** the digest returns the email it would have sent, with `502`.
 - **No Plaid:** use the manual expense route and the seed.
 

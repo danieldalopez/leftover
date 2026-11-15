@@ -339,13 +339,8 @@
         1820,
         0
       ],
-      "onError": "continueRegularOutput",
-      "credentials": {
-        "anthropicApi": {
-          "id": "leftoverCredLLM",
-          "name": "LLM"
-        }
-      }
+      "disabled": true,
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {

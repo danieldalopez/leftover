@@ -8,7 +8,7 @@ From spec §15. Each step says what to click, what to say, and what to do if a s
 - [ ] Tab 2: the n8n canvas, LO-04 Weekly Audit open (that's the one judges watch run).
 - [ ] Tab 3: the onboarding form, `<n8n URL>/form/lo-onboarding`.
 - [ ] `node scripts/demo-rehearsal.mjs`: all ✓ or ↷. It finishes with a reset, so Maya starts clean.
-- [ ] Credentials connected so far (each one makes a step real instead of a fallback): Alpaca, Plaid, LLM, Gmail.
+- [ ] Credentials connected so far (each one makes a step real instead of a fallback): Alpaca, Plaid, Gmail. There's no LLM on purpose (spec D4): the texts are fixed templates.
 - [ ] Backup video recorded of one full run (spec §15).
 
 ## The 3 minutes
@@ -18,7 +18,7 @@ Say: 41% of young TFSA holders aren't investing. Round-up apps reward spending. 
 
 **2. Onboarding (40 s)**: tab 3, the form.
 Answer the quiz fast, then show the tier, the plain-language explanation, the editable allocation and the consent box.
-Fallback: without the LLM key the explanation is the fixed template text. It reads fine; don't mention it.
+The explanation is template text written from their own answers: tier, horizon, how big a drop they'd sit through, home bias. There's no LLM (spec D4).
 
 **3. This week (40 s)**: dashboard, "This week".
 Point out Maya: under budget on groceries, over on eating out (red bar). Click **Add sandbox purchase** ($14 Banh Mi) and the eating-out bar moves.

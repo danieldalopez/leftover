@@ -61,7 +61,7 @@ Facts about **this** n8n that every lane relies on, all verified on 2026-11-14. 
 | `LO Webhook Key` | Header Auth `x-lo-key` | **created** (`leftoverCredHook`); the value is `N8N_WEBHOOK_KEY` in `.env` |
 | `Alpaca Paper` | Custom Auth (2 headers) | **created** (`leftoverCredAlpc`) with placeholder values by `scripts/setup-instance.mjs`: Sergio pastes the paper keys into it in n8n |
 | `Plaid Sandbox` | Custom Auth (body `client_id`, `secret`) | **created** (`leftoverCredPlad`) with placeholder values: Sergio pastes the sandbox keys into it in n8n |
-| `LLM` | Anthropic | **created** (`leftoverCredLLM`) with a placeholder key by `scripts/setup-instance.mjs`: Sergio pastes the Anthropic API key into it in n8n |
+| `LLM` | Anthropic | **not used** (D4: template text for the demo). The LLM nodes stay in LO-01 and LO-07, switched off |
 | `Gmail` | Gmail OAuth2 | needed before Lane E |
 
 These four hold third-party keys, which Sergio enters in n8n himself. Until they exist, lanes build and test everything up to the external call, using stubs or mocks at that boundary.
