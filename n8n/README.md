@@ -63,8 +63,16 @@ A reset keeps both values if they're already set.
 Routes that catch an exception still answer `500 INTERNAL`. After the reply they fail the run on purpose, so LO-09 hears about it.
 
 ## 6. Making it public (for the Vercel dashboard)
-The dashboard on Vercel needs to reach n8n over the internet. Two options:
-- **This Mac + a tunnel** (keeps the fixed IDs). First create the n8n owner account. Until it exists, anyone with the URL could claim the instance. Then run a tunnel to port 5678 and set the Vercel env vars `MOCK=0`, `N8N_BASE_URL=<tunnel URL>`, `N8N_WEBHOOK_KEY` and `DEMO_USER_ID=maya`.
+The dashboard on Vercel (https://leftover-rosy.vercel.app) needs to reach n8n over the internet.
+
+**What's set up (nothing to install):** start the preview server `leftover-public`, or run `node scripts/public-tunnel.mjs --update-vercel`.
+- **Webhook-only proxy.** A small proxy on `127.0.0.1:5699` forwards only `/webhook/*` to the local n8n. The editor, `/rest`, `/form` and the owner-setup page answer 404 from outside, so the n8n UI is never public, owner account or not. The webhooks still need `x-lo-key`.
+- **Tunnel.** macOS's built-in `ssh` opens a tunnel to localhost.run (free, no account) and gets a URL like `https://<id>.app.lhr.life`.
+- **Re-pointing Vercel.** The free domain rotates now and then. With `--update-vercel`, every new URL runs `scripts/vercel-live.mjs <url>`, which checks the URL answers, sets `MOCK=0`, `N8N_BASE_URL`, `N8N_WEBHOOK_KEY` (from `.env`, never printed) and `DEMO_USER_ID=maya`, and redeploys. It takes about a minute, during which the dashboard shows its "Mock data" badge.
+- **Going dark.** Stop `leftover-public` to take the webhooks offline. `node scripts/vercel-live.mjs off` puts Vercel back on sample data.
+- **Caution.** Anyone with the Vercel URL can press the demo buttons, Reset included, and they act on this Mac's n8n.
+
+Other options:
 - **n8n Cloud.** There's no CLI there, and importing a file through the UI gives each workflow a new ID. After importing (same order as above), re-point the 5 sub-workflow calls by hand: LO-04 → LO-05 and LO-07, LO-00 → LO-04, LO-02 → LO-03, and LO-03b → itself. Then create the credentials with the same names and select them on their nodes. This path is untested.
 
 ## 7. Checks

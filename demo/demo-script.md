@@ -4,7 +4,7 @@ From spec §15. Each step says what to click, what to say, and what to do if a s
 
 ## Before you go on stage (10 minutes before)
 - [ ] n8n running (preview server `leftover-n8n`, or the command in `n8n/README.md`). The owner account is created, so you can show the canvas.
-- [ ] Dashboard open: local at http://localhost:3211 (preview `leftover-dashboard`), or Vercel once it's live. The badge must say **Live from n8n**, not "Mock data".
+- [ ] Dashboard open: https://leftover-rosy.vercel.app (needs the preview server `leftover-public` running: it tunnels the webhooks and re-points Vercel), or local at http://localhost:3211. The badge must say **Live from n8n**, not "Mock data".
 - [ ] Tab 2: the n8n canvas, LO-04 Weekly Audit open (that's the one judges watch run).
 - [ ] Tab 3: the onboarding form, `<n8n URL>/form/lo-onboarding`.
 - [ ] `node scripts/demo-rehearsal.mjs`: all ✓ or ↷. It finishes with a reset, so Maya starts clean.
