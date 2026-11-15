@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test 'lib/*.test.mjs' 'scripts/*.test.mjs'"
+    "test": "ICU_TIMEZONE_FILES_DIR=n8n/icu-tz node --test 'lib/*.test.mjs' 'scripts/*.test.mjs'"
   }
 }

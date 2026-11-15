@@ -1,0 +1,14 @@
+#!/bin/sh
+# n8n/icu-tz/bin/node: runs the real node with newer ICU timezone data (n8n/icu-tz/*.res).
+# Why: BC went to permanent UTC-7 on 2026-11-01 (tz 2026c+), but Node's ICU here has tz 2026a.
+# Put n8n/icu-tz/bin first on PATH for n8n: its main process and the Code-node task runner both
+# start `node` from PATH, and the runner gets PATH but not other env vars. See n8n/icu-tz/README.md.
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+export ICU_TIMEZONE_FILES_DIR="${ICU_TIMEZONE_FILES_DIR:-$(dirname -- "$here")}"
+old_ifs=$IFS; IFS=:
+for dir in $PATH; do
+  [ "$dir" = "$here" ] && continue
+  if [ -x "$dir/node" ]; then IFS=$old_ifs; exec "$dir/node" "$@"; fi
+done
+echo "n8n/icu-tz/bin/node: no other node on PATH" >&2
+exit 127

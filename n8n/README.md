@@ -5,9 +5,9 @@ The 11 workflows in `n8n/workflows/` are the whole backend. The data lives in n8
 ## 1. Start n8n (self-hosted, pinned version)
 
 ```bash
-GENERIC_TIMEZONE=America/Vancouver TZ=America/Vancouver N8N_DIAGNOSTICS_ENABLED=false npx -y n8n@2.47.7
+PATH="$PWD/n8n/icu-tz/bin:$PATH" GENERIC_TIMEZONE=America/Vancouver TZ=America/Vancouver N8N_DIAGNOSTICS_ENABLED=false npx -y n8n@2.47.7
 ```
-In the Claude desktop app this is the preview server `leftover-n8n` (port 5678). The timezone matters: the Sunday audit and the order checks are scheduled in Vancouver time.
+In the Claude desktop app this is the preview server `leftover-n8n` (port 5678). The timezone matters: the Sunday audit and the order checks are scheduled in Vancouver time. `n8n/icu-tz/bin` on `PATH` gives n8n (and its Code-node runner) timezone data that knows BC is on UTC−7 all year since Nov 1, 2026; see `n8n/icu-tz/README.md`.
 
 ## 2. Load everything (one command)
 

@@ -131,6 +131,7 @@ Young Canadians are saving but not investing, often because they feel they don't
 ### 6.1 Time
 - Week = Monday 00:00 to Sunday 23:59, timezone **America/Vancouver**.
 - Weekly audit runs **Sunday 20:00 America/Vancouver** (plus manual trigger).
+- BC has been on **UTC−7 all year since 2026-11-01** (IANA tz 2026c+). The runtime's timezone data must know that: Homebrew's Node here ships tz 2026a, so n8n and the tests run with the newer ICU files in `n8n/icu-tz/` (see its README). Without them, Vancouver times from November 2026 on are an hour off.
 
 ### 6.2 Categories
 Only **variable** spending is budgeted weekly. Fixed costs (rent, utilities, phone, subscriptions, transfers, income) are excluded from the audit because they aren't weekly decisions.
@@ -448,7 +449,7 @@ docker run -it --rm --name n8n -p 5678:5678 \
 ```
 Open http://localhost:5678 and create the owner account. For public webhooks during dev add `start --tunnel` at the end (dev only) or use cloudflared/ngrok. Without Docker: `npx n8n`.
 
-**What this build actually uses for dev:** no Docker on Sergio's Mac, so n8n runs with `npx n8n@<pinned version>` (Node 26), with `GENERIC_TIMEZONE` and `TZ` set to America/Vancouver. The pinned version and how to start it live in `n8n/CONVENTIONS.md`. The demo instance (Cloud trial or tunnel) is set up in Wave 3 by importing the same JSON.
+**What this build actually uses for dev:** no Docker on Sergio's Mac, so n8n runs with `npx n8n@<pinned version>` (Node 26), with `GENERIC_TIMEZONE` and `TZ` set to America/Vancouver and `n8n/icu-tz/bin` first on `PATH` (§6.1). The pinned version and how to start it live in `n8n/CONVENTIONS.md`. The demo instance (Cloud trial or tunnel) is set up in Wave 3 by importing the same JSON.
 
 Either way: set the instance timezone to America/Vancouver, set WF09 as the error workflow everywhere.
 

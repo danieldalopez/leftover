@@ -56,7 +56,7 @@ ${weekLib}
 
 const now = new Date();
 const nowIso = now.toISOString();
-const atOffset = (days) => new Date(\`\${seedDate(days, now)}T12:00:00-08:00\`).toISOString();
+const atOffset = (days) => new Date(\`\${seedDate(days, now)}T12:00:00-07:00\`).toISOString();
 const u = SEED.user;
 
 const users = [{

@@ -8,7 +8,7 @@ Facts about **this** n8n that every lane relies on, all verified on 2026-11-14. 
   - in the Claude desktop app, preview server **`leftover-n8n`** (defined in `~/Claude/.claude/launch.json`);
   - or in a terminal:
     ```bash
-    GENERIC_TIMEZONE=America/Vancouver TZ=America/Vancouver N8N_DIAGNOSTICS_ENABLED=false npx -y n8n@2.47.7
+    PATH="$PWD/n8n/icu-tz/bin:$PATH" GENERIC_TIMEZONE=America/Vancouver TZ=America/Vancouver N8N_DIAGNOSTICS_ENABLED=false npx -y n8n@2.47.7
     ```
 - Webhooks: `http://localhost:5678/webhook/<path>`. Only the JS task runner exists (no Python), so write JavaScript Code nodes only.
 - **No n8n API key and no owner login are needed to build.** The owner account (created in the editor UI by Sergio) is only needed to *look at* the canvas, e.g. for the demo.

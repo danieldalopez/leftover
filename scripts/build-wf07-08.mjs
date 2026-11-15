@@ -370,7 +370,7 @@ function devSeed(nodes, g) {
   const U = 'test-e';
   const X = (i) => 260 + i * 220;
   const WEEK = stripExport(readFileSync(join(root, 'lib/week.mjs'), 'utf8'));
-  const rowsCode = (rows) => `${WEEK}\nconst now = new Date();\nconst ws = weekStart(now);\nconst day = (n) => seedDate(n, now);\nconst at = (n, hhmm) => new Date(\`\${addDays(ws, n)}T\${hhmm}:00-08:00\`).toISOString();\n${rows}`;
+  const rowsCode = (rows) => `${WEEK}\nconst now = new Date();\nconst ws = weekStart(now);\nconst day = (n) => seedDate(n, now);\nconst at = (n, hhmm) => new Date(\`\${addDays(ws, n)}T\${hhmm}:00-07:00\`).toISOString();\n${rows}`;
   const line = (k, label, p, a) => ({ category_key: k, label, planned: p, actual: a, under: Math.max(Math.round((p - a) * 100), 0) / 100, over: Math.max(Math.round((a - p) * 100), 0) / 100 });
   const auditsJs = JSON.stringify([
     { off: -28, status: 'skipped_paused', lines: [], gross: 0, over: 0, toBuf: 0, bufAfter: 0, inv: 0, carry: 0 },
