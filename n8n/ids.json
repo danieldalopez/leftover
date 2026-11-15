@@ -14,6 +14,7 @@
     "LO-09": "leftoverWF09errh"
   },
   "credentials": {
-    "lo_webhook_key": "leftoverCredHook"
+    "lo_webhook_key": "leftoverCredHook",
+    "plaid_sandbox": "leftoverCredPlad"
   }
 }

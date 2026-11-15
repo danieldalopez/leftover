@@ -60,7 +60,7 @@ Facts about **this** n8n that every lane relies on, all verified on 2026-11-14. 
 |---|---|---|
 | `LO Webhook Key` | Header Auth `x-lo-key` | **created** (`leftoverCredHook`); the value is `N8N_WEBHOOK_KEY` in `.env` |
 | `Alpaca Paper` | Custom Auth (2 headers) | needed before Lane B |
-| `Plaid Sandbox` | Custom Auth (body `client_id`, `secret`) | needed before Lane C |
+| `Plaid Sandbox` | Custom Auth (body `client_id`, `secret`) | **created** (`leftoverCredPlad`) with placeholder values: Sergio pastes the sandbox keys into it in n8n |
 | `LLM` | Anthropic or OpenAI | needed before Lanes D/E. **Provider not chosen yet (D4)** |
 | `Gmail` | Gmail OAuth2 | needed before Lane E |
 

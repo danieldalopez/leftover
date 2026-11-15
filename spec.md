@@ -147,10 +147,12 @@ Default categories (user edits amounts at onboarding):
 | personal_care | Personal care | 20 | PERSONAL_CARE |
 | other | Other variable | 20 | fallback for unmapped variable spend |
 
-Transactions in categories like RENT_AND_UTILITIES, TRANSFER_IN/OUT, INCOME, LOAN_PAYMENTS are stored but **excluded** from the audit. Mapping lives in a `category_map` Data Table so it's editable without touching workflows.
+Transactions in categories like RENT_AND_UTILITIES, TRANSFER_IN/OUT, INCOME, LOAN_PAYMENTS and LOAN_DISBURSEMENTS are stored but **excluded** from the audit. (LOAN_DISBURSEMENTS is new in PFC v2: without its own row, loan money coming in would fall back to `other` and look like a refund that cancels out spending.) Mapping lives in a `category_map` Data Table so it's editable without touching workflows.
 
 ### 6.3 Spend per category
-`actual_c` = sum of outflows minus refunds for category c with transaction date in the week. Plaid convention: positive amount = money out; negative = money in (refund). Include **pending** transactions; when a pending one posts, dedupe using `pending_transaction_id`.
+`actual_c` = sum of outflows minus refunds for category c with transaction date in the week. Plaid convention: positive amount = money out; negative = money in (refund). Include **pending** transactions; when a pending one posts, dedupe using `pending_transaction_id`: a pending row stops counting once any non-removed row has `pending_txn_id` equal to its `txn_id`.
+
+The transaction date is Plaid's `authorized_date` when present, else `date` (the posted date), so a purchase lands in the week it was made. A charge that posts days later is what the true-up (§6.6) catches.
 
 ### 6.4 Underspend (gross, per category, no cross-category netting)
 Per Sergio's decision, categories are **not** netted against each other.
@@ -293,7 +295,8 @@ Naming: `LO-00 Setup and Seed`, etc. Each scheduled workflow = Schedule Trigger 
   3. Re-audit last week (6.6) > late_adj.
   4. Compute per category under/over, gross_surplus (6.4).
   5. Apply cushion (6.5), carries and caps (6.7).
-  6. Upsert audit row (idempotent on audit_id). If an audit for this week already has status "invested", stop (no double investing).
+  6. Write the audit row (idempotent on audit_id). An audit is **final once it moves money** (`computed`, `carried` or `invested`): a rerun of that week writes nothing and returns the stored row. If the stored audit is `computed` and the run invests, WF05 is retried with the stored amount (a backfilled week, or a failed invest). A `skipped_paused` row moved no money, so it is recomputed. Later changes to an audited week reach the next week through `late_adj` (6.6). Why not recompute: the audits table has no "balance before" columns, so a recompute couldn't undo the first run's effect on the buffer and carries.
+     WF04 owns `pending_carry` and `deficit_carry`. When it invests, the old `pending_carry` is already inside `investable_cad`, so it sets `pending_carry = 0` before calling WF05.
   7. If investable >= min_invest: Execute Workflow WF05 with `{audit_id, user_id, investable_cad}`. Else status "carried".
   8. Execute WF07 digest (or let WF07 run after WF05 returns).
 - All math in one Code node with unit-testable pure functions; include the worked example (6.8) as an inline self-test that throws if wrong.
@@ -303,19 +306,20 @@ Naming: `LO-00 Setup and Seed`, etc. Each scheduled workflow = Schedule Trigger 
 - Steps:
   1. Load allocation_json from profile.
   2. Get USD/CAD rate (HTTP to FX API; fallback config value).
-  3. Split investable into sleeves by weights; round to cents; drop sleeves under $1 into the largest sleeve (check Alpaca's current minimum notional in docs).
+  3. Split investable into sleeves by weights; round to cents; fold any sleeve under **USD 1** (Alpaca's minimum notional for fractional orders, compared after FX conversion) into the largest sleeve.
   4. For each sleeve: Alpaca `POST /v2/orders` with `{symbol, notional, side:"buy", type:"market", time_in_force:"day", client_order_id}`. Headers `APCA-API-KEY-ID`, `APCA-API-SECRET-KEY`. Base URL `https://paper-api.alpaca.markets`.
   5. If Alpaca returns duplicate client_order_id, treat as success (idempotent).
-  6. Write orders rows; set audit status "invested"; subtract invested amount from pending_carry.
+  6. Write orders rows; set audit status "invested". Carries belong to WF04 (WF04 step 6): WF05 only clamps `pending_carry = max(pending_carry − invested, 0)`, which is a no-op after WF04 has zeroed it.
 - Before first run, verify each symbol is `fractionable: true` via `GET /v2/assets/{symbol}`.
 
 ### WF06 Order Reconcile
-- Triggers: Schedule hourly, Monday to Friday + Webhook.
+- Triggers: Schedule hourly **06:00–14:00 America/Vancouver, Monday to Friday** (cron `0 6-14 * * 1-5`, 45 runs a week; US market hours are 06:30–13:00 Pacific, and nothing changes outside them, R3) + Webhook.
+- If Alpaca is unusable, it returns `UPSTREAM_ERROR` and changes nothing. It doesn't throw, so the hourly schedule doesn't spam WF09.
 - For orders not in a terminal state: `GET /v2/orders/{id}` (or by client_order_id) > update status, filled_qty, filled_avg_price, filled_at. Rejected orders: retry once as a new order with suffix `-r1`, then alert via WF09.
 
 ### WF07 Weekly Digest
 - Trigger: called after audit + Webhook `POST /lo/digest/send`.
-- Builds: category scoreboard, this week invested (CAD), buffer status, lifetime invested, portfolio value (Alpaca `GET /v2/positions`), illustrative future value of this week's amount at 4/6/8% over 10/20/30 years: `FV = amount x (1 + r)^years`.
+- Builds: category scoreboard, this week invested (CAD), buffer status, lifetime invested, portfolio value (derived from the user's orders, as in WF08), illustrative future value of this week's amount at 4/6/8% over 10/20/30 years: `FV = amount x (1 + r)^years`.
 - LLM node writes a warm 80 to 120 word summary. Prompt rules: no recommendations to buy/sell specific securities, call projections "illustrative, not a prediction", mention the best category this week.
 - Send via Gmail node (P0) or Telegram (P1).
 
@@ -323,7 +327,7 @@ Naming: `LO-00 Setup and Seed`, etc. Each scheduled workflow = Schedule Trigger 
 - Webhook endpoints (header auth `x-lo-key`), each ends in Respond to Webhook with JSON:
   - `GET /lo/api/summary?user_id=` current week lines, days left, buffer, lifetime invested, portfolio value
   - `GET /lo/api/audits?user_id=` weekly history
-  - `GET /lo/api/portfolio?user_id=` positions + orders
+  - `GET /lo/api/portfolio?user_id=` positions + orders. Positions are **derived from the user's own `orders` rows** (filled qty, cost basis, contributions), because every user shares one paper account and `GET /v2/positions` can't be split per user. Alpaca supplies only the latest trade price (IEX feed) and the market clock.
   - `GET /lo/api/projection?user_id=&rate=` lifetime contributions + projections
   - `POST /lo/api/settings` update budgets, pause, cushion
 - Note: on n8n Cloud each webhook call counts as an execution. Dashboard must not poll; fetch on page load and on button press only.
@@ -526,9 +530,9 @@ All routes need the header `x-lo-key` (credential `LO Webhook Key`).
 | `POST /lo/demo/add-txn` | LO-03 | `{user_id, merchant, amount_cad, date?}` |
 | `POST /lo/expense` | LO-03b | `{user_id, amount_cad, category_key, merchant, date?}` |
 | `POST /lo/audit/run` | LO-04 | `{user_id?, week_start?, invest?}`. `invest` defaults to `true`; `false` writes the audit without calling LO-05 (for backfills). |
-| `POST /lo/invest/run` | LO-05 | `{audit_id, user_id, investable_cad}` (test entry, same as the internal call) |
-| `POST /lo/reconcile/run` | LO-06 | `{}` |
-| `POST /lo/digest/send` | LO-07 | `{user_id, audit_id?}` (default: latest audit) |
+| `POST /lo/invest/run` | LO-05 | `{audit_id, user_id, investable_cad, dry_run?}` (test entry, same as the internal call) |
+| `POST /lo/reconcile/run` | LO-06 | `{user_id?}` (default: every open order; `user_id` is for testing) |
+| `POST /lo/digest/send` | LO-07 | `{user_id, audit_id?, dry_run?}` (default: latest audit) |
 | `GET /lo/api/summary` | LO-08 | `?user_id=` |
 | `GET /lo/api/audits` | LO-08 | `?user_id=` |
 | `GET /lo/api/portfolio` | LO-08 | `?user_id=` |
@@ -564,6 +568,7 @@ LO-01 is an n8n Form with its own URL. LO-09 has no route.
 The demo must never break (§15 backup plan), and lanes build before every credential exists.
 - `POST /lo/invest/run` and `POST /lo/digest/send` accept **`dry_run: true`**. Invest computes FX and the sleeve split and returns the orders it *would* place (status `dry_run`), without calling Alpaca or writing rows. Digest returns `subject` and `body` without sending.
 - If Alpaca is unreachable or the `Alpaca Paper` credential is missing, LO-05 behaves like `dry_run` and returns `error.code = "UPSTREAM_ERROR"` alongside the computed split. The audit stays `computed`, so a later run can still invest.
+- Without Alpaca, LO-08 and LO-07 value positions at the last fill price and return `market_open: null`, `next_open: null` (the dashboard says market hours are unavailable). LO-06 returns `UPSTREAM_ERROR` and changes nothing.
 - If the LLM fails, LO-01 and LO-07 fall back to a fixed template text (still general, non-advisory language), so the form and the digest always complete.
 - If Plaid is missing, LO-03b (manual expense) and the seed carry the demo (§15).
 

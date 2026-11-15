@@ -37,6 +37,9 @@ Request `{ "user_id": "test-c" }`
 ```json
 { "ok": true, "data": { "user_id": "test-c", "item_id": "…", "institution_name": "First Platypus Bank", "sync": { "added": 12, "modified": 0, "removed": 0 } } }
 ```
+- `already_linked: true`: the user already had a bank link; connect is idempotent and changes nothing.
+- `sync.not_ready: true`: Plaid hadn't pulled the new Item yet; a later `/lo/sync` picks the data up.
+- `sync.error`: connect worked but the first sync failed.
 
 ## POST /lo/sync (LO-03)
 Request `{ "user_id"?: "test-c" }` (default: every user with a bank link)
@@ -93,15 +96,21 @@ Request `{ "audit_id": "maya-2026-11-02", "user_id": "maya", "investable_cad": 2
   }
 }
 ```
-- `fx_source`: `frankfurter` | `fallback`.
+- `status`: `invested` | `dry_run` | `partial` (some orders placed) | `failed`. Anything but `invested` comes with `error {code, message}` and leaves the audit `computed`; internal callers get that `error` on the data object.
+- `fx_source`: `frankfurter` | `fallback` | `previous_run` (a re-run reusing the stored rate).
+- `already_invested: true`: the audit was already `invested`; nothing new was placed.
+- `folded[]`: sleeves under USD 1 that were folded into the largest one. `allocation_source`: `profile` | `tier`. `warnings[]`: non-fatal notes (e.g. `investable_cad` differs from the audit row).
+- An order can have `status: "failed"` with its own `error`.
 - `duplicate: true` means Alpaca already had that `client_order_id`. It counts as success.
 - In this example EWC (3%) was below the $1 minimum and was folded into the largest sleeve.
 
 ## POST /lo/reconcile/run (LO-06)
-Request `{}`
+Request `{ "user_id"?: "test-b" }` (default: every open order)
 ```json
 { "ok": true, "data": { "checked": 3, "updated": 3, "retried": 0, "failed": 0 } }
 ```
+- Optional `problems[]` (orders Alpaca couldn't find, counted in `failed`) and `alerts[]` (a rejected `-r1` retry, which also reaches LO-09).
+- Without Alpaca: `502 UPSTREAM_ERROR` with `data.open` = the number of open orders, none checked or changed.
 
 ## POST /lo/digest/send (LO-07), same as the internal call from LO-04
 Request `{ "user_id": "maya", "audit_id"?: "maya-2026-11-02", "dry_run"?: false }` (default: the user's latest audit). `dry_run: true` returns `subject` and `body` (plus `sent_to: null`) without sending. If the LLM fails, the body uses the fixed template (spec §19.5).

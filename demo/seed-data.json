@@ -27,6 +27,7 @@
     { "plaid_pfc_primary": "TRANSFER_OUT", "plaid_pfc_detailed": "", "category_key": "excluded", "excluded": true },
     { "plaid_pfc_primary": "INCOME", "plaid_pfc_detailed": "", "category_key": "excluded", "excluded": true },
     { "plaid_pfc_primary": "LOAN_PAYMENTS", "plaid_pfc_detailed": "", "category_key": "excluded", "excluded": true },
+    { "plaid_pfc_primary": "LOAN_DISBURSEMENTS", "plaid_pfc_detailed": "", "category_key": "excluded", "excluded": true },
     { "plaid_pfc_primary": "BANK_FEES", "plaid_pfc_detailed": "", "category_key": "excluded", "excluded": true },
     { "plaid_pfc_primary": "GENERAL_SERVICES", "plaid_pfc_detailed": "", "category_key": "excluded", "excluded": true },
     { "plaid_pfc_primary": "GOVERNMENT_AND_NON_PROFIT", "plaid_pfc_detailed": "", "category_key": "excluded", "excluded": true }

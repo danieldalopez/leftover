@@ -33,7 +33,7 @@ The current week, live.
 - `buffer`: from `users`.
 - `lifetime.invested_cad`: Σ `investable_cad` of audits with status `invested`.
 - `last_audit`: the most recent audit, or `null`.
-- `portfolio`: from Alpaca positions; `queued_usd` = Σ `notional_usd` of orders still `queued`.
+- `portfolio`: positions derived from the user's orders (as in `/lo/api/portfolio`); `queued_usd` = Σ `notional_usd` of orders still `queued`.
 
 ## audits
 Every audit for the user, **newest first**.
@@ -45,10 +45,10 @@ Every audit for the user, **newest first**.
   - `current_streak`: consecutive such weeks counting back from the newest audit.
 
 ## portfolio
-- `positions[]`: Alpaca `GET /v2/positions`, plus `sleeve` (from config `sleeve_symbols`) and `contributed_cad` (Σ `notional_cad` of that symbol's filled orders).
+- `positions[]`: derived from the user's own filled orders (all users share one paper account, so Alpaca `GET /v2/positions` can't be split per user), valued at Alpaca's latest trade price (IEX), or the last fill price without Alpaca; plus `sleeve` (from config `sleeve_symbols`) and `contributed_cad` (Σ `notional_cad` of that symbol's filled orders).
 - `orders[]`: every order for the user, newest first. `status` is the mapped status (spec §19.2) and `alpaca_status` is the raw one.
 - While queued: `filled_qty` and `filled_avg_price` are `0`, `filled_at` is `null`, and `estimated_value_usd` = `notional_usd`. Once filled, `estimated_value_usd` is `null`.
-- `market_open` and `next_open`: from Alpaca `GET /v2/clock`. When orders are queued and the market is closed, the UI shows "Queued · fills at Monday's open" (`portfolio-queued.json` is that state).
+- `market_open` and `next_open`: from Alpaca `GET /v2/clock`; both `null` without Alpaca (spec §19.5). When orders are queued and the market is closed, the UI shows "Queued · fills at Monday's open" (`portfolio-queued.json` is that state).
 - `totals.unrealized_pl_pct` = unrealized ÷ cost basis, 4 decimals.
 
 ## projection

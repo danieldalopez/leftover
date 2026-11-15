@@ -87,7 +87,7 @@ Written by: LO-02, LO-03 (cursor).
 |---|---|---|
 | txn_id | string | Plaid `transaction_id`, or `manual-…` / `seed-…` |
 | user_id | string | |
-| date | **string** | `YYYY-MM-DD` local calendar date |
+| date | **string** | `YYYY-MM-DD` local calendar date. Plaid rows: `authorized_date` when present, else `date` (spec §6.3) |
 | amount | number | CAD; positive = money out, negative = money in (refund) |
 | merchant | string | |
 | pfc_primary | string | empty for manual entries |
@@ -99,7 +99,7 @@ Written by: LO-02, LO-03 (cursor).
 | removed | boolean | removed rows never count |
 | synced_at | date | |
 
-**What counts toward a week** (§6.3): rows with `removed = false`, a budget `category_key`, a `date` inside the week, and not superseded (no other row has `pending_txn_id` = this row's `txn_id`). Pending rows count.
+**What counts toward a week** (§6.3): rows with `removed = false`, a budget `category_key`, a `date` inside the week, and not superseded (no other **non-removed** row has `pending_txn_id` = this row's `txn_id`). Pending rows count.
 
 Written by: LO-00, LO-03, LO-03b.
 
