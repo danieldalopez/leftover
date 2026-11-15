@@ -8,8 +8,7 @@
         "httpMethod": "POST",
         "path": "lo/invest/run",
         "authentication": "headerAuth",
-        "responseMode": "lastNode",
-        "responseData": "firstEntryJson",
+        "responseMode": "responseNode",
         "options": {}
       },
       "name": "POST /lo/invest/run",
@@ -31,36 +30,722 @@
       "parameters": {
         "inputSource": "passthrough"
       },
-      "name": "Called by another workflow",
+      "name": "Called by LO-04",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.3,
       "position": [
         0,
-        180
+        200
       ]
     },
     {
       "parameters": {
-        "jsCode": "// STUB: replaced by its lane (see BUILD-PLAN.md). Keep the workflow id.\nreturn [{ json: { ok: true, stub: true, workflow: 'LO-05' } }];"
+        "jsCode": "// Webhook items are {headers, params, query, body}; LO-04's Execute Workflow passes the payload itself.\nconst j = $input.first().json;\nconst viaWebhook = Boolean(j) && typeof j === 'object' && j.body !== undefined && j.headers !== undefined;\nconst req = viaWebhook ? (j.body || {}) : (j || {});\nreturn [{ json: {\n  audit_id: String(req.audit_id ?? '').trim(),\n  user_id: String(req.user_id ?? '').trim(),\n  investable_cad: req.investable_cad ?? null,\n  dry_run: req.dry_run === true || req.dry_run === 'true',\n  via: viaWebhook ? 'webhook' : 'workflow',\n} }];"
       },
-      "name": "Stub response",
+      "name": "Read request",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        320,
+        240,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "users"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Read request').first().json.user_id }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "name": "Read user",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        100
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "profiles"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Read request').first().json.user_id }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "name": "Read profile",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        680,
+        100
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "audits"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "audit_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Read request').first().json.audit_id }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "name": "Read audit",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        900,
+        100
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "orders"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "audit_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Read request').first().json.audit_id }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "name": "Read orders for this audit",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        100
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "config"
+        },
+        "returnAll": true
+      },
+      "name": "Read config",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1340,
+        100
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.frankfurter.dev/v1/latest",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "base",
+              "value": "USD"
+            },
+            {
+              "name": "symbols",
+              "value": "CAD"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "name": "USD/CAD rate (Frankfurter)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1560,
+        100
+      ],
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ---- lib/allocate.mjs ---- pasted verbatim: change lib/allocate.mjs, run npm test, re-paste.\n// lib/allocate.mjs: invest + reconcile logic for LO-05 and LO-06\n// (spec §6.9, §10 WF05/WF06, §11.5, §12, §19.2, §19.5).\n//\n// - sleeve weights from the profile (allocation_json, or tier + home bias)\n// - CAD -> USD at a Frankfurter rate with the config fallback\n// - split to the cent (largest remainder, total preserved), sleeves under\n//   Alpaca's $1 minimum folded into the largest sleeve\n// - request validation, Alpaca response handling, reconcile decisions\n//\n// Plain functions, no imports, so this pastes straight into an n8n Code node:\n// LO-05 and LO-06 embed everything above the `export` line at the bottom\n// (lib/allocate.test.mjs checks they stay identical).\n\nconst SLEEVES = ['equity_us', 'equity_intl', 'equity_ca', 'bonds', 'cash'];\n\n// §11.5 asset mix per tier.\nconst TIER_MIX = {\n  cash: { equity: 0, bonds: 0, cash: 1 },\n  conservative: { equity: 0.2, bonds: 0.6, cash: 0.2 },\n  balanced: { equity: 0.6, bonds: 0.4, cash: 0 },\n  growth: { equity: 0.8, bonds: 0.2, cash: 0 },\n  all_equity: { equity: 1, bonds: 0, cash: 0 },\n};\n\n// §11.5 equity split by home bias.\nconst HOME_BIAS_SPLIT = {\n  global: { equity_us: 0.6, equity_intl: 0.35, equity_ca: 0.05 },\n  more_canada: { equity_us: 0.45, equity_intl: 0.25, equity_ca: 0.3 },\n};\n\nconst ALPACA_PAPER_URL = 'https://paper-api.alpaca.markets'; // paper only, never live (spec §0.6)\nconst MIN_NOTIONAL_USD = 1; // Alpaca: fractional orders from $1 notional\nconst CLIENT_ORDER_ID_MAX = 48; // Alpaca v2 limit (newer docs say 128; stay under the strict one)\nconst RETRY_SUFFIX = '-r1'; // spec §19.2\nconst TERMINAL_STATUSES = ['filled', 'canceled', 'expired', 'rejected', 'replaced'];\nconst FX_SANE_RANGE = [0.8, 2.0]; // CAD per 1 USD; anything outside is treated as a bad quote\nconst HTTP_FOR_CODE = { BAD_REQUEST: 400, NOT_FOUND: 404, UPSTREAM_ERROR: 502, INTERNAL: 500 };\n\n// ---------- money ----------\n\n// Dollars -> integer cents. toFixed(6) strips float noise (26.15 * 100 = 2614.9999…).\nfunction toCents(amount) {\n  const n = Number(amount);\n  if (!Number.isFinite(n)) throw new Error(`toCents: not a number: ${amount}`);\n  return Math.round(Number((n * 100).toFixed(6)));\n}\n\nfunction round2(amount) {\n  return toCents(amount) / 100;\n}\n\nfunction round4(x) {\n  return Math.round(Number((Number(x) * 10000).toFixed(6))) / 10000;\n}\n\n// Split `totalCents` across `weights` (non-negative numbers) into integer cents\n// that sum exactly to `totalCents`. Largest remainder: everyone gets the floor\n// of their share, the leftover cents go to the largest fractional parts\n// (ties: larger weight, then earlier position).\nfunction splitCents(totalCents, weights) {\n  if (!Number.isInteger(totalCents) || totalCents < 0) throw new Error(`splitCents: bad total ${totalCents}`);\n  const sum = weights.reduce((a, b) => a + b, 0);\n  if (!(sum > 0)) throw new Error('splitCents: weights sum to 0');\n  const raw = weights.map((w) => (totalCents * w) / sum);\n  const out = raw.map((r) => Math.floor(r + 1e-9));\n  let left = totalCents - out.reduce((a, b) => a + b, 0);\n  const rank = raw\n    .map((r, i) => ({ i, frac: Number((r - out[i]).toFixed(9)), w: weights[i] }))\n    .sort((a, b) => b.frac - a.frac || b.w - a.w || a.i - b.i);\n  for (let k = 0; left > 0; k = (k + 1) % rank.length) {\n    out[rank[k].i] += 1;\n    left -= 1;\n  }\n  return out;\n}\n\n// ---------- weights ----------\n\n// §11.5: tier + home bias -> sleeve weights (fractions summing to 1).\nfunction sleeveWeights(tier, homeBias = 'global') {\n  const mix = TIER_MIX[tier];\n  if (!mix) throw new Error(`unknown tier: ${tier}`);\n  const split = HOME_BIAS_SPLIT[homeBias] || HOME_BIAS_SPLIT.global;\n  return {\n    equity_us: round4(mix.equity * split.equity_us),\n    equity_intl: round4(mix.equity * split.equity_intl),\n    equity_ca: round4(mix.equity * split.equity_ca),\n    bonds: mix.bonds,\n    cash: mix.cash,\n  };\n}\n\n// allocation_json (string or object) -> validated weights for every sleeve.\nfunction parseWeights(allocation) {\n  let obj = allocation;\n  if (typeof obj === 'string') {\n    try {\n      obj = JSON.parse(obj);\n    } catch {\n      throw new Error('allocation_json is not valid JSON');\n    }\n  }\n  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('allocation must be an object of sleeve weights');\n  const weights = {};\n  let sum = 0;\n  for (const [sleeve, value] of Object.entries(obj)) {\n    if (!SLEEVES.includes(sleeve)) throw new Error(`allocation has an unknown sleeve: ${sleeve}`);\n    const w = Number(value);\n    if (!Number.isFinite(w) || w < 0) throw new Error(`allocation weight for ${sleeve} must be a number >= 0`);\n    weights[sleeve] = w;\n    sum += w;\n  }\n  if (Math.abs(sum - 1) > 0.01) throw new Error(`allocation weights sum to ${round4(sum)}, expected 1`);\n  for (const s of SLEEVES) if (!(s in weights)) weights[s] = 0;\n  return weights;\n}\n\n// The user's (possibly edited) allocation wins; tier + home bias only when the\n// profile has none. An allocation that is present but broken is an error, not\n// a silent fallback: we never invest differently from what the user chose.\nfunction resolveWeights(profile) {\n  const raw = profile && profile.allocation_json;\n  if (raw !== undefined && raw !== null && String(raw).trim() !== '') {\n    return { weights: parseWeights(raw), source: 'profile' };\n  }\n  return { weights: sleeveWeights(profile && profile.tier, profile && profile.home_bias), source: 'tier' };\n}\n\n// ---------- FX ----------\n\n// Frankfurter body {base:\"USD\", date, rates:{CAD}} -> CAD per 1 USD, else the\n// config fallback (`fx_fallback_usdcad`). Rounded to 4 decimals, the rate we\n// store on every order.\nfunction pickFxRate(frankfurterBody, fallbackValue) {\n  const inRange = (r) => Number.isFinite(r) && r >= FX_SANE_RANGE[0] && r <= FX_SANE_RANGE[1];\n  const body = frankfurterBody && typeof frankfurterBody === 'object' ? frankfurterBody : {};\n  const rate = Number(body.rates && body.rates.CAD);\n  if ((body.base === undefined || body.base === 'USD') && inRange(rate)) {\n    return { fx_rate: round4(rate), fx_source: 'frankfurter', fx_date: body.date || null };\n  }\n  const fallback = Number(fallbackValue);\n  if (fallbackValue !== '' && fallbackValue !== null && fallbackValue !== undefined && inRange(fallback)) {\n    return { fx_rate: round4(fallback), fx_source: 'fallback', fx_date: null };\n  }\n  throw new Error('no usable USD/CAD rate: Frankfurter failed and config fx_fallback_usdcad is missing or out of range');\n}\n\n// ---------- the split ----------\n\nfunction clientOrderId(auditId, symbol) {\n  const id = `${auditId}-${symbol}`;\n  if (id.length + RETRY_SUFFIX.length > CLIENT_ORDER_ID_MAX) {\n    throw new Error(`client_order_id ${id} is too long for Alpaca (max ${CLIENT_ORDER_ID_MAX} with the retry suffix)`);\n  }\n  return id;\n}\n\nfunction isRetryId(clientOrderIdValue) {\n  return String(clientOrderIdValue || '').endsWith(RETRY_SUFFIX);\n}\n\n// investable CAD -> one order per sleeve (spec §10 WF05 step 3).\n// 1. CAD split to the cent by weight (total preserved).\n// 2. USD total = CAD total / fx, split in proportion to the CAD amounts (total preserved).\n// 3. Any sleeve whose USD amount is under Alpaca's minimum is folded into the\n//    largest sleeve, then step 2 is redone, until every order clears the minimum.\nfunction allocate({ investable_cad, weights, fx_rate, symbols, audit_id, min_notional_usd = MIN_NOTIONAL_USD }) {\n  const totalCad = toCents(investable_cad);\n  if (!(totalCad > 0)) throw new Error('investable_cad must be greater than 0');\n  const fx = Number(fx_rate);\n  if (!(fx > 0)) throw new Error(`bad fx_rate: ${fx_rate}`);\n  const minUsd = toCents(min_notional_usd);\n  const w = parseWeights(weights);\n\n  let sleeves = SLEEVES.filter((s) => w[s] > 0);\n  const seen = new Set();\n  for (const s of sleeves) {\n    const sym = symbols && symbols[s];\n    if (!sym || typeof sym !== 'string') throw new Error(`config sleeve_symbols has no ticker for sleeve ${s}`);\n    if (seen.has(sym)) throw new Error(`config sleeve_symbols maps two sleeves to ${sym}`);\n    seen.add(sym);\n  }\n\n  const cad = {};\n  splitCents(totalCad, sleeves.map((s) => w[s])).forEach((c, i) => {\n    cad[sleeves[i]] = c;\n  });\n  sleeves = sleeves.filter((s) => cad[s] > 0);\n  const largest = sleeves\n    .slice()\n    .sort((a, b) => cad[b] - cad[a] || w[b] - w[a] || SLEEVES.indexOf(a) - SLEEVES.indexOf(b))[0];\n\n  const totalUsd = Math.round(Number((totalCad / fx).toFixed(6)));\n  const folded = [];\n  let usd = {};\n  for (;;) {\n    usd = {};\n    splitCents(totalUsd, sleeves.map((s) => cad[s])).forEach((c, i) => {\n      usd[sleeves[i]] = c;\n    });\n    const small = sleeves.filter((s) => s !== largest && usd[s] < minUsd);\n    if (!small.length) break;\n    for (const s of small) {\n      folded.push({ sleeve: s, symbol: symbols[s], notional_cad: cad[s] / 100, into: largest });\n      cad[largest] += cad[s];\n      delete cad[s];\n    }\n    sleeves = sleeves.filter((s) => !small.includes(s));\n  }\n  if (usd[largest] < minUsd) {\n    throw new Error(`USD ${totalUsd / 100} is below Alpaca's minimum order of USD ${minUsd / 100}`);\n  }\n\n  return {\n    investable_cad: totalCad / 100,\n    fx_rate: fx,\n    invested_cad: totalCad / 100,\n    invested_usd: totalUsd / 100,\n    orders: sleeves.map((s) => ({\n      client_order_id: clientOrderId(audit_id, symbols[s]),\n      symbol: symbols[s],\n      sleeve: s,\n      notional_cad: cad[s] / 100,\n      notional_usd: usd[s] / 100,\n    })),\n    folded,\n  };\n}\n\n// ---------- order statuses (spec §19.2) ----------\n\nfunction isTerminalStatus(rawStatus) {\n  return TERMINAL_STATUSES.includes(rawStatus);\n}\n\n// Raw Alpaca status -> API status: queued | partially_filled | filled | rejected | canceled.\nfunction apiOrderStatus(rawStatus) {\n  if (rawStatus === 'filled' || rawStatus === 'partially_filled' || rawStatus === 'rejected') return rawStatus;\n  if (rawStatus === 'canceled' || rawStatus === 'expired') return 'canceled';\n  return 'queued';\n}\n\n// ---------- envelopes (spec §19.2) ----------\n\nfunction envelopeOk(data) {\n  return { ok: true, data };\n}\n\nfunction envelopeError(code, message, data) {\n  const env = { ok: false, error: { code, message } };\n  if (data !== undefined) env.data = data;\n  return env;\n}\n\n// What LO-05 returns to LO-04 (Execute Workflow): the `data` object, with\n// `error` added when the run did not invest (contracts/webhooks.md).\nfunction internalResult(envelope, request) {\n  if (envelope.ok) return envelope.data;\n  const req = request || {};\n  const base = envelope.data || { audit_id: req.audit_id || null, user_id: req.user_id || null, status: 'failed' };\n  return { ...base, error: envelope.error };\n}\n\n// ---------- Alpaca responses (n8n HTTP Request node, full response + never error) ----------\n\n// n8n HTTP item -> {ok, status, body, error}. A request that never got an HTTP\n// answer (missing credential, DNS, timeout) comes back as {error} with status 0.\nfunction readHttp(json) {\n  if (!json || typeof json !== 'object') return { ok: false, status: 0, body: null, error: 'no response' };\n  if (json.statusCode === undefined) {\n    const e = json.error;\n    const msg = typeof e === 'string' ? e : (e && (e.message || e.description)) || 'request failed';\n    return { ok: false, status: 0, body: null, error: String(msg) };\n  }\n  const status = Number(json.statusCode);\n  const body = json.body === undefined ? null : json.body;\n  const ok = status >= 200 && status < 300;\n  let error = null;\n  if (!ok) {\n    const detail = body && typeof body === 'object' && body.message ? body.message : typeof body === 'string' ? body.slice(0, 200) : '';\n    error = `HTTP ${status}${detail ? `: ${detail}` : ''}`;\n  }\n  return { ok, status, body, error };\n}\n\n// GET /v2/account -> can we trade? Missing credential, bad keys, network down\n// or a blocked account all mean \"not ready\" (spec §19.5).\nfunction accountReady(accountHttpJson) {\n  const r = readHttp(accountHttpJson);\n  if (!r.ok) {\n    if (r.status === 0) return { ready: false, reason: `Alpaca not reachable or the \"Alpaca Paper\" credential is missing (${r.error})` };\n    if (r.status === 401 || r.status === 403) return { ready: false, reason: `Alpaca refused the API keys (${r.error})` };\n    return { ready: false, reason: `Alpaca account check failed (${r.error})` };\n  }\n  const acct = r.body || {};\n  if (acct.status && acct.status !== 'ACTIVE') return { ready: false, reason: `Alpaca account status is ${acct.status}` };\n  if (acct.trading_blocked || acct.account_blocked) return { ready: false, reason: 'Alpaca account is blocked from trading' };\n  return { ready: true, reason: null };\n}\n\n// Alpaca timestamps carry micro/nanoseconds (\"…09.123456789Z\"): store plain ISO (ms, UTC).\nfunction isoOrNull(value) {\n  if (value === null || value === undefined || value === '') return null;\n  const s = String(value).replace(/(\\.\\d{3})\\d+/, '$1');\n  const t = Date.parse(s);\n  return Number.isFinite(t) ? new Date(t).toISOString() : null;\n}\n\n// Alpaca order object -> the columns we store (Alpaca sends numbers as strings).\nfunction orderFieldsFromAlpaca(order) {\n  const o = order || {};\n  const num = (v) => {\n    const n = Number(v);\n    return v === null || v === undefined || v === '' || !Number.isFinite(n) ? 0 : n;\n  };\n  return {\n    alpaca_order_id: o.id || '',\n    status: o.status || '',\n    filled_qty: num(o.filled_qty),\n    filled_avg_price: num(o.filled_avg_price),\n    submitted_at: isoOrNull(o.submitted_at || o.created_at),\n    filled_at: isoOrNull(o.filled_at),\n  };\n}\n\n// One planned order + its POST /v2/orders and GET /v2/orders:by_client_order_id\n// answers -> placed or not. The lookup is the source of truth: a POST that\n// failed (e.g. 422 because the client_order_id already exists) whose lookup\n// finds the order is a duplicate, which counts as success (spec §10 WF05 step 5).\nfunction placementResult(planned, postHttpJson, lookupHttpJson) {\n  const post = readHttp(postHttpJson);\n  const look = readHttp(lookupHttpJson);\n  if (look.ok && look.body && look.body.client_order_id === planned.client_order_id) {\n    return { ...planned, placed: true, duplicate: !post.ok, ...orderFieldsFromAlpaca(look.body), error: null };\n  }\n  if (post.ok && post.body && post.body.id) {\n    return { ...planned, placed: true, duplicate: false, ...orderFieldsFromAlpaca(post.body), error: null };\n  }\n  return {\n    ...planned,\n    placed: false,\n    duplicate: false,\n    ...orderFieldsFromAlpaca(null),\n    error: post.error || look.error || 'order not placed',\n  };\n}\n\n// An orders-table row for a placed order (contracts/data-tables.md).\nfunction orderRow(placed, ctx) {\n  return {\n    client_order_id: placed.client_order_id,\n    audit_id: ctx.audit_id,\n    user_id: ctx.user_id,\n    symbol: placed.symbol,\n    sleeve: placed.sleeve,\n    notional_usd: placed.notional_usd,\n    notional_cad: placed.notional_cad,\n    fx_rate: ctx.fx_rate,\n    alpaca_order_id: placed.alpaca_order_id,\n    status: placed.status,\n    filled_qty: placed.filled_qty,\n    filled_avg_price: placed.filled_avg_price,\n    submitted_at: placed.submitted_at,\n    filled_at: placed.filled_at,\n  };\n}\n\n// ---------- LO-05 ----------\n\nfunction configMap(rows) {\n  const cfg = {};\n  for (const r of rows || []) if (r && r.key) cfg[r.key] = r.value;\n  return cfg;\n}\n\nfunction sum2(values) {\n  return values.reduce((a, v) => a + toCents(v), 0) / 100;\n}\n\n// Audit already invested: return what was placed, touch nothing (idempotent re-run).\nfunction alreadyInvestedData(audit, rows, userId) {\n  const mine = (rows || []).filter((r) => r.audit_id === audit.audit_id);\n  const counted = mine.filter((r) => !isRetryId(r.client_order_id));\n  return {\n    audit_id: audit.audit_id,\n    user_id: userId,\n    status: 'invested',\n    already_invested: true,\n    fx_rate: counted.length ? Number(counted[0].fx_rate) : null,\n    fx_source: 'previous_run',\n    invested_cad: sum2(counted.map((r) => r.notional_cad)),\n    invested_usd: sum2(counted.map((r) => r.notional_usd)),\n    orders: mine.map((r) => ({\n      client_order_id: r.client_order_id,\n      symbol: r.symbol,\n      sleeve: r.sleeve,\n      notional_cad: round2(r.notional_cad),\n      notional_usd: round2(r.notional_usd),\n      status: apiOrderStatus(r.status),\n      alpaca_status: r.status,\n      duplicate: true,\n    })),\n  };\n}\n\n// Everything LO-05 decides before talking to Alpaca, as one pure function.\n// Inputs are the webhook/Execute Workflow body and the rows the Data Table\n// nodes read (null when missing). Returns:\n//   { proceed: false, http_status, envelope }            -> reply now\n//   { proceed: true, plan }                              -> check Alpaca, place plan.orders\nfunction planInvest({ request, user, profile, audit, config, existingOrders, fxBody }) {\n  const fail = (code, message, data) => ({ proceed: false, http_status: HTTP_FOR_CODE[code], envelope: envelopeError(code, message, data) });\n  const req = request && typeof request === 'object' ? request : {};\n  const user_id = String(req.user_id || '').trim();\n  const audit_id = String(req.audit_id || '').trim();\n  const dry_run = req.dry_run === true || req.dry_run === 'true';\n  const amount = Number(req.investable_cad);\n  const cfg = config || {};\n\n  if (!user_id) return fail('BAD_REQUEST', 'user_id is required');\n  if (!audit_id) return fail('BAD_REQUEST', 'audit_id is required');\n  if (!audit_id.startsWith(`${user_id}-`)) return fail('BAD_REQUEST', `audit_id ${audit_id} does not belong to user ${user_id}`);\n  if (req.investable_cad === undefined || req.investable_cad === null || req.investable_cad === '' || !Number.isFinite(amount) || amount <= 0) {\n    return fail('BAD_REQUEST', 'investable_cad must be a number greater than 0');\n  }\n  if (!user) return fail('NOT_FOUND', `unknown user ${user_id}`);\n  if (!profile) return fail('NOT_FOUND', `no investor profile for ${user_id}`);\n\n  const base = String(cfg.alpaca_base_url || ALPACA_PAPER_URL).replace(/\\/+$/, '');\n  if (base !== ALPACA_PAPER_URL) return fail('INTERNAL', `config alpaca_base_url must be ${ALPACA_PAPER_URL} (paper trading only), got ${base}`);\n  let symbols;\n  try {\n    symbols = JSON.parse(cfg.sleeve_symbols);\n  } catch {\n    return fail('INTERNAL', 'config sleeve_symbols is missing or not valid JSON');\n  }\n\n  if (!dry_run) {\n    if (!audit) return fail('NOT_FOUND', `unknown audit ${audit_id}`);\n    if (audit.user_id !== user_id) return fail('BAD_REQUEST', `audit ${audit_id} belongs to ${audit.user_id}, not ${user_id}`);\n    if (audit.status === 'invested') return { proceed: false, http_status: 200, envelope: envelopeOk(alreadyInvestedData(audit, existingOrders, user_id)) };\n    if (audit.status !== 'computed') return fail('BAD_REQUEST', `audit ${audit_id} is ${audit.status}; only computed audits can be invested`);\n    if (user.status === 'paused') return fail('BAD_REQUEST', `investing is paused for ${user_id}`);\n    if (!user.consent_at) return fail('BAD_REQUEST', `${user_id} has not given standing consent to invest`);\n  }\n\n  const maxWeekly = Number(user.max_weekly_invest) > 0 ? Number(user.max_weekly_invest) : 200;\n  const minInvest = Number(user.min_invest) > 0 ? Number(user.min_invest) : 5;\n  if (toCents(amount) > toCents(maxWeekly)) return fail('BAD_REQUEST', `investable_cad ${round2(amount)} is above max_weekly_invest ${maxWeekly}`);\n  if (toCents(amount) < toCents(minInvest)) return fail('BAD_REQUEST', `investable_cad ${round2(amount)} is below min_invest ${minInvest}`);\n\n  let weights;\n  let allocation_source;\n  try {\n    ({ weights, source: allocation_source } = resolveWeights(profile));\n  } catch (e) {\n    return fail('BAD_REQUEST', `profile for ${user_id}: ${e.message}`);\n  }\n\n  // A re-run after a partial failure reuses the rate already on this audit's\n  // orders, so the split (and every client_order_id's amount) is identical.\n  const previous = (existingOrders || []).find((o) => o.audit_id === audit_id && !isRetryId(o.client_order_id) && Number(o.fx_rate) > 0);\n  let fx;\n  if (previous) {\n    fx = { fx_rate: Number(previous.fx_rate), fx_source: 'previous_run', fx_date: null };\n  } else {\n    try {\n      fx = pickFxRate(fxBody, cfg.fx_fallback_usdcad);\n    } catch (e) {\n      return fail('UPSTREAM_ERROR', e.message);\n    }\n  }\n\n  let split;\n  try {\n    split = allocate({ investable_cad: amount, weights, fx_rate: fx.fx_rate, symbols, audit_id });\n  } catch (e) {\n    return fail('BAD_REQUEST', e.message);\n  }\n\n  const warnings = [];\n  if (audit && audit.investable_cad !== undefined && audit.investable_cad !== null && toCents(audit.investable_cad) !== toCents(amount)) {\n    warnings.push(`investable_cad ${round2(amount)} differs from the audit's ${round2(audit.investable_cad)}`);\n  }\n\n  const data = {\n    audit_id,\n    user_id,\n    status: 'dry_run',\n    fx_rate: fx.fx_rate,\n    fx_source: fx.fx_source,\n    invested_cad: split.invested_cad,\n    invested_usd: split.invested_usd,\n    allocation_source,\n    orders: split.orders.map((o) => ({ ...o, status: 'dry_run', alpaca_status: null, duplicate: false })),\n    folded: split.folded,\n  };\n  if (warnings.length) data.warnings = warnings;\n  if (dry_run) return { proceed: false, http_status: 200, envelope: envelopeOk(data) };\n\n  return {\n    proceed: true,\n    http_status: 200,\n    plan: {\n      ...data,\n      status: 'pending',\n      alpaca_base_url: ALPACA_PAPER_URL,\n      pending_carry: Number(user.pending_carry) || 0,\n      orders: split.orders,\n    },\n  };\n}\n\n// Alpaca not usable before any order was sent: behave like dry_run, report\n// UPSTREAM_ERROR, leave the audit computed (spec §19.5).\nfunction upstreamResult(plan, reason) {\n  const { alpaca_base_url, pending_carry, ...data } = plan;\n  return {\n    http_status: 502,\n    envelope: envelopeError('UPSTREAM_ERROR', `${reason}. No order was sent; the audit stays computed so a later run can invest.`, {\n      ...data,\n      status: 'dry_run',\n      orders: plan.orders.map((o) => ({ ...o, status: 'dry_run', alpaca_status: null, duplicate: false })),\n    }),\n  };\n}\n\n// After placing: rows to upsert, the reply, and (when every order is placed)\n// the user's new pending_carry (spec §10 WF05 step 6).\nfunction finishInvest(plan, results) {\n  const ctx = { audit_id: plan.audit_id, user_id: plan.user_id, fx_rate: plan.fx_rate };\n  const placed = results.filter((r) => r.placed);\n  const rows = placed.map((r) => orderRow(r, ctx));\n  const allPlaced = placed.length === results.length && results.length > 0;\n  const { alpaca_base_url, pending_carry, ...rest } = plan;\n  const data = {\n    ...rest,\n    status: allPlaced ? 'invested' : 'partial',\n    invested_cad: allPlaced ? plan.invested_cad : sum2(placed.map((r) => r.notional_cad)),\n    invested_usd: allPlaced ? plan.invested_usd : sum2(placed.map((r) => r.notional_usd)),\n    orders: results.map((r) => {\n      const o = {\n        client_order_id: r.client_order_id,\n        symbol: r.symbol,\n        sleeve: r.sleeve,\n        notional_cad: r.notional_cad,\n        notional_usd: r.notional_usd,\n        status: r.placed ? apiOrderStatus(r.status) : 'failed',\n        alpaca_status: r.placed ? r.status : null,\n        duplicate: r.duplicate,\n      };\n      if (!r.placed) o.error = r.error;\n      return o;\n    }),\n  };\n  if (allPlaced) {\n    return {\n      rows,\n      all_placed: true,\n      http_status: 200,\n      envelope: envelopeOk(data),\n      pending_carry_after: Math.max(toCents(pending_carry) - toCents(plan.invested_cad), 0) / 100,\n    };\n  }\n  const failed = results.filter((r) => !r.placed);\n  return {\n    rows,\n    all_placed: false,\n    http_status: 502,\n    envelope: envelopeError(\n      'UPSTREAM_ERROR',\n      `${failed.length} of ${results.length} orders were not accepted by Alpaca (${failed.map((f) => `${f.symbol}: ${f.error}`).join('; ')}). ` +\n        'Placed orders are recorded; the audit stays computed and a re-run retries the rest without duplicates.',\n      data,\n    ),\n    pending_carry_after: null,\n  };\n}\n\n// ---------- LO-06 ----------\n\n// Orders still worth asking Alpaca about.\nfunction pickOpenOrders(rows, userId) {\n  return (rows || []).filter((r) => r && r.client_order_id && !isTerminalStatus(r.status) && (!userId || r.user_id === userId));\n}\n\nfunction sameValue(a, b) {\n  const blank = (v) => v === null || v === undefined || v === '';\n  if (typeof a === 'number' || typeof b === 'number') return (blank(a) ? 0 : Number(a)) === (blank(b) ? 0 : Number(b));\n  if (blank(a) && blank(b)) return true;\n  if (blank(a) || blank(b)) return false;\n  const ta = Date.parse(a);\n  const tb = Date.parse(b);\n  if (/^\\d{4}-\\d{2}-\\d{2}T/.test(String(a)) && Number.isFinite(ta) && Number.isFinite(tb)) return Math.abs(ta - tb) < 1000;\n  return String(a) === String(b);\n}\n\n// One open row + its GET /v2/orders:by_client_order_id answer -> what to do.\n//   kind: updated | unchanged | missing (404) | error\n//   patch: columns to write; retry: a `-r1` order to submit; alert: message for WF09.\nfunction reconcileOrder(row, lookupHttpJson, knownClientOrderIds) {\n  const look = readHttp(lookupHttpJson);\n  if (!look.ok || !look.body || look.body.client_order_id !== row.client_order_id) {\n    return { kind: look.status === 404 ? 'missing' : 'error', patch: null, retry: null, alert: null, error: look.error || 'lookup returned another order' };\n  }\n  const f = orderFieldsFromAlpaca(look.body);\n  const patch = {};\n  for (const k of ['alpaca_order_id', 'status', 'filled_qty', 'filled_avg_price', 'submitted_at', 'filled_at']) {\n    if (k === 'submitted_at' && !f[k]) continue;\n    if (!sameValue(row[k], f[k])) patch[k] = f[k];\n  }\n  let retry = null;\n  let alert = null;\n  if (f.status === 'rejected' && row.status !== 'rejected') {\n    if (isRetryId(row.client_order_id)) {\n      alert = `order ${row.client_order_id} (${row.symbol}) was rejected again after its one retry`;\n    } else {\n      const retryId = `${row.client_order_id}${RETRY_SUFFIX}`;\n      if (!knownClientOrderIds || !knownClientOrderIds.has(retryId)) {\n        retry = {\n          client_order_id: retryId,\n          audit_id: row.audit_id,\n          user_id: row.user_id,\n          symbol: row.symbol,\n          sleeve: row.sleeve,\n          notional_usd: round2(row.notional_usd),\n          notional_cad: round2(row.notional_cad),\n          fx_rate: Number(row.fx_rate),\n        };\n      }\n    }\n  }\n  return { kind: Object.keys(patch).length ? 'updated' : 'unchanged', patch, retry, alert, error: null };\n}\n\n// All open rows + their lookups -> updates, retries, alerts and counts.\nfunction planReconcile(openRows, lookupHttpJsons, allRows) {\n  const known = new Set((allRows || []).map((r) => r.client_order_id));\n  const updates = [];\n  const retries = [];\n  const alerts = [];\n  const problems = [];\n  openRows.forEach((row, i) => {\n    const d = reconcileOrder(row, lookupHttpJsons[i], known);\n    if (d.kind === 'updated') updates.push({ client_order_id: row.client_order_id, ...d.patch });\n    if (d.kind === 'missing' || d.kind === 'error') problems.push({ client_order_id: row.client_order_id, error: d.error });\n    if (d.retry) retries.push(d.retry);\n    if (d.alert) alerts.push(d.alert);\n  });\n  return { checked: openRows.length, updates, retries, alerts, problems };\n}\n\n// Retry orders placed (or not) -> rows to write, final counts and alerts.\nfunction finishReconcile(summary, retryResults) {\n  const rows = [];\n  const alerts = summary.alerts.slice();\n  let retried = 0;\n  (retryResults || []).forEach((r) => {\n    if (r.placed) {\n      retried += 1;\n      rows.push(orderRow(r, { audit_id: r.audit_id, user_id: r.user_id, fx_rate: r.fx_rate }));\n      if (r.status === 'rejected') alerts.push(`retry ${r.client_order_id} (${r.symbol}) was rejected immediately`);\n    } else {\n      alerts.push(`retry ${r.client_order_id} (${r.symbol}) could not be placed: ${r.error}`);\n    }\n  });\n  const failedRetries = (retryResults || []).filter((r) => !r.placed).length;\n  const data = {\n    checked: summary.checked,\n    updated: summary.updates.length,\n    retried,\n    failed: summary.problems.length + failedRetries,\n  };\n  if (summary.problems.length) data.problems = summary.problems;\n  if (alerts.length) data.alerts = alerts;\n  return { rows, alerts, envelope: envelopeOk(data) };\n}\n// ---- end of lib/allocate.mjs ----\n\n// Validate, pick the FX rate, split into sleeves (spec §10 WF05 steps 1-3, §19.5 dry_run).\nconst rows = (name) => $(name).all().map((i) => i.json).filter((r) => r && Object.keys(r).length > 0);\nconst request = $('Read request').first().json;\nconst result = planInvest({\n  request,\n  user: rows('Read user').find((r) => r.user_id === request.user_id) || null,\n  profile: rows('Read profile').find((r) => r.user_id === request.user_id) || null,\n  audit: rows('Read audit').find((r) => r.audit_id === request.audit_id) || null,\n  config: configMap(rows('Read config')),\n  existingOrders: rows('Read orders for this audit'),\n  fxBody: $('USD/CAD rate (Frankfurter)').first().json,\n});\nreturn [{ json: { ...result, request, internal: result.envelope ? internalResult(result.envelope, request) : null } }];"
+      },
+      "name": "Plan orders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "lane-b-cond-1",
+              "leftValue": "={{ $json.proceed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Place real orders?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        2000,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.plan.alpaca_base_url }}/v2/account",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": false,
+        "sendBody": false,
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "name": "Alpaca: check account",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2220,
+        360
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ---- lib/allocate.mjs ---- pasted verbatim: change lib/allocate.mjs, run npm test, re-paste.\n// lib/allocate.mjs: invest + reconcile logic for LO-05 and LO-06\n// (spec §6.9, §10 WF05/WF06, §11.5, §12, §19.2, §19.5).\n//\n// - sleeve weights from the profile (allocation_json, or tier + home bias)\n// - CAD -> USD at a Frankfurter rate with the config fallback\n// - split to the cent (largest remainder, total preserved), sleeves under\n//   Alpaca's $1 minimum folded into the largest sleeve\n// - request validation, Alpaca response handling, reconcile decisions\n//\n// Plain functions, no imports, so this pastes straight into an n8n Code node:\n// LO-05 and LO-06 embed everything above the `export` line at the bottom\n// (lib/allocate.test.mjs checks they stay identical).\n\nconst SLEEVES = ['equity_us', 'equity_intl', 'equity_ca', 'bonds', 'cash'];\n\n// §11.5 asset mix per tier.\nconst TIER_MIX = {\n  cash: { equity: 0, bonds: 0, cash: 1 },\n  conservative: { equity: 0.2, bonds: 0.6, cash: 0.2 },\n  balanced: { equity: 0.6, bonds: 0.4, cash: 0 },\n  growth: { equity: 0.8, bonds: 0.2, cash: 0 },\n  all_equity: { equity: 1, bonds: 0, cash: 0 },\n};\n\n// §11.5 equity split by home bias.\nconst HOME_BIAS_SPLIT = {\n  global: { equity_us: 0.6, equity_intl: 0.35, equity_ca: 0.05 },\n  more_canada: { equity_us: 0.45, equity_intl: 0.25, equity_ca: 0.3 },\n};\n\nconst ALPACA_PAPER_URL = 'https://paper-api.alpaca.markets'; // paper only, never live (spec §0.6)\nconst MIN_NOTIONAL_USD = 1; // Alpaca: fractional orders from $1 notional\nconst CLIENT_ORDER_ID_MAX = 48; // Alpaca v2 limit (newer docs say 128; stay under the strict one)\nconst RETRY_SUFFIX = '-r1'; // spec §19.2\nconst TERMINAL_STATUSES = ['filled', 'canceled', 'expired', 'rejected', 'replaced'];\nconst FX_SANE_RANGE = [0.8, 2.0]; // CAD per 1 USD; anything outside is treated as a bad quote\nconst HTTP_FOR_CODE = { BAD_REQUEST: 400, NOT_FOUND: 404, UPSTREAM_ERROR: 502, INTERNAL: 500 };\n\n// ---------- money ----------\n\n// Dollars -> integer cents. toFixed(6) strips float noise (26.15 * 100 = 2614.9999…).\nfunction toCents(amount) {\n  const n = Number(amount);\n  if (!Number.isFinite(n)) throw new Error(`toCents: not a number: ${amount}`);\n  return Math.round(Number((n * 100).toFixed(6)));\n}\n\nfunction round2(amount) {\n  return toCents(amount) / 100;\n}\n\nfunction round4(x) {\n  return Math.round(Number((Number(x) * 10000).toFixed(6))) / 10000;\n}\n\n// Split `totalCents` across `weights` (non-negative numbers) into integer cents\n// that sum exactly to `totalCents`. Largest remainder: everyone gets the floor\n// of their share, the leftover cents go to the largest fractional parts\n// (ties: larger weight, then earlier position).\nfunction splitCents(totalCents, weights) {\n  if (!Number.isInteger(totalCents) || totalCents < 0) throw new Error(`splitCents: bad total ${totalCents}`);\n  const sum = weights.reduce((a, b) => a + b, 0);\n  if (!(sum > 0)) throw new Error('splitCents: weights sum to 0');\n  const raw = weights.map((w) => (totalCents * w) / sum);\n  const out = raw.map((r) => Math.floor(r + 1e-9));\n  let left = totalCents - out.reduce((a, b) => a + b, 0);\n  const rank = raw\n    .map((r, i) => ({ i, frac: Number((r - out[i]).toFixed(9)), w: weights[i] }))\n    .sort((a, b) => b.frac - a.frac || b.w - a.w || a.i - b.i);\n  for (let k = 0; left > 0; k = (k + 1) % rank.length) {\n    out[rank[k].i] += 1;\n    left -= 1;\n  }\n  return out;\n}\n\n// ---------- weights ----------\n\n// §11.5: tier + home bias -> sleeve weights (fractions summing to 1).\nfunction sleeveWeights(tier, homeBias = 'global') {\n  const mix = TIER_MIX[tier];\n  if (!mix) throw new Error(`unknown tier: ${tier}`);\n  const split = HOME_BIAS_SPLIT[homeBias] || HOME_BIAS_SPLIT.global;\n  return {\n    equity_us: round4(mix.equity * split.equity_us),\n    equity_intl: round4(mix.equity * split.equity_intl),\n    equity_ca: round4(mix.equity * split.equity_ca),\n    bonds: mix.bonds,\n    cash: mix.cash,\n  };\n}\n\n// allocation_json (string or object) -> validated weights for every sleeve.\nfunction parseWeights(allocation) {\n  let obj = allocation;\n  if (typeof obj === 'string') {\n    try {\n      obj = JSON.parse(obj);\n    } catch {\n      throw new Error('allocation_json is not valid JSON');\n    }\n  }\n  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('allocation must be an object of sleeve weights');\n  const weights = {};\n  let sum = 0;\n  for (const [sleeve, value] of Object.entries(obj)) {\n    if (!SLEEVES.includes(sleeve)) throw new Error(`allocation has an unknown sleeve: ${sleeve}`);\n    const w = Number(value);\n    if (!Number.isFinite(w) || w < 0) throw new Error(`allocation weight for ${sleeve} must be a number >= 0`);\n    weights[sleeve] = w;\n    sum += w;\n  }\n  if (Math.abs(sum - 1) > 0.01) throw new Error(`allocation weights sum to ${round4(sum)}, expected 1`);\n  for (const s of SLEEVES) if (!(s in weights)) weights[s] = 0;\n  return weights;\n}\n\n// The user's (possibly edited) allocation wins; tier + home bias only when the\n// profile has none. An allocation that is present but broken is an error, not\n// a silent fallback: we never invest differently from what the user chose.\nfunction resolveWeights(profile) {\n  const raw = profile && profile.allocation_json;\n  if (raw !== undefined && raw !== null && String(raw).trim() !== '') {\n    return { weights: parseWeights(raw), source: 'profile' };\n  }\n  return { weights: sleeveWeights(profile && profile.tier, profile && profile.home_bias), source: 'tier' };\n}\n\n// ---------- FX ----------\n\n// Frankfurter body {base:\"USD\", date, rates:{CAD}} -> CAD per 1 USD, else the\n// config fallback (`fx_fallback_usdcad`). Rounded to 4 decimals, the rate we\n// store on every order.\nfunction pickFxRate(frankfurterBody, fallbackValue) {\n  const inRange = (r) => Number.isFinite(r) && r >= FX_SANE_RANGE[0] && r <= FX_SANE_RANGE[1];\n  const body = frankfurterBody && typeof frankfurterBody === 'object' ? frankfurterBody : {};\n  const rate = Number(body.rates && body.rates.CAD);\n  if ((body.base === undefined || body.base === 'USD') && inRange(rate)) {\n    return { fx_rate: round4(rate), fx_source: 'frankfurter', fx_date: body.date || null };\n  }\n  const fallback = Number(fallbackValue);\n  if (fallbackValue !== '' && fallbackValue !== null && fallbackValue !== undefined && inRange(fallback)) {\n    return { fx_rate: round4(fallback), fx_source: 'fallback', fx_date: null };\n  }\n  throw new Error('no usable USD/CAD rate: Frankfurter failed and config fx_fallback_usdcad is missing or out of range');\n}\n\n// ---------- the split ----------\n\nfunction clientOrderId(auditId, symbol) {\n  const id = `${auditId}-${symbol}`;\n  if (id.length + RETRY_SUFFIX.length > CLIENT_ORDER_ID_MAX) {\n    throw new Error(`client_order_id ${id} is too long for Alpaca (max ${CLIENT_ORDER_ID_MAX} with the retry suffix)`);\n  }\n  return id;\n}\n\nfunction isRetryId(clientOrderIdValue) {\n  return String(clientOrderIdValue || '').endsWith(RETRY_SUFFIX);\n}\n\n// investable CAD -> one order per sleeve (spec §10 WF05 step 3).\n// 1. CAD split to the cent by weight (total preserved).\n// 2. USD total = CAD total / fx, split in proportion to the CAD amounts (total preserved).\n// 3. Any sleeve whose USD amount is under Alpaca's minimum is folded into the\n//    largest sleeve, then step 2 is redone, until every order clears the minimum.\nfunction allocate({ investable_cad, weights, fx_rate, symbols, audit_id, min_notional_usd = MIN_NOTIONAL_USD }) {\n  const totalCad = toCents(investable_cad);\n  if (!(totalCad > 0)) throw new Error('investable_cad must be greater than 0');\n  const fx = Number(fx_rate);\n  if (!(fx > 0)) throw new Error(`bad fx_rate: ${fx_rate}`);\n  const minUsd = toCents(min_notional_usd);\n  const w = parseWeights(weights);\n\n  let sleeves = SLEEVES.filter((s) => w[s] > 0);\n  const seen = new Set();\n  for (const s of sleeves) {\n    const sym = symbols && symbols[s];\n    if (!sym || typeof sym !== 'string') throw new Error(`config sleeve_symbols has no ticker for sleeve ${s}`);\n    if (seen.has(sym)) throw new Error(`config sleeve_symbols maps two sleeves to ${sym}`);\n    seen.add(sym);\n  }\n\n  const cad = {};\n  splitCents(totalCad, sleeves.map((s) => w[s])).forEach((c, i) => {\n    cad[sleeves[i]] = c;\n  });\n  sleeves = sleeves.filter((s) => cad[s] > 0);\n  const largest = sleeves\n    .slice()\n    .sort((a, b) => cad[b] - cad[a] || w[b] - w[a] || SLEEVES.indexOf(a) - SLEEVES.indexOf(b))[0];\n\n  const totalUsd = Math.round(Number((totalCad / fx).toFixed(6)));\n  const folded = [];\n  let usd = {};\n  for (;;) {\n    usd = {};\n    splitCents(totalUsd, sleeves.map((s) => cad[s])).forEach((c, i) => {\n      usd[sleeves[i]] = c;\n    });\n    const small = sleeves.filter((s) => s !== largest && usd[s] < minUsd);\n    if (!small.length) break;\n    for (const s of small) {\n      folded.push({ sleeve: s, symbol: symbols[s], notional_cad: cad[s] / 100, into: largest });\n      cad[largest] += cad[s];\n      delete cad[s];\n    }\n    sleeves = sleeves.filter((s) => !small.includes(s));\n  }\n  if (usd[largest] < minUsd) {\n    throw new Error(`USD ${totalUsd / 100} is below Alpaca's minimum order of USD ${minUsd / 100}`);\n  }\n\n  return {\n    investable_cad: totalCad / 100,\n    fx_rate: fx,\n    invested_cad: totalCad / 100,\n    invested_usd: totalUsd / 100,\n    orders: sleeves.map((s) => ({\n      client_order_id: clientOrderId(audit_id, symbols[s]),\n      symbol: symbols[s],\n      sleeve: s,\n      notional_cad: cad[s] / 100,\n      notional_usd: usd[s] / 100,\n    })),\n    folded,\n  };\n}\n\n// ---------- order statuses (spec §19.2) ----------\n\nfunction isTerminalStatus(rawStatus) {\n  return TERMINAL_STATUSES.includes(rawStatus);\n}\n\n// Raw Alpaca status -> API status: queued | partially_filled | filled | rejected | canceled.\nfunction apiOrderStatus(rawStatus) {\n  if (rawStatus === 'filled' || rawStatus === 'partially_filled' || rawStatus === 'rejected') return rawStatus;\n  if (rawStatus === 'canceled' || rawStatus === 'expired') return 'canceled';\n  return 'queued';\n}\n\n// ---------- envelopes (spec §19.2) ----------\n\nfunction envelopeOk(data) {\n  return { ok: true, data };\n}\n\nfunction envelopeError(code, message, data) {\n  const env = { ok: false, error: { code, message } };\n  if (data !== undefined) env.data = data;\n  return env;\n}\n\n// What LO-05 returns to LO-04 (Execute Workflow): the `data` object, with\n// `error` added when the run did not invest (contracts/webhooks.md).\nfunction internalResult(envelope, request) {\n  if (envelope.ok) return envelope.data;\n  const req = request || {};\n  const base = envelope.data || { audit_id: req.audit_id || null, user_id: req.user_id || null, status: 'failed' };\n  return { ...base, error: envelope.error };\n}\n\n// ---------- Alpaca responses (n8n HTTP Request node, full response + never error) ----------\n\n// n8n HTTP item -> {ok, status, body, error}. A request that never got an HTTP\n// answer (missing credential, DNS, timeout) comes back as {error} with status 0.\nfunction readHttp(json) {\n  if (!json || typeof json !== 'object') return { ok: false, status: 0, body: null, error: 'no response' };\n  if (json.statusCode === undefined) {\n    const e = json.error;\n    const msg = typeof e === 'string' ? e : (e && (e.message || e.description)) || 'request failed';\n    return { ok: false, status: 0, body: null, error: String(msg) };\n  }\n  const status = Number(json.statusCode);\n  const body = json.body === undefined ? null : json.body;\n  const ok = status >= 200 && status < 300;\n  let error = null;\n  if (!ok) {\n    const detail = body && typeof body === 'object' && body.message ? body.message : typeof body === 'string' ? body.slice(0, 200) : '';\n    error = `HTTP ${status}${detail ? `: ${detail}` : ''}`;\n  }\n  return { ok, status, body, error };\n}\n\n// GET /v2/account -> can we trade? Missing credential, bad keys, network down\n// or a blocked account all mean \"not ready\" (spec §19.5).\nfunction accountReady(accountHttpJson) {\n  const r = readHttp(accountHttpJson);\n  if (!r.ok) {\n    if (r.status === 0) return { ready: false, reason: `Alpaca not reachable or the \"Alpaca Paper\" credential is missing (${r.error})` };\n    if (r.status === 401 || r.status === 403) return { ready: false, reason: `Alpaca refused the API keys (${r.error})` };\n    return { ready: false, reason: `Alpaca account check failed (${r.error})` };\n  }\n  const acct = r.body || {};\n  if (acct.status && acct.status !== 'ACTIVE') return { ready: false, reason: `Alpaca account status is ${acct.status}` };\n  if (acct.trading_blocked || acct.account_blocked) return { ready: false, reason: 'Alpaca account is blocked from trading' };\n  return { ready: true, reason: null };\n}\n\n// Alpaca timestamps carry micro/nanoseconds (\"…09.123456789Z\"): store plain ISO (ms, UTC).\nfunction isoOrNull(value) {\n  if (value === null || value === undefined || value === '') return null;\n  const s = String(value).replace(/(\\.\\d{3})\\d+/, '$1');\n  const t = Date.parse(s);\n  return Number.isFinite(t) ? new Date(t).toISOString() : null;\n}\n\n// Alpaca order object -> the columns we store (Alpaca sends numbers as strings).\nfunction orderFieldsFromAlpaca(order) {\n  const o = order || {};\n  const num = (v) => {\n    const n = Number(v);\n    return v === null || v === undefined || v === '' || !Number.isFinite(n) ? 0 : n;\n  };\n  return {\n    alpaca_order_id: o.id || '',\n    status: o.status || '',\n    filled_qty: num(o.filled_qty),\n    filled_avg_price: num(o.filled_avg_price),\n    submitted_at: isoOrNull(o.submitted_at || o.created_at),\n    filled_at: isoOrNull(o.filled_at),\n  };\n}\n\n// One planned order + its POST /v2/orders and GET /v2/orders:by_client_order_id\n// answers -> placed or not. The lookup is the source of truth: a POST that\n// failed (e.g. 422 because the client_order_id already exists) whose lookup\n// finds the order is a duplicate, which counts as success (spec §10 WF05 step 5).\nfunction placementResult(planned, postHttpJson, lookupHttpJson) {\n  const post = readHttp(postHttpJson);\n  const look = readHttp(lookupHttpJson);\n  if (look.ok && look.body && look.body.client_order_id === planned.client_order_id) {\n    return { ...planned, placed: true, duplicate: !post.ok, ...orderFieldsFromAlpaca(look.body), error: null };\n  }\n  if (post.ok && post.body && post.body.id) {\n    return { ...planned, placed: true, duplicate: false, ...orderFieldsFromAlpaca(post.body), error: null };\n  }\n  return {\n    ...planned,\n    placed: false,\n    duplicate: false,\n    ...orderFieldsFromAlpaca(null),\n    error: post.error || look.error || 'order not placed',\n  };\n}\n\n// An orders-table row for a placed order (contracts/data-tables.md).\nfunction orderRow(placed, ctx) {\n  return {\n    client_order_id: placed.client_order_id,\n    audit_id: ctx.audit_id,\n    user_id: ctx.user_id,\n    symbol: placed.symbol,\n    sleeve: placed.sleeve,\n    notional_usd: placed.notional_usd,\n    notional_cad: placed.notional_cad,\n    fx_rate: ctx.fx_rate,\n    alpaca_order_id: placed.alpaca_order_id,\n    status: placed.status,\n    filled_qty: placed.filled_qty,\n    filled_avg_price: placed.filled_avg_price,\n    submitted_at: placed.submitted_at,\n    filled_at: placed.filled_at,\n  };\n}\n\n// ---------- LO-05 ----------\n\nfunction configMap(rows) {\n  const cfg = {};\n  for (const r of rows || []) if (r && r.key) cfg[r.key] = r.value;\n  return cfg;\n}\n\nfunction sum2(values) {\n  return values.reduce((a, v) => a + toCents(v), 0) / 100;\n}\n\n// Audit already invested: return what was placed, touch nothing (idempotent re-run).\nfunction alreadyInvestedData(audit, rows, userId) {\n  const mine = (rows || []).filter((r) => r.audit_id === audit.audit_id);\n  const counted = mine.filter((r) => !isRetryId(r.client_order_id));\n  return {\n    audit_id: audit.audit_id,\n    user_id: userId,\n    status: 'invested',\n    already_invested: true,\n    fx_rate: counted.length ? Number(counted[0].fx_rate) : null,\n    fx_source: 'previous_run',\n    invested_cad: sum2(counted.map((r) => r.notional_cad)),\n    invested_usd: sum2(counted.map((r) => r.notional_usd)),\n    orders: mine.map((r) => ({\n      client_order_id: r.client_order_id,\n      symbol: r.symbol,\n      sleeve: r.sleeve,\n      notional_cad: round2(r.notional_cad),\n      notional_usd: round2(r.notional_usd),\n      status: apiOrderStatus(r.status),\n      alpaca_status: r.status,\n      duplicate: true,\n    })),\n  };\n}\n\n// Everything LO-05 decides before talking to Alpaca, as one pure function.\n// Inputs are the webhook/Execute Workflow body and the rows the Data Table\n// nodes read (null when missing). Returns:\n//   { proceed: false, http_status, envelope }            -> reply now\n//   { proceed: true, plan }                              -> check Alpaca, place plan.orders\nfunction planInvest({ request, user, profile, audit, config, existingOrders, fxBody }) {\n  const fail = (code, message, data) => ({ proceed: false, http_status: HTTP_FOR_CODE[code], envelope: envelopeError(code, message, data) });\n  const req = request && typeof request === 'object' ? request : {};\n  const user_id = String(req.user_id || '').trim();\n  const audit_id = String(req.audit_id || '').trim();\n  const dry_run = req.dry_run === true || req.dry_run === 'true';\n  const amount = Number(req.investable_cad);\n  const cfg = config || {};\n\n  if (!user_id) return fail('BAD_REQUEST', 'user_id is required');\n  if (!audit_id) return fail('BAD_REQUEST', 'audit_id is required');\n  if (!audit_id.startsWith(`${user_id}-`)) return fail('BAD_REQUEST', `audit_id ${audit_id} does not belong to user ${user_id}`);\n  if (req.investable_cad === undefined || req.investable_cad === null || req.investable_cad === '' || !Number.isFinite(amount) || amount <= 0) {\n    return fail('BAD_REQUEST', 'investable_cad must be a number greater than 0');\n  }\n  if (!user) return fail('NOT_FOUND', `unknown user ${user_id}`);\n  if (!profile) return fail('NOT_FOUND', `no investor profile for ${user_id}`);\n\n  const base = String(cfg.alpaca_base_url || ALPACA_PAPER_URL).replace(/\\/+$/, '');\n  if (base !== ALPACA_PAPER_URL) return fail('INTERNAL', `config alpaca_base_url must be ${ALPACA_PAPER_URL} (paper trading only), got ${base}`);\n  let symbols;\n  try {\n    symbols = JSON.parse(cfg.sleeve_symbols);\n  } catch {\n    return fail('INTERNAL', 'config sleeve_symbols is missing or not valid JSON');\n  }\n\n  if (!dry_run) {\n    if (!audit) return fail('NOT_FOUND', `unknown audit ${audit_id}`);\n    if (audit.user_id !== user_id) return fail('BAD_REQUEST', `audit ${audit_id} belongs to ${audit.user_id}, not ${user_id}`);\n    if (audit.status === 'invested') return { proceed: false, http_status: 200, envelope: envelopeOk(alreadyInvestedData(audit, existingOrders, user_id)) };\n    if (audit.status !== 'computed') return fail('BAD_REQUEST', `audit ${audit_id} is ${audit.status}; only computed audits can be invested`);\n    if (user.status === 'paused') return fail('BAD_REQUEST', `investing is paused for ${user_id}`);\n    if (!user.consent_at) return fail('BAD_REQUEST', `${user_id} has not given standing consent to invest`);\n  }\n\n  const maxWeekly = Number(user.max_weekly_invest) > 0 ? Number(user.max_weekly_invest) : 200;\n  const minInvest = Number(user.min_invest) > 0 ? Number(user.min_invest) : 5;\n  if (toCents(amount) > toCents(maxWeekly)) return fail('BAD_REQUEST', `investable_cad ${round2(amount)} is above max_weekly_invest ${maxWeekly}`);\n  if (toCents(amount) < toCents(minInvest)) return fail('BAD_REQUEST', `investable_cad ${round2(amount)} is below min_invest ${minInvest}`);\n\n  let weights;\n  let allocation_source;\n  try {\n    ({ weights, source: allocation_source } = resolveWeights(profile));\n  } catch (e) {\n    return fail('BAD_REQUEST', `profile for ${user_id}: ${e.message}`);\n  }\n\n  // A re-run after a partial failure reuses the rate already on this audit's\n  // orders, so the split (and every client_order_id's amount) is identical.\n  const previous = (existingOrders || []).find((o) => o.audit_id === audit_id && !isRetryId(o.client_order_id) && Number(o.fx_rate) > 0);\n  let fx;\n  if (previous) {\n    fx = { fx_rate: Number(previous.fx_rate), fx_source: 'previous_run', fx_date: null };\n  } else {\n    try {\n      fx = pickFxRate(fxBody, cfg.fx_fallback_usdcad);\n    } catch (e) {\n      return fail('UPSTREAM_ERROR', e.message);\n    }\n  }\n\n  let split;\n  try {\n    split = allocate({ investable_cad: amount, weights, fx_rate: fx.fx_rate, symbols, audit_id });\n  } catch (e) {\n    return fail('BAD_REQUEST', e.message);\n  }\n\n  const warnings = [];\n  if (audit && audit.investable_cad !== undefined && audit.investable_cad !== null && toCents(audit.investable_cad) !== toCents(amount)) {\n    warnings.push(`investable_cad ${round2(amount)} differs from the audit's ${round2(audit.investable_cad)}`);\n  }\n\n  const data = {\n    audit_id,\n    user_id,\n    status: 'dry_run',\n    fx_rate: fx.fx_rate,\n    fx_source: fx.fx_source,\n    invested_cad: split.invested_cad,\n    invested_usd: split.invested_usd,\n    allocation_source,\n    orders: split.orders.map((o) => ({ ...o, status: 'dry_run', alpaca_status: null, duplicate: false })),\n    folded: split.folded,\n  };\n  if (warnings.length) data.warnings = warnings;\n  if (dry_run) return { proceed: false, http_status: 200, envelope: envelopeOk(data) };\n\n  return {\n    proceed: true,\n    http_status: 200,\n    plan: {\n      ...data,\n      status: 'pending',\n      alpaca_base_url: ALPACA_PAPER_URL,\n      pending_carry: Number(user.pending_carry) || 0,\n      orders: split.orders,\n    },\n  };\n}\n\n// Alpaca not usable before any order was sent: behave like dry_run, report\n// UPSTREAM_ERROR, leave the audit computed (spec §19.5).\nfunction upstreamResult(plan, reason) {\n  const { alpaca_base_url, pending_carry, ...data } = plan;\n  return {\n    http_status: 502,\n    envelope: envelopeError('UPSTREAM_ERROR', `${reason}. No order was sent; the audit stays computed so a later run can invest.`, {\n      ...data,\n      status: 'dry_run',\n      orders: plan.orders.map((o) => ({ ...o, status: 'dry_run', alpaca_status: null, duplicate: false })),\n    }),\n  };\n}\n\n// After placing: rows to upsert, the reply, and (when every order is placed)\n// the user's new pending_carry (spec §10 WF05 step 6).\nfunction finishInvest(plan, results) {\n  const ctx = { audit_id: plan.audit_id, user_id: plan.user_id, fx_rate: plan.fx_rate };\n  const placed = results.filter((r) => r.placed);\n  const rows = placed.map((r) => orderRow(r, ctx));\n  const allPlaced = placed.length === results.length && results.length > 0;\n  const { alpaca_base_url, pending_carry, ...rest } = plan;\n  const data = {\n    ...rest,\n    status: allPlaced ? 'invested' : 'partial',\n    invested_cad: allPlaced ? plan.invested_cad : sum2(placed.map((r) => r.notional_cad)),\n    invested_usd: allPlaced ? plan.invested_usd : sum2(placed.map((r) => r.notional_usd)),\n    orders: results.map((r) => {\n      const o = {\n        client_order_id: r.client_order_id,\n        symbol: r.symbol,\n        sleeve: r.sleeve,\n        notional_cad: r.notional_cad,\n        notional_usd: r.notional_usd,\n        status: r.placed ? apiOrderStatus(r.status) : 'failed',\n        alpaca_status: r.placed ? r.status : null,\n        duplicate: r.duplicate,\n      };\n      if (!r.placed) o.error = r.error;\n      return o;\n    }),\n  };\n  if (allPlaced) {\n    return {\n      rows,\n      all_placed: true,\n      http_status: 200,\n      envelope: envelopeOk(data),\n      pending_carry_after: Math.max(toCents(pending_carry) - toCents(plan.invested_cad), 0) / 100,\n    };\n  }\n  const failed = results.filter((r) => !r.placed);\n  return {\n    rows,\n    all_placed: false,\n    http_status: 502,\n    envelope: envelopeError(\n      'UPSTREAM_ERROR',\n      `${failed.length} of ${results.length} orders were not accepted by Alpaca (${failed.map((f) => `${f.symbol}: ${f.error}`).join('; ')}). ` +\n        'Placed orders are recorded; the audit stays computed and a re-run retries the rest without duplicates.',\n      data,\n    ),\n    pending_carry_after: null,\n  };\n}\n\n// ---------- LO-06 ----------\n\n// Orders still worth asking Alpaca about.\nfunction pickOpenOrders(rows, userId) {\n  return (rows || []).filter((r) => r && r.client_order_id && !isTerminalStatus(r.status) && (!userId || r.user_id === userId));\n}\n\nfunction sameValue(a, b) {\n  const blank = (v) => v === null || v === undefined || v === '';\n  if (typeof a === 'number' || typeof b === 'number') return (blank(a) ? 0 : Number(a)) === (blank(b) ? 0 : Number(b));\n  if (blank(a) && blank(b)) return true;\n  if (blank(a) || blank(b)) return false;\n  const ta = Date.parse(a);\n  const tb = Date.parse(b);\n  if (/^\\d{4}-\\d{2}-\\d{2}T/.test(String(a)) && Number.isFinite(ta) && Number.isFinite(tb)) return Math.abs(ta - tb) < 1000;\n  return String(a) === String(b);\n}\n\n// One open row + its GET /v2/orders:by_client_order_id answer -> what to do.\n//   kind: updated | unchanged | missing (404) | error\n//   patch: columns to write; retry: a `-r1` order to submit; alert: message for WF09.\nfunction reconcileOrder(row, lookupHttpJson, knownClientOrderIds) {\n  const look = readHttp(lookupHttpJson);\n  if (!look.ok || !look.body || look.body.client_order_id !== row.client_order_id) {\n    return { kind: look.status === 404 ? 'missing' : 'error', patch: null, retry: null, alert: null, error: look.error || 'lookup returned another order' };\n  }\n  const f = orderFieldsFromAlpaca(look.body);\n  const patch = {};\n  for (const k of ['alpaca_order_id', 'status', 'filled_qty', 'filled_avg_price', 'submitted_at', 'filled_at']) {\n    if (k === 'submitted_at' && !f[k]) continue;\n    if (!sameValue(row[k], f[k])) patch[k] = f[k];\n  }\n  let retry = null;\n  let alert = null;\n  if (f.status === 'rejected' && row.status !== 'rejected') {\n    if (isRetryId(row.client_order_id)) {\n      alert = `order ${row.client_order_id} (${row.symbol}) was rejected again after its one retry`;\n    } else {\n      const retryId = `${row.client_order_id}${RETRY_SUFFIX}`;\n      if (!knownClientOrderIds || !knownClientOrderIds.has(retryId)) {\n        retry = {\n          client_order_id: retryId,\n          audit_id: row.audit_id,\n          user_id: row.user_id,\n          symbol: row.symbol,\n          sleeve: row.sleeve,\n          notional_usd: round2(row.notional_usd),\n          notional_cad: round2(row.notional_cad),\n          fx_rate: Number(row.fx_rate),\n        };\n      }\n    }\n  }\n  return { kind: Object.keys(patch).length ? 'updated' : 'unchanged', patch, retry, alert, error: null };\n}\n\n// All open rows + their lookups -> updates, retries, alerts and counts.\nfunction planReconcile(openRows, lookupHttpJsons, allRows) {\n  const known = new Set((allRows || []).map((r) => r.client_order_id));\n  const updates = [];\n  const retries = [];\n  const alerts = [];\n  const problems = [];\n  openRows.forEach((row, i) => {\n    const d = reconcileOrder(row, lookupHttpJsons[i], known);\n    if (d.kind === 'updated') updates.push({ client_order_id: row.client_order_id, ...d.patch });\n    if (d.kind === 'missing' || d.kind === 'error') problems.push({ client_order_id: row.client_order_id, error: d.error });\n    if (d.retry) retries.push(d.retry);\n    if (d.alert) alerts.push(d.alert);\n  });\n  return { checked: openRows.length, updates, retries, alerts, problems };\n}\n\n// Retry orders placed (or not) -> rows to write, final counts and alerts.\nfunction finishReconcile(summary, retryResults) {\n  const rows = [];\n  const alerts = summary.alerts.slice();\n  let retried = 0;\n  (retryResults || []).forEach((r) => {\n    if (r.placed) {\n      retried += 1;\n      rows.push(orderRow(r, { audit_id: r.audit_id, user_id: r.user_id, fx_rate: r.fx_rate }));\n      if (r.status === 'rejected') alerts.push(`retry ${r.client_order_id} (${r.symbol}) was rejected immediately`);\n    } else {\n      alerts.push(`retry ${r.client_order_id} (${r.symbol}) could not be placed: ${r.error}`);\n    }\n  });\n  const failedRetries = (retryResults || []).filter((r) => !r.placed).length;\n  const data = {\n    checked: summary.checked,\n    updated: summary.updates.length,\n    retried,\n    failed: summary.problems.length + failedRetries,\n  };\n  if (summary.problems.length) data.problems = summary.problems;\n  if (alerts.length) data.alerts = alerts;\n  return { rows, alerts, envelope: envelopeOk(data) };\n}\n// ---- end of lib/allocate.mjs ----\n\n// Alpaca missing or down -> behave like dry_run + UPSTREAM_ERROR (spec §19.5). Else one item per order.\nconst planned = $('Plan orders').first().json;\nconst gate = accountReady($input.first().json);\nif (!gate.ready) {\n  const up = upstreamResult(planned.plan, gate.reason);\n  return [{ json: { ready: false, http_status: up.http_status, envelope: up.envelope, internal: internalResult(up.envelope, planned.request) } }];\n}\nreturn planned.plan.orders.map((o) => ({ json: {\n  ready: true,\n  ...o,\n  url: planned.plan.alpaca_base_url + '/v2/orders',\n  request_body: { symbol: o.symbol, notional: o.notional_usd.toFixed(2), side: 'buy', type: 'market', time_in_force: 'day', client_order_id: o.client_order_id },\n} }));"
+      },
+      "name": "One item per order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "lane-b-cond-2",
+              "leftValue": "={{ $json.ready }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Alpaca ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        2660,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": false,
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.request_body) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "name": "Alpaca: submit order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2880,
+        600
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('One item per order').item.json.url }}:by_client_order_id",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "client_order_id",
+              "value": "={{ $('One item per order').item.json.client_order_id }}"
+            }
+          ]
+        },
+        "sendBody": false,
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "name": "Alpaca: confirm order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3100,
+        600
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ---- lib/allocate.mjs ---- pasted verbatim: change lib/allocate.mjs, run npm test, re-paste.\n// lib/allocate.mjs: invest + reconcile logic for LO-05 and LO-06\n// (spec §6.9, §10 WF05/WF06, §11.5, §12, §19.2, §19.5).\n//\n// - sleeve weights from the profile (allocation_json, or tier + home bias)\n// - CAD -> USD at a Frankfurter rate with the config fallback\n// - split to the cent (largest remainder, total preserved), sleeves under\n//   Alpaca's $1 minimum folded into the largest sleeve\n// - request validation, Alpaca response handling, reconcile decisions\n//\n// Plain functions, no imports, so this pastes straight into an n8n Code node:\n// LO-05 and LO-06 embed everything above the `export` line at the bottom\n// (lib/allocate.test.mjs checks they stay identical).\n\nconst SLEEVES = ['equity_us', 'equity_intl', 'equity_ca', 'bonds', 'cash'];\n\n// §11.5 asset mix per tier.\nconst TIER_MIX = {\n  cash: { equity: 0, bonds: 0, cash: 1 },\n  conservative: { equity: 0.2, bonds: 0.6, cash: 0.2 },\n  balanced: { equity: 0.6, bonds: 0.4, cash: 0 },\n  growth: { equity: 0.8, bonds: 0.2, cash: 0 },\n  all_equity: { equity: 1, bonds: 0, cash: 0 },\n};\n\n// §11.5 equity split by home bias.\nconst HOME_BIAS_SPLIT = {\n  global: { equity_us: 0.6, equity_intl: 0.35, equity_ca: 0.05 },\n  more_canada: { equity_us: 0.45, equity_intl: 0.25, equity_ca: 0.3 },\n};\n\nconst ALPACA_PAPER_URL = 'https://paper-api.alpaca.markets'; // paper only, never live (spec §0.6)\nconst MIN_NOTIONAL_USD = 1; // Alpaca: fractional orders from $1 notional\nconst CLIENT_ORDER_ID_MAX = 48; // Alpaca v2 limit (newer docs say 128; stay under the strict one)\nconst RETRY_SUFFIX = '-r1'; // spec §19.2\nconst TERMINAL_STATUSES = ['filled', 'canceled', 'expired', 'rejected', 'replaced'];\nconst FX_SANE_RANGE = [0.8, 2.0]; // CAD per 1 USD; anything outside is treated as a bad quote\nconst HTTP_FOR_CODE = { BAD_REQUEST: 400, NOT_FOUND: 404, UPSTREAM_ERROR: 502, INTERNAL: 500 };\n\n// ---------- money ----------\n\n// Dollars -> integer cents. toFixed(6) strips float noise (26.15 * 100 = 2614.9999…).\nfunction toCents(amount) {\n  const n = Number(amount);\n  if (!Number.isFinite(n)) throw new Error(`toCents: not a number: ${amount}`);\n  return Math.round(Number((n * 100).toFixed(6)));\n}\n\nfunction round2(amount) {\n  return toCents(amount) / 100;\n}\n\nfunction round4(x) {\n  return Math.round(Number((Number(x) * 10000).toFixed(6))) / 10000;\n}\n\n// Split `totalCents` across `weights` (non-negative numbers) into integer cents\n// that sum exactly to `totalCents`. Largest remainder: everyone gets the floor\n// of their share, the leftover cents go to the largest fractional parts\n// (ties: larger weight, then earlier position).\nfunction splitCents(totalCents, weights) {\n  if (!Number.isInteger(totalCents) || totalCents < 0) throw new Error(`splitCents: bad total ${totalCents}`);\n  const sum = weights.reduce((a, b) => a + b, 0);\n  if (!(sum > 0)) throw new Error('splitCents: weights sum to 0');\n  const raw = weights.map((w) => (totalCents * w) / sum);\n  const out = raw.map((r) => Math.floor(r + 1e-9));\n  let left = totalCents - out.reduce((a, b) => a + b, 0);\n  const rank = raw\n    .map((r, i) => ({ i, frac: Number((r - out[i]).toFixed(9)), w: weights[i] }))\n    .sort((a, b) => b.frac - a.frac || b.w - a.w || a.i - b.i);\n  for (let k = 0; left > 0; k = (k + 1) % rank.length) {\n    out[rank[k].i] += 1;\n    left -= 1;\n  }\n  return out;\n}\n\n// ---------- weights ----------\n\n// §11.5: tier + home bias -> sleeve weights (fractions summing to 1).\nfunction sleeveWeights(tier, homeBias = 'global') {\n  const mix = TIER_MIX[tier];\n  if (!mix) throw new Error(`unknown tier: ${tier}`);\n  const split = HOME_BIAS_SPLIT[homeBias] || HOME_BIAS_SPLIT.global;\n  return {\n    equity_us: round4(mix.equity * split.equity_us),\n    equity_intl: round4(mix.equity * split.equity_intl),\n    equity_ca: round4(mix.equity * split.equity_ca),\n    bonds: mix.bonds,\n    cash: mix.cash,\n  };\n}\n\n// allocation_json (string or object) -> validated weights for every sleeve.\nfunction parseWeights(allocation) {\n  let obj = allocation;\n  if (typeof obj === 'string') {\n    try {\n      obj = JSON.parse(obj);\n    } catch {\n      throw new Error('allocation_json is not valid JSON');\n    }\n  }\n  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('allocation must be an object of sleeve weights');\n  const weights = {};\n  let sum = 0;\n  for (const [sleeve, value] of Object.entries(obj)) {\n    if (!SLEEVES.includes(sleeve)) throw new Error(`allocation has an unknown sleeve: ${sleeve}`);\n    const w = Number(value);\n    if (!Number.isFinite(w) || w < 0) throw new Error(`allocation weight for ${sleeve} must be a number >= 0`);\n    weights[sleeve] = w;\n    sum += w;\n  }\n  if (Math.abs(sum - 1) > 0.01) throw new Error(`allocation weights sum to ${round4(sum)}, expected 1`);\n  for (const s of SLEEVES) if (!(s in weights)) weights[s] = 0;\n  return weights;\n}\n\n// The user's (possibly edited) allocation wins; tier + home bias only when the\n// profile has none. An allocation that is present but broken is an error, not\n// a silent fallback: we never invest differently from what the user chose.\nfunction resolveWeights(profile) {\n  const raw = profile && profile.allocation_json;\n  if (raw !== undefined && raw !== null && String(raw).trim() !== '') {\n    return { weights: parseWeights(raw), source: 'profile' };\n  }\n  return { weights: sleeveWeights(profile && profile.tier, profile && profile.home_bias), source: 'tier' };\n}\n\n// ---------- FX ----------\n\n// Frankfurter body {base:\"USD\", date, rates:{CAD}} -> CAD per 1 USD, else the\n// config fallback (`fx_fallback_usdcad`). Rounded to 4 decimals, the rate we\n// store on every order.\nfunction pickFxRate(frankfurterBody, fallbackValue) {\n  const inRange = (r) => Number.isFinite(r) && r >= FX_SANE_RANGE[0] && r <= FX_SANE_RANGE[1];\n  const body = frankfurterBody && typeof frankfurterBody === 'object' ? frankfurterBody : {};\n  const rate = Number(body.rates && body.rates.CAD);\n  if ((body.base === undefined || body.base === 'USD') && inRange(rate)) {\n    return { fx_rate: round4(rate), fx_source: 'frankfurter', fx_date: body.date || null };\n  }\n  const fallback = Number(fallbackValue);\n  if (fallbackValue !== '' && fallbackValue !== null && fallbackValue !== undefined && inRange(fallback)) {\n    return { fx_rate: round4(fallback), fx_source: 'fallback', fx_date: null };\n  }\n  throw new Error('no usable USD/CAD rate: Frankfurter failed and config fx_fallback_usdcad is missing or out of range');\n}\n\n// ---------- the split ----------\n\nfunction clientOrderId(auditId, symbol) {\n  const id = `${auditId}-${symbol}`;\n  if (id.length + RETRY_SUFFIX.length > CLIENT_ORDER_ID_MAX) {\n    throw new Error(`client_order_id ${id} is too long for Alpaca (max ${CLIENT_ORDER_ID_MAX} with the retry suffix)`);\n  }\n  return id;\n}\n\nfunction isRetryId(clientOrderIdValue) {\n  return String(clientOrderIdValue || '').endsWith(RETRY_SUFFIX);\n}\n\n// investable CAD -> one order per sleeve (spec §10 WF05 step 3).\n// 1. CAD split to the cent by weight (total preserved).\n// 2. USD total = CAD total / fx, split in proportion to the CAD amounts (total preserved).\n// 3. Any sleeve whose USD amount is under Alpaca's minimum is folded into the\n//    largest sleeve, then step 2 is redone, until every order clears the minimum.\nfunction allocate({ investable_cad, weights, fx_rate, symbols, audit_id, min_notional_usd = MIN_NOTIONAL_USD }) {\n  const totalCad = toCents(investable_cad);\n  if (!(totalCad > 0)) throw new Error('investable_cad must be greater than 0');\n  const fx = Number(fx_rate);\n  if (!(fx > 0)) throw new Error(`bad fx_rate: ${fx_rate}`);\n  const minUsd = toCents(min_notional_usd);\n  const w = parseWeights(weights);\n\n  let sleeves = SLEEVES.filter((s) => w[s] > 0);\n  const seen = new Set();\n  for (const s of sleeves) {\n    const sym = symbols && symbols[s];\n    if (!sym || typeof sym !== 'string') throw new Error(`config sleeve_symbols has no ticker for sleeve ${s}`);\n    if (seen.has(sym)) throw new Error(`config sleeve_symbols maps two sleeves to ${sym}`);\n    seen.add(sym);\n  }\n\n  const cad = {};\n  splitCents(totalCad, sleeves.map((s) => w[s])).forEach((c, i) => {\n    cad[sleeves[i]] = c;\n  });\n  sleeves = sleeves.filter((s) => cad[s] > 0);\n  const largest = sleeves\n    .slice()\n    .sort((a, b) => cad[b] - cad[a] || w[b] - w[a] || SLEEVES.indexOf(a) - SLEEVES.indexOf(b))[0];\n\n  const totalUsd = Math.round(Number((totalCad / fx).toFixed(6)));\n  const folded = [];\n  let usd = {};\n  for (;;) {\n    usd = {};\n    splitCents(totalUsd, sleeves.map((s) => cad[s])).forEach((c, i) => {\n      usd[sleeves[i]] = c;\n    });\n    const small = sleeves.filter((s) => s !== largest && usd[s] < minUsd);\n    if (!small.length) break;\n    for (const s of small) {\n      folded.push({ sleeve: s, symbol: symbols[s], notional_cad: cad[s] / 100, into: largest });\n      cad[largest] += cad[s];\n      delete cad[s];\n    }\n    sleeves = sleeves.filter((s) => !small.includes(s));\n  }\n  if (usd[largest] < minUsd) {\n    throw new Error(`USD ${totalUsd / 100} is below Alpaca's minimum order of USD ${minUsd / 100}`);\n  }\n\n  return {\n    investable_cad: totalCad / 100,\n    fx_rate: fx,\n    invested_cad: totalCad / 100,\n    invested_usd: totalUsd / 100,\n    orders: sleeves.map((s) => ({\n      client_order_id: clientOrderId(audit_id, symbols[s]),\n      symbol: symbols[s],\n      sleeve: s,\n      notional_cad: cad[s] / 100,\n      notional_usd: usd[s] / 100,\n    })),\n    folded,\n  };\n}\n\n// ---------- order statuses (spec §19.2) ----------\n\nfunction isTerminalStatus(rawStatus) {\n  return TERMINAL_STATUSES.includes(rawStatus);\n}\n\n// Raw Alpaca status -> API status: queued | partially_filled | filled | rejected | canceled.\nfunction apiOrderStatus(rawStatus) {\n  if (rawStatus === 'filled' || rawStatus === 'partially_filled' || rawStatus === 'rejected') return rawStatus;\n  if (rawStatus === 'canceled' || rawStatus === 'expired') return 'canceled';\n  return 'queued';\n}\n\n// ---------- envelopes (spec §19.2) ----------\n\nfunction envelopeOk(data) {\n  return { ok: true, data };\n}\n\nfunction envelopeError(code, message, data) {\n  const env = { ok: false, error: { code, message } };\n  if (data !== undefined) env.data = data;\n  return env;\n}\n\n// What LO-05 returns to LO-04 (Execute Workflow): the `data` object, with\n// `error` added when the run did not invest (contracts/webhooks.md).\nfunction internalResult(envelope, request) {\n  if (envelope.ok) return envelope.data;\n  const req = request || {};\n  const base = envelope.data || { audit_id: req.audit_id || null, user_id: req.user_id || null, status: 'failed' };\n  return { ...base, error: envelope.error };\n}\n\n// ---------- Alpaca responses (n8n HTTP Request node, full response + never error) ----------\n\n// n8n HTTP item -> {ok, status, body, error}. A request that never got an HTTP\n// answer (missing credential, DNS, timeout) comes back as {error} with status 0.\nfunction readHttp(json) {\n  if (!json || typeof json !== 'object') return { ok: false, status: 0, body: null, error: 'no response' };\n  if (json.statusCode === undefined) {\n    const e = json.error;\n    const msg = typeof e === 'string' ? e : (e && (e.message || e.description)) || 'request failed';\n    return { ok: false, status: 0, body: null, error: String(msg) };\n  }\n  const status = Number(json.statusCode);\n  const body = json.body === undefined ? null : json.body;\n  const ok = status >= 200 && status < 300;\n  let error = null;\n  if (!ok) {\n    const detail = body && typeof body === 'object' && body.message ? body.message : typeof body === 'string' ? body.slice(0, 200) : '';\n    error = `HTTP ${status}${detail ? `: ${detail}` : ''}`;\n  }\n  return { ok, status, body, error };\n}\n\n// GET /v2/account -> can we trade? Missing credential, bad keys, network down\n// or a blocked account all mean \"not ready\" (spec §19.5).\nfunction accountReady(accountHttpJson) {\n  const r = readHttp(accountHttpJson);\n  if (!r.ok) {\n    if (r.status === 0) return { ready: false, reason: `Alpaca not reachable or the \"Alpaca Paper\" credential is missing (${r.error})` };\n    if (r.status === 401 || r.status === 403) return { ready: false, reason: `Alpaca refused the API keys (${r.error})` };\n    return { ready: false, reason: `Alpaca account check failed (${r.error})` };\n  }\n  const acct = r.body || {};\n  if (acct.status && acct.status !== 'ACTIVE') return { ready: false, reason: `Alpaca account status is ${acct.status}` };\n  if (acct.trading_blocked || acct.account_blocked) return { ready: false, reason: 'Alpaca account is blocked from trading' };\n  return { ready: true, reason: null };\n}\n\n// Alpaca timestamps carry micro/nanoseconds (\"…09.123456789Z\"): store plain ISO (ms, UTC).\nfunction isoOrNull(value) {\n  if (value === null || value === undefined || value === '') return null;\n  const s = String(value).replace(/(\\.\\d{3})\\d+/, '$1');\n  const t = Date.parse(s);\n  return Number.isFinite(t) ? new Date(t).toISOString() : null;\n}\n\n// Alpaca order object -> the columns we store (Alpaca sends numbers as strings).\nfunction orderFieldsFromAlpaca(order) {\n  const o = order || {};\n  const num = (v) => {\n    const n = Number(v);\n    return v === null || v === undefined || v === '' || !Number.isFinite(n) ? 0 : n;\n  };\n  return {\n    alpaca_order_id: o.id || '',\n    status: o.status || '',\n    filled_qty: num(o.filled_qty),\n    filled_avg_price: num(o.filled_avg_price),\n    submitted_at: isoOrNull(o.submitted_at || o.created_at),\n    filled_at: isoOrNull(o.filled_at),\n  };\n}\n\n// One planned order + its POST /v2/orders and GET /v2/orders:by_client_order_id\n// answers -> placed or not. The lookup is the source of truth: a POST that\n// failed (e.g. 422 because the client_order_id already exists) whose lookup\n// finds the order is a duplicate, which counts as success (spec §10 WF05 step 5).\nfunction placementResult(planned, postHttpJson, lookupHttpJson) {\n  const post = readHttp(postHttpJson);\n  const look = readHttp(lookupHttpJson);\n  if (look.ok && look.body && look.body.client_order_id === planned.client_order_id) {\n    return { ...planned, placed: true, duplicate: !post.ok, ...orderFieldsFromAlpaca(look.body), error: null };\n  }\n  if (post.ok && post.body && post.body.id) {\n    return { ...planned, placed: true, duplicate: false, ...orderFieldsFromAlpaca(post.body), error: null };\n  }\n  return {\n    ...planned,\n    placed: false,\n    duplicate: false,\n    ...orderFieldsFromAlpaca(null),\n    error: post.error || look.error || 'order not placed',\n  };\n}\n\n// An orders-table row for a placed order (contracts/data-tables.md).\nfunction orderRow(placed, ctx) {\n  return {\n    client_order_id: placed.client_order_id,\n    audit_id: ctx.audit_id,\n    user_id: ctx.user_id,\n    symbol: placed.symbol,\n    sleeve: placed.sleeve,\n    notional_usd: placed.notional_usd,\n    notional_cad: placed.notional_cad,\n    fx_rate: ctx.fx_rate,\n    alpaca_order_id: placed.alpaca_order_id,\n    status: placed.status,\n    filled_qty: placed.filled_qty,\n    filled_avg_price: placed.filled_avg_price,\n    submitted_at: placed.submitted_at,\n    filled_at: placed.filled_at,\n  };\n}\n\n// ---------- LO-05 ----------\n\nfunction configMap(rows) {\n  const cfg = {};\n  for (const r of rows || []) if (r && r.key) cfg[r.key] = r.value;\n  return cfg;\n}\n\nfunction sum2(values) {\n  return values.reduce((a, v) => a + toCents(v), 0) / 100;\n}\n\n// Audit already invested: return what was placed, touch nothing (idempotent re-run).\nfunction alreadyInvestedData(audit, rows, userId) {\n  const mine = (rows || []).filter((r) => r.audit_id === audit.audit_id);\n  const counted = mine.filter((r) => !isRetryId(r.client_order_id));\n  return {\n    audit_id: audit.audit_id,\n    user_id: userId,\n    status: 'invested',\n    already_invested: true,\n    fx_rate: counted.length ? Number(counted[0].fx_rate) : null,\n    fx_source: 'previous_run',\n    invested_cad: sum2(counted.map((r) => r.notional_cad)),\n    invested_usd: sum2(counted.map((r) => r.notional_usd)),\n    orders: mine.map((r) => ({\n      client_order_id: r.client_order_id,\n      symbol: r.symbol,\n      sleeve: r.sleeve,\n      notional_cad: round2(r.notional_cad),\n      notional_usd: round2(r.notional_usd),\n      status: apiOrderStatus(r.status),\n      alpaca_status: r.status,\n      duplicate: true,\n    })),\n  };\n}\n\n// Everything LO-05 decides before talking to Alpaca, as one pure function.\n// Inputs are the webhook/Execute Workflow body and the rows the Data Table\n// nodes read (null when missing). Returns:\n//   { proceed: false, http_status, envelope }            -> reply now\n//   { proceed: true, plan }                              -> check Alpaca, place plan.orders\nfunction planInvest({ request, user, profile, audit, config, existingOrders, fxBody }) {\n  const fail = (code, message, data) => ({ proceed: false, http_status: HTTP_FOR_CODE[code], envelope: envelopeError(code, message, data) });\n  const req = request && typeof request === 'object' ? request : {};\n  const user_id = String(req.user_id || '').trim();\n  const audit_id = String(req.audit_id || '').trim();\n  const dry_run = req.dry_run === true || req.dry_run === 'true';\n  const amount = Number(req.investable_cad);\n  const cfg = config || {};\n\n  if (!user_id) return fail('BAD_REQUEST', 'user_id is required');\n  if (!audit_id) return fail('BAD_REQUEST', 'audit_id is required');\n  if (!audit_id.startsWith(`${user_id}-`)) return fail('BAD_REQUEST', `audit_id ${audit_id} does not belong to user ${user_id}`);\n  if (req.investable_cad === undefined || req.investable_cad === null || req.investable_cad === '' || !Number.isFinite(amount) || amount <= 0) {\n    return fail('BAD_REQUEST', 'investable_cad must be a number greater than 0');\n  }\n  if (!user) return fail('NOT_FOUND', `unknown user ${user_id}`);\n  if (!profile) return fail('NOT_FOUND', `no investor profile for ${user_id}`);\n\n  const base = String(cfg.alpaca_base_url || ALPACA_PAPER_URL).replace(/\\/+$/, '');\n  if (base !== ALPACA_PAPER_URL) return fail('INTERNAL', `config alpaca_base_url must be ${ALPACA_PAPER_URL} (paper trading only), got ${base}`);\n  let symbols;\n  try {\n    symbols = JSON.parse(cfg.sleeve_symbols);\n  } catch {\n    return fail('INTERNAL', 'config sleeve_symbols is missing or not valid JSON');\n  }\n\n  if (!dry_run) {\n    if (!audit) return fail('NOT_FOUND', `unknown audit ${audit_id}`);\n    if (audit.user_id !== user_id) return fail('BAD_REQUEST', `audit ${audit_id} belongs to ${audit.user_id}, not ${user_id}`);\n    if (audit.status === 'invested') return { proceed: false, http_status: 200, envelope: envelopeOk(alreadyInvestedData(audit, existingOrders, user_id)) };\n    if (audit.status !== 'computed') return fail('BAD_REQUEST', `audit ${audit_id} is ${audit.status}; only computed audits can be invested`);\n    if (user.status === 'paused') return fail('BAD_REQUEST', `investing is paused for ${user_id}`);\n    if (!user.consent_at) return fail('BAD_REQUEST', `${user_id} has not given standing consent to invest`);\n  }\n\n  const maxWeekly = Number(user.max_weekly_invest) > 0 ? Number(user.max_weekly_invest) : 200;\n  const minInvest = Number(user.min_invest) > 0 ? Number(user.min_invest) : 5;\n  if (toCents(amount) > toCents(maxWeekly)) return fail('BAD_REQUEST', `investable_cad ${round2(amount)} is above max_weekly_invest ${maxWeekly}`);\n  if (toCents(amount) < toCents(minInvest)) return fail('BAD_REQUEST', `investable_cad ${round2(amount)} is below min_invest ${minInvest}`);\n\n  let weights;\n  let allocation_source;\n  try {\n    ({ weights, source: allocation_source } = resolveWeights(profile));\n  } catch (e) {\n    return fail('BAD_REQUEST', `profile for ${user_id}: ${e.message}`);\n  }\n\n  // A re-run after a partial failure reuses the rate already on this audit's\n  // orders, so the split (and every client_order_id's amount) is identical.\n  const previous = (existingOrders || []).find((o) => o.audit_id === audit_id && !isRetryId(o.client_order_id) && Number(o.fx_rate) > 0);\n  let fx;\n  if (previous) {\n    fx = { fx_rate: Number(previous.fx_rate), fx_source: 'previous_run', fx_date: null };\n  } else {\n    try {\n      fx = pickFxRate(fxBody, cfg.fx_fallback_usdcad);\n    } catch (e) {\n      return fail('UPSTREAM_ERROR', e.message);\n    }\n  }\n\n  let split;\n  try {\n    split = allocate({ investable_cad: amount, weights, fx_rate: fx.fx_rate, symbols, audit_id });\n  } catch (e) {\n    return fail('BAD_REQUEST', e.message);\n  }\n\n  const warnings = [];\n  if (audit && audit.investable_cad !== undefined && audit.investable_cad !== null && toCents(audit.investable_cad) !== toCents(amount)) {\n    warnings.push(`investable_cad ${round2(amount)} differs from the audit's ${round2(audit.investable_cad)}`);\n  }\n\n  const data = {\n    audit_id,\n    user_id,\n    status: 'dry_run',\n    fx_rate: fx.fx_rate,\n    fx_source: fx.fx_source,\n    invested_cad: split.invested_cad,\n    invested_usd: split.invested_usd,\n    allocation_source,\n    orders: split.orders.map((o) => ({ ...o, status: 'dry_run', alpaca_status: null, duplicate: false })),\n    folded: split.folded,\n  };\n  if (warnings.length) data.warnings = warnings;\n  if (dry_run) return { proceed: false, http_status: 200, envelope: envelopeOk(data) };\n\n  return {\n    proceed: true,\n    http_status: 200,\n    plan: {\n      ...data,\n      status: 'pending',\n      alpaca_base_url: ALPACA_PAPER_URL,\n      pending_carry: Number(user.pending_carry) || 0,\n      orders: split.orders,\n    },\n  };\n}\n\n// Alpaca not usable before any order was sent: behave like dry_run, report\n// UPSTREAM_ERROR, leave the audit computed (spec §19.5).\nfunction upstreamResult(plan, reason) {\n  const { alpaca_base_url, pending_carry, ...data } = plan;\n  return {\n    http_status: 502,\n    envelope: envelopeError('UPSTREAM_ERROR', `${reason}. No order was sent; the audit stays computed so a later run can invest.`, {\n      ...data,\n      status: 'dry_run',\n      orders: plan.orders.map((o) => ({ ...o, status: 'dry_run', alpaca_status: null, duplicate: false })),\n    }),\n  };\n}\n\n// After placing: rows to upsert, the reply, and (when every order is placed)\n// the user's new pending_carry (spec §10 WF05 step 6).\nfunction finishInvest(plan, results) {\n  const ctx = { audit_id: plan.audit_id, user_id: plan.user_id, fx_rate: plan.fx_rate };\n  const placed = results.filter((r) => r.placed);\n  const rows = placed.map((r) => orderRow(r, ctx));\n  const allPlaced = placed.length === results.length && results.length > 0;\n  const { alpaca_base_url, pending_carry, ...rest } = plan;\n  const data = {\n    ...rest,\n    status: allPlaced ? 'invested' : 'partial',\n    invested_cad: allPlaced ? plan.invested_cad : sum2(placed.map((r) => r.notional_cad)),\n    invested_usd: allPlaced ? plan.invested_usd : sum2(placed.map((r) => r.notional_usd)),\n    orders: results.map((r) => {\n      const o = {\n        client_order_id: r.client_order_id,\n        symbol: r.symbol,\n        sleeve: r.sleeve,\n        notional_cad: r.notional_cad,\n        notional_usd: r.notional_usd,\n        status: r.placed ? apiOrderStatus(r.status) : 'failed',\n        alpaca_status: r.placed ? r.status : null,\n        duplicate: r.duplicate,\n      };\n      if (!r.placed) o.error = r.error;\n      return o;\n    }),\n  };\n  if (allPlaced) {\n    return {\n      rows,\n      all_placed: true,\n      http_status: 200,\n      envelope: envelopeOk(data),\n      pending_carry_after: Math.max(toCents(pending_carry) - toCents(plan.invested_cad), 0) / 100,\n    };\n  }\n  const failed = results.filter((r) => !r.placed);\n  return {\n    rows,\n    all_placed: false,\n    http_status: 502,\n    envelope: envelopeError(\n      'UPSTREAM_ERROR',\n      `${failed.length} of ${results.length} orders were not accepted by Alpaca (${failed.map((f) => `${f.symbol}: ${f.error}`).join('; ')}). ` +\n        'Placed orders are recorded; the audit stays computed and a re-run retries the rest without duplicates.',\n      data,\n    ),\n    pending_carry_after: null,\n  };\n}\n\n// ---------- LO-06 ----------\n\n// Orders still worth asking Alpaca about.\nfunction pickOpenOrders(rows, userId) {\n  return (rows || []).filter((r) => r && r.client_order_id && !isTerminalStatus(r.status) && (!userId || r.user_id === userId));\n}\n\nfunction sameValue(a, b) {\n  const blank = (v) => v === null || v === undefined || v === '';\n  if (typeof a === 'number' || typeof b === 'number') return (blank(a) ? 0 : Number(a)) === (blank(b) ? 0 : Number(b));\n  if (blank(a) && blank(b)) return true;\n  if (blank(a) || blank(b)) return false;\n  const ta = Date.parse(a);\n  const tb = Date.parse(b);\n  if (/^\\d{4}-\\d{2}-\\d{2}T/.test(String(a)) && Number.isFinite(ta) && Number.isFinite(tb)) return Math.abs(ta - tb) < 1000;\n  return String(a) === String(b);\n}\n\n// One open row + its GET /v2/orders:by_client_order_id answer -> what to do.\n//   kind: updated | unchanged | missing (404) | error\n//   patch: columns to write; retry: a `-r1` order to submit; alert: message for WF09.\nfunction reconcileOrder(row, lookupHttpJson, knownClientOrderIds) {\n  const look = readHttp(lookupHttpJson);\n  if (!look.ok || !look.body || look.body.client_order_id !== row.client_order_id) {\n    return { kind: look.status === 404 ? 'missing' : 'error', patch: null, retry: null, alert: null, error: look.error || 'lookup returned another order' };\n  }\n  const f = orderFieldsFromAlpaca(look.body);\n  const patch = {};\n  for (const k of ['alpaca_order_id', 'status', 'filled_qty', 'filled_avg_price', 'submitted_at', 'filled_at']) {\n    if (k === 'submitted_at' && !f[k]) continue;\n    if (!sameValue(row[k], f[k])) patch[k] = f[k];\n  }\n  let retry = null;\n  let alert = null;\n  if (f.status === 'rejected' && row.status !== 'rejected') {\n    if (isRetryId(row.client_order_id)) {\n      alert = `order ${row.client_order_id} (${row.symbol}) was rejected again after its one retry`;\n    } else {\n      const retryId = `${row.client_order_id}${RETRY_SUFFIX}`;\n      if (!knownClientOrderIds || !knownClientOrderIds.has(retryId)) {\n        retry = {\n          client_order_id: retryId,\n          audit_id: row.audit_id,\n          user_id: row.user_id,\n          symbol: row.symbol,\n          sleeve: row.sleeve,\n          notional_usd: round2(row.notional_usd),\n          notional_cad: round2(row.notional_cad),\n          fx_rate: Number(row.fx_rate),\n        };\n      }\n    }\n  }\n  return { kind: Object.keys(patch).length ? 'updated' : 'unchanged', patch, retry, alert, error: null };\n}\n\n// All open rows + their lookups -> updates, retries, alerts and counts.\nfunction planReconcile(openRows, lookupHttpJsons, allRows) {\n  const known = new Set((allRows || []).map((r) => r.client_order_id));\n  const updates = [];\n  const retries = [];\n  const alerts = [];\n  const problems = [];\n  openRows.forEach((row, i) => {\n    const d = reconcileOrder(row, lookupHttpJsons[i], known);\n    if (d.kind === 'updated') updates.push({ client_order_id: row.client_order_id, ...d.patch });\n    if (d.kind === 'missing' || d.kind === 'error') problems.push({ client_order_id: row.client_order_id, error: d.error });\n    if (d.retry) retries.push(d.retry);\n    if (d.alert) alerts.push(d.alert);\n  });\n  return { checked: openRows.length, updates, retries, alerts, problems };\n}\n\n// Retry orders placed (or not) -> rows to write, final counts and alerts.\nfunction finishReconcile(summary, retryResults) {\n  const rows = [];\n  const alerts = summary.alerts.slice();\n  let retried = 0;\n  (retryResults || []).forEach((r) => {\n    if (r.placed) {\n      retried += 1;\n      rows.push(orderRow(r, { audit_id: r.audit_id, user_id: r.user_id, fx_rate: r.fx_rate }));\n      if (r.status === 'rejected') alerts.push(`retry ${r.client_order_id} (${r.symbol}) was rejected immediately`);\n    } else {\n      alerts.push(`retry ${r.client_order_id} (${r.symbol}) could not be placed: ${r.error}`);\n    }\n  });\n  const failedRetries = (retryResults || []).filter((r) => !r.placed).length;\n  const data = {\n    checked: summary.checked,\n    updated: summary.updates.length,\n    retried,\n    failed: summary.problems.length + failedRetries,\n  };\n  if (summary.problems.length) data.problems = summary.problems;\n  if (alerts.length) data.alerts = alerts;\n  return { rows, alerts, envelope: envelopeOk(data) };\n}\n// ---- end of lib/allocate.mjs ----\n\n// POST answer + lookup answer per order -> placed / duplicate / refused (spec §10 WF05 steps 4-6).\nconst planned = $('Plan orders').first().json;\nconst orders = $('One item per order').all().map((i) => i.json);\nconst posts = $('Alpaca: submit order').all().map((i) => i.json);\nconst lookups = $input.all().map((i) => i.json);\nconst results = orders.map((o, i) => placementResult(\n  { client_order_id: o.client_order_id, symbol: o.symbol, sleeve: o.sleeve, notional_cad: o.notional_cad, notional_usd: o.notional_usd },\n  posts[i], lookups[i],\n));\nconst done = finishInvest(planned.plan, results);\nreturn [{ json: { ...done, row_count: done.rows.length, internal: internalResult(done.envelope, planned.request) } }];"
+      },
+      "name": "Collect results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3320,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "lane-b-cond-3",
+              "leftValue": "={{ $json.row_count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Any order placed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        3540,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $('Collect results').first().json.rows.map((row) => ({ json: row }));"
+      },
+      "name": "Order rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "orders"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "client_order_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.client_order_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "name": "Save orders",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3980,
+        840
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "lane-b-cond-4",
+              "leftValue": "={{ $('Collect results').first().json.all_placed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "All orders placed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        4200,
+        840
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $('Plan orders').first().json.plan;\nreturn [{ json: { audit_id: p.audit_id, status: 'invested' } }];"
+      },
+      "name": "Audit status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4420,
+        1080
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "audits"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "audit_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.audit_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "name": "Mark audit invested",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        4640,
+        1080
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// spec §10 WF05 step 6: subtract what was invested from pending_carry (never below 0).\nconst p = $('Plan orders').first().json.plan;\nreturn [{ json: { user_id: p.user_id, pending_carry: $('Collect results').first().json.pending_carry_after } }];"
+      },
+      "name": "New pending_carry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4860,
+        1080
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "users"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "name": "Update pending_carry",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        5080,
+        1080
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Whichever stage ran last decides the reply.\nconst ran = (name) => $(name).isExecuted;\nlet out;\nif (ran('Collect results')) out = $('Collect results').first().json;\nelse if (ran('One item per order') && $('One item per order').first().json.ready === false) out = $('One item per order').first().json;\nelse out = $('Plan orders').first().json;\nreturn [{ json: { via: $('Read request').first().json.via, http_status: out.http_status, envelope: out.envelope, internal: out.internal } }];"
+      },
+      "name": "Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5300,
+        100
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "lane-b-cond-5",
+              "leftValue": "={{ $json.via }}",
+              "rightValue": "webhook",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Called by webhook?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        5520,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.envelope }}",
+        "options": {
+          "responseCode": "={{ $json.http_status }}"
+        }
+      },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        5740,
         0
       ]
     },
     {
       "parameters": {
-        "content": "## LO-05 Invest Executor: stub\nOwned by its lane in BUILD-PLAN.md. Answers {ok:true, stub:true} until the lane replaces it.\nRoutes: POST /lo/invest/run"
+        "jsCode": "// Execute Workflow callers get the data object (+ error when not invested): contracts/webhooks.md.\nreturn [{ json: $json.internal }];"
       },
-      "name": "About this stub",
+      "name": "Return to LO-04",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5740,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## LO-05 Invest Executor\nInvests one audit: `{audit_id, user_id, investable_cad, dry_run?}` from LO-04 (Execute Workflow) or `POST /lo/invest/run`.\n1. Read user, profile, audit, existing orders, config; FX from Frankfurter (fallback: config `fx_fallback_usdcad`).\n2. **Plan orders**: allocation → sleeves, CAD split to the cent, sleeves under Alpaca's $1 USD minimum folded into the largest (lib/allocate.mjs).\n3. `dry_run` or a bad request replies here. An audit already `invested` returns its orders and places nothing.\n4. Alpaca paper only. One market `day` order per sleeve, `client_order_id = {audit_id}-{symbol}`; a duplicate counts as success.\n5. Save orders, set the audit `invested`, lower `pending_carry`.",
+        "width": 560,
+        "height": 300
+      },
+      "name": "About LO-05",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
         -40,
-        -220
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Alpaca missing or down (spec §19.5)\nNo `Alpaca Paper` credential, bad keys or no answer: reply like `dry_run` with `UPSTREAM_ERROR`. Nothing is sent or written; the audit stays `computed`.",
+        "width": 420,
+        "height": 200,
+        "color": 3
+      },
+      "name": "Alpaca missing or down",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2180,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Idempotent\nThe lookup by `client_order_id` is the truth: a POST refused because the id exists, but found by the lookup, is a duplicate = success. A partial failure leaves the audit `computed`; a re-run reuses the same FX rate, so only the missing orders are placed.",
+        "width": 420,
+        "height": 220,
+        "color": 4
+      },
+      "name": "Idempotent",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2840,
+        840
       ]
     }
   ],
@@ -69,18 +754,328 @@
       "main": [
         [
           {
-            "node": "Stub response",
+            "node": "Read request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Called by another workflow": {
+    "Called by LO-04": {
       "main": [
         [
           {
-            "node": "Stub response",
+            "node": "Read request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read request": {
+      "main": [
+        [
+          {
+            "node": "Read user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read user": {
+      "main": [
+        [
+          {
+            "node": "Read profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read profile": {
+      "main": [
+        [
+          {
+            "node": "Read audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read audit": {
+      "main": [
+        [
+          {
+            "node": "Read orders for this audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read orders for this audit": {
+      "main": [
+        [
+          {
+            "node": "Read config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read config": {
+      "main": [
+        [
+          {
+            "node": "USD/CAD rate (Frankfurter)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "USD/CAD rate (Frankfurter)": {
+      "main": [
+        [
+          {
+            "node": "Plan orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan orders": {
+      "main": [
+        [
+          {
+            "node": "Place real orders?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Place real orders?": {
+      "main": [
+        [
+          {
+            "node": "Alpaca: check account",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alpaca: check account": {
+      "main": [
+        [
+          {
+            "node": "One item per order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per order": {
+      "main": [
+        [
+          {
+            "node": "Alpaca ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alpaca ready?": {
+      "main": [
+        [
+          {
+            "node": "Alpaca: submit order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alpaca: submit order": {
+      "main": [
+        [
+          {
+            "node": "Alpaca: confirm order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alpaca: confirm order": {
+      "main": [
+        [
+          {
+            "node": "Collect results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect results": {
+      "main": [
+        [
+          {
+            "node": "Any order placed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any order placed?": {
+      "main": [
+        [
+          {
+            "node": "Order rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order rows": {
+      "main": [
+        [
+          {
+            "node": "Save orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save orders": {
+      "main": [
+        [
+          {
+            "node": "All orders placed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All orders placed?": {
+      "main": [
+        [
+          {
+            "node": "Audit status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audit status": {
+      "main": [
+        [
+          {
+            "node": "Mark audit invested",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark audit invested": {
+      "main": [
+        [
+          {
+            "node": "New pending_carry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New pending_carry": {
+      "main": [
+        [
+          {
+            "node": "Update pending_carry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update pending_carry": {
+      "main": [
+        [
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply": {
+      "main": [
+        [
+          {
+            "node": "Called by webhook?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Called by webhook?": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return to LO-04",
             "type": "main",
             "index": 0
           }
