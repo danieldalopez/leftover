@@ -223,6 +223,16 @@ Routes, request bodies and internal payloads are defined in `spec.md` §19.1. Ow
 **Start when A and B are merged.** Fold in C–F as they land.
 **Owns:** merging, wiring, `n8n/README.md`, `demo/demo-script.md`, and fixes anywhere (no other lane is running by then).
 
+**Status 2026-11-15:**
+- ✅ Lanes merged.
+- ✅ Reset backfills Maya's 3 past weeks through LO-04 (`invest: false`).
+- ✅ LO-09 is the error workflow everywhere, and published (n8n 2.47 skips an unpublished one).
+- ✅ Sunday schedule on.
+- ✅ Fresh-instance test passed via `scripts/setup-instance.mjs`. It found the Plaid/Alpaca credential gap, now fixed with fixed IDs + placeholders.
+- ✅ `n8n/README.md` and `demo/demo-script.md` written; `scripts/demo-rehearsal.mjs --twice` is clean.
+- ✅ Dashboard on Vercel (https://leftover-rosy.vercel.app) with sample data (`MOCK=1`).
+- Open: a public n8n URL (owner account first, then a tunnel or Cloud) to switch Vercel to live; Sergio's keys (Alpaca, Plaid, LLM, Gmail); the backup video.
+
 1. Merge lane branches into `main` (Sergio approves each one).
 2. Wire the real chain: WF04 → WF05 → WF07; WF02 → WF03; reset → backfill Maya's past 3 weeks through WF04 (decide `invest: false` vs real paper orders) so History isn't empty.
 3. Set WF09 as the error workflow on every workflow; activate the schedules; confirm the instance timezone.

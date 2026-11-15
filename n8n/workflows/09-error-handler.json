@@ -1,28 +1,46 @@
 {
   "id": "leftoverWF09errh",
   "name": "LO-09 Error Handler",
-  "active": false,
+  "active": true,
   "nodes": [
     {
       "parameters": {},
       "name": "On workflow error",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [0, 0]
+      "position": [
+        0,
+        0
+      ]
     },
     {
       "parameters": {
         "resource": "row",
         "operation": "get",
-        "dataTableId": { "__rl": true, "mode": "name", "value": "config" },
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "config"
+        },
         "matchType": "allConditions",
-        "filters": { "conditions": [{ "keyName": "key", "condition": "eq", "keyValue": "demo_email_to" }] },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "condition": "eq",
+              "keyValue": "demo_email_to"
+            }
+          ]
+        },
         "returnAll": true
       },
       "name": "Read alert recipient",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
-      "position": [220, 0],
+      "position": [
+        220,
+        0
+      ],
       "alwaysOutputData": true
     },
     {
@@ -32,7 +50,10 @@
       "name": "Format alert",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [440, 0]
+      "position": [
+        440,
+        0
+      ]
     },
     {
       "parameters": {
@@ -45,7 +66,11 @@
       "name": "Send alert email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
-      "position": [660, 0]
+      "position": [
+        660,
+        0
+      ],
+      "disabled": true
     },
     {
       "parameters": {
@@ -54,14 +79,50 @@
       "name": "About",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-40, -220]
+      "position": [
+        -40,
+        -220
+      ]
     }
   ],
   "connections": {
-    "On workflow error": { "main": [[{ "node": "Read alert recipient", "type": "main", "index": 0 }]] },
-    "Read alert recipient": { "main": [[{ "node": "Format alert", "type": "main", "index": 0 }]] },
-    "Format alert": { "main": [[{ "node": "Send alert email", "type": "main", "index": 0 }]] }
+    "On workflow error": {
+      "main": [
+        [
+          {
+            "node": "Read alert recipient",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read alert recipient": {
+      "main": [
+        [
+          {
+            "node": "Format alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format alert": {
+      "main": [
+        [
+          {
+            "node": "Send alert email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-  "settings": { "executionOrder": "v1", "timezone": "America/Vancouver" },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Vancouver"
+  },
   "staticData": null
 }

@@ -27,10 +27,16 @@ curl -s -X POST "$N8N_BASE_URL/webhook/lo/audit/run" \
 ---
 
 ## POST /lo/demo/reset (LO-00)
-Request `{}`. Deletes every row for `maya` in users, profiles, budgets, transactions, audits and orders, then reseeds from `demo/seed-data.json`. It also re-upserts `config` and `category_map` (keeping `demo_email_to` and `dashboard_url` if already set). Other users are untouched.
+Request `{}`. Deletes every row for `maya` in users, profiles, budgets, transactions, audits and orders, then reseeds from `demo/seed-data.json`. It also re-upserts `config` and `category_map` (keeping `demo_email_to` and `dashboard_url` if already set). Then it audits Maya's 3 past weeks through LO-04 with `invest: false`, oldest first, so History isn't empty. Other users are untouched.
 ```json
-{ "ok": true, "data": { "user_id": "maya", "week_start": "2026-11-09", "transactions_seeded": 43, "budgets_seeded": 7 } }
+{ "ok": true, "data": { "user_id": "maya", "week_start": "2026-11-09", "transactions_seeded": 43, "budgets_seeded": 7,
+  "backfilled": [
+    { "audit_id": "maya-2026-10-19", "status": "computed", "investable_cad": 45.18, "buffer_after_cad": 45.18 },
+    { "audit_id": "maya-2026-10-26", "status": "computed", "investable_cad": 27.25, "buffer_after_cad": 27.25 },
+    { "audit_id": "maya-2026-11-02", "status": "computed", "investable_cad": 26.15, "buffer_after_cad": 41.00 }
+  ] } }
 ```
+A week LO-04 couldn't audit shows `{ "error": {code, message} }` in its place.
 
 ## POST /lo/plaid/connect-sandbox (LO-02)
 Request `{ "user_id": "test-c" }`
@@ -134,5 +140,6 @@ Response: `fixtures/settings.json` (the full settings after the update).
 | LO-04 → LO-05 | `{audit_id, user_id, investable_cad}` | the `data` object of `/lo/invest/run` |
 | LO-04 → LO-07 | `{user_id, audit_id}` | the `data` object of `/lo/digest/send` |
 | LO-02 → LO-03 | `{user_id}` | the `data` object of `/lo/sync` |
+| LO-00 → LO-04 | `{user_id, week_start, invest: false}`, once per past week | `{status, body}`: body is the `/lo/audit/run` envelope |
 
 Until a lane fills in its workflow, its stub returns `{"ok": true, "stub": true}`. Callers must not break on that.

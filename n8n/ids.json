@@ -15,6 +15,7 @@
   },
   "credentials": {
     "lo_webhook_key": "leftoverCredHook",
-    "plaid_sandbox": "leftoverCredPlad"
+    "plaid_sandbox": "leftoverCredPlad",
+    "alpaca_paper": "leftoverCredAlpc"
   }
 }

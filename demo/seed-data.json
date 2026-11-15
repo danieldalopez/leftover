@@ -9,7 +9,7 @@
     { "key": "plaid_base_url", "value": "https://sandbox.plaid.com" },
     { "key": "sleeve_symbols", "value": "{\"equity_us\":\"VTI\",\"equity_intl\":\"VXUS\",\"equity_ca\":\"EWC\",\"bonds\":\"BND\",\"cash\":\"SGOV\"}" },
     { "key": "demo_email_to", "value": "", "_note": "When set, LO-07 sends the demo user's digest here instead of users.email. Set in Wave 3." },
-    { "key": "dashboard_url", "value": "", "_note": "Linked from the onboarding result page and the digest. Set in Wave 3." }
+    { "key": "dashboard_url", "value": "https://leftover-rosy.vercel.app", "_note": "Linked from the onboarding result page and the digest. The Vercel production alias (set in Wave 3)." }
   ],
   "category_map": [
     { "plaid_pfc_primary": "FOOD_AND_DRINK", "plaid_pfc_detailed": "FOOD_AND_DRINK_GROCERIES", "category_key": "groceries", "excluded": false },

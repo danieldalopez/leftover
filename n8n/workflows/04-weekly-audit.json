@@ -34,12 +34,12 @@
     },
     {
       "parameters": {
-        "content": "### Schedule disabled in dev\nThe shared dev n8n holds every lane's test users. Z enables this trigger in Wave 3.",
+        "content": "### Sunday 20:00 schedule\nAudits every active user (and records paused ones) for the current week, invests via LO-05, then sends the digest via LO-07. Enabled in Wave 3.",
         "width": 300,
         "height": 140,
         "color": 3
       },
-      "name": "Schedule is off",
+      "name": "Schedule",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -87,12 +87,11 @@
       "position": [
         0,
         280
-      ],
-      "disabled": true
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// One request shape for both triggers.\n// Webhook item: { headers, params, query, body }. Schedule item: { timestamp, ... }.\nconst j = $input.first().json;\nconst fromWebhook = j.headers !== undefined && j.body !== undefined;\nconst body = fromWebhook && j.body && typeof j.body === 'object' ? j.body : {};\n\n// `since`: lower bound for the transactions / audits fetch. Always on or before\n// last week's Monday (needed for the §6.6 true-up). Validation and the real week\n// math (lib/week.mjs) happen in \"Compute audits\".\nconst ymd = /^\\d{4}-\\d{2}-\\d{2}$/;\nconst given = typeof body.week_start === 'string' && ymd.test(body.week_start);\nconst d = given ? new Date(body.week_start + 'T00:00:00Z') : new Date();\nd.setUTCDate(d.getUTCDate() - (given ? 7 : 15));\n\nreturn [{ json: {\n  source: fromWebhook ? 'webhook' : 'schedule',\n  user_id: body.user_id ?? null,\n  week_start: body.week_start ?? null,\n  invest: body.invest ?? null,\n  since: Number.isNaN(d.getTime()) ? '1970-01-01' : d.toISOString().slice(0, 10),\n} }];\n"
+        "jsCode": "// One request shape for both triggers.\n// Webhook item: { headers, params, query, body }. Schedule item: { timestamp, ... }.\n// LO-00 (reset backfill) item: { user_id, week_start, invest } via Execute Workflow.\nconst j = $input.first().json;\nconst fromWebhook = j.headers !== undefined && j.body !== undefined;\nconst fromWorkflow = !fromWebhook && (j.user_id !== undefined || j.week_start !== undefined || j.invest !== undefined);\nconst body = fromWebhook ? (j.body && typeof j.body === 'object' ? j.body : {}) : fromWorkflow ? j : {};\n\n// `since`: lower bound for the transactions / audits fetch. Always on or before\n// last week's Monday (needed for the §6.6 true-up). Validation and the real week\n// math (lib/week.mjs) happen in \"Compute audits\".\nconst ymd = /^\\d{4}-\\d{2}-\\d{2}$/;\nconst given = typeof body.week_start === 'string' && ymd.test(body.week_start);\nconst d = given ? new Date(body.week_start + 'T00:00:00Z') : new Date();\nd.setUTCDate(d.getUTCDate() - (given ? 7 : 15));\n\nreturn [{ json: {\n  source: fromWebhook ? 'webhook' : fromWorkflow ? 'workflow' : 'schedule',\n  user_id: body.user_id ?? null,\n  week_start: body.week_start ?? null,\n  invest: body.invest ?? null,\n  since: Number.isNaN(d.getTime()) ? '1970-01-01' : d.toISOString().slice(0, 10),\n} }];\n"
       },
       "name": "Normalize request",
       "type": "n8n-nodes-base.code",
@@ -455,6 +454,18 @@
         2160,
         740
       ]
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "name": "Called by LO-00",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        460
+      ]
     }
   ],
   "connections": {
@@ -644,11 +655,23 @@
           }
         ]
       ]
+    },
+    "Called by LO-00": {
+      "main": [
+        [
+          {
+            "node": "Normalize request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1",
-    "timezone": "America/Vancouver"
+    "timezone": "America/Vancouver",
+    "errorWorkflow": "leftoverWF09errh"
   },
   "staticData": null
 }

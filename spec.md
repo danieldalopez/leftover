@@ -266,7 +266,7 @@ Naming: `LO-00 Setup and Seed`, etc. Each scheduled workflow = Schedule Trigger 
 ### WF00 Setup and Seed
 - Trigger: Manual.
 - Creates all Data Tables (Data Table node, create operation) if missing. Seeds `category_map`, `config`, and one demo user "Maya" with budgets, a balanced profile, and 4 weeks of transactions from `demo/seed-data.json` (embed seed in a Code node or fetch from a raw GitHub URL).
-- Also exposes webhook `POST /lo/demo/reset` to wipe and reseed (dashboard "Reset demo" button).
+- Also exposes webhook `POST /lo/demo/reset` to wipe and reseed (dashboard "Reset demo" button). After reseeding it audits Maya's 3 past weeks through WF04 with `invest: false`, oldest first, so History isn't empty right after a reset.
 
 ### WF01 Onboarding Form
 - Trigger: **n8n Form Trigger** (multi page with Form nodes).
@@ -524,7 +524,7 @@ All routes need the header `x-lo-key` (credential `LO Webhook Key`).
 
 | Route | Workflow | Body / query |
 |---|---|---|
-| `POST /lo/demo/reset` | LO-00 | `{}`. Deletes and reseeds the demo user's rows only. |
+| `POST /lo/demo/reset` | LO-00 | `{}`. Deletes and reseeds the demo user's rows only, then backfills her 3 past weeks through LO-04 (`invest: false`). |
 | `POST /lo/plaid/connect-sandbox` | LO-02 | `{user_id}` |
 | `POST /lo/sync` | LO-03 | `{user_id?}` (default: every linked user) |
 | `POST /lo/demo/add-txn` | LO-03 | `{user_id, merchant, amount_cad, date?}` |
@@ -545,6 +545,7 @@ LO-01 is an n8n Form with its own URL. LO-09 has no route.
 - LO-04 → LO-05 `{audit_id, user_id, investable_cad}`
 - LO-04 → LO-07 `{user_id, audit_id}`
 - LO-02 → LO-03 `{user_id}`
+- LO-00 → LO-04 `{user_id, week_start, invest: false}` (reset backfill)
 
 ### 19.2 Response format
 - Success: `{"ok": true, "data": {...}}`. Failure: `{"ok": false, "error": {"code": "SNAKE_CASE", "message": "..."}}` with a 4xx/5xx status.

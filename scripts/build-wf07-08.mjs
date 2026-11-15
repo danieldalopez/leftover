@@ -125,6 +125,20 @@ function respond(name, position) {
     name, type: T('respondToWebhook'), typeVersion: V('respondToWebhook'), position,
   };
 }
+// Wave 3: a Code node that catches an exception answers 500 INTERNAL, so the run would count as a
+// success and never reach LO-09 (contracts/webhooks.md: INTERNAL also reaches LO-09). After the
+// reply has gone out, fail the run on purpose so the error workflow fires.
+function alertOnInternal(ifName, stopName, position, g, after) {
+  g.link(after, ifName);
+  g.link(ifName, stopName, 0);
+  return [
+    ifTrue(ifName, '={{ $json.status === 500 }}', position),
+    {
+      parameters: { errorMessage: '={{ ($json.body && $json.body.error && $json.body.error.message) || "INTERNAL" }}' },
+      name: stopName, type: 'n8n-nodes-base.stopAndError', typeVersion: 1, position: [position[0] + 240, position[1]],
+    },
+  ];
+}
 function sticky(name, content, position, width, height, color) {
   return { parameters: { content, width, height, ...(color ? { color } : {}) }, name, type: T('stickyNote'), typeVersion: V('stickyNote'), position };
 }
@@ -324,6 +338,7 @@ return [{ json: res }];`), [X(12), y]),
   }
 
   nodes.push(respond(RESPOND, [X(13), 600]));
+  nodes.push(...alertOnInternal('Internal error?', 'Alert LO-09', [X(14), 600], g, RESPOND));
 
   nodes.push(
     sticky('About LO-08', [
@@ -343,7 +358,7 @@ return [{ json: res }];`), [X(12), y]),
     active: true,
     nodes,
     connections: g.connections,
-    settings: { executionOrder: 'v1', timezone: 'America/Vancouver' },
+    settings: { executionOrder: 'v1', timezone: 'America/Vancouver', errorWorkflow: ids.workflows['LO-09'] },
     staticData: null,
   };
 }
@@ -574,6 +589,7 @@ return [{ json: r.body && r.body.ok ? r.body.data : r.body }];`, [X(16), y + 120
   g.link('Digest: send email', 'Digest: result');
   g.link('Digest: result', 'Digest: via webhook?');
   g.link('Digest: via webhook?', 'Respond to webhook', 0);
+  nodes.push(...alertOnInternal('Digest: internal error?', 'Digest: alert LO-09', [X(17), y - 120], g, 'Respond to webhook'));
   g.link('Digest: via webhook?', 'Digest: return to caller', 1);
   return {
     id: ids.workflows['LO-07'],
@@ -581,7 +597,7 @@ return [{ json: r.body && r.body.ok ? r.body.data : r.body }];`, [X(16), y + 120
     active: true,
     nodes,
     connections: g.connections,
-    settings: { executionOrder: 'v1', timezone: 'America/Vancouver' },
+    settings: { executionOrder: 'v1', timezone: 'America/Vancouver', errorWorkflow: ids.workflows['LO-09'] },
     staticData: null,
   };
 }

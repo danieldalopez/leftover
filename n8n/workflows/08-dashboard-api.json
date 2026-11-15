@@ -244,7 +244,13 @@
         0
       ],
       "executeOnce": true,
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "leftoverCredAlpc",
+          "name": "Alpaca Paper"
+        }
+      }
     },
     {
       "parameters": {
@@ -551,7 +557,13 @@
         600
       ],
       "executeOnce": true,
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "leftoverCredAlpc",
+          "name": "Alpaca Paper"
+        }
+      }
     },
     {
       "parameters": {
@@ -583,7 +595,13 @@
         600
       ],
       "executeOnce": true,
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "leftoverCredAlpc",
+          "name": "Alpaca Paper"
+        }
+      }
     },
     {
       "parameters": {
@@ -1169,6 +1187,52 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "496e7465-726e-416c-8065-72726f723f3a",
+              "leftValue": "={{ $json.status === 500 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "name": "Internal error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        3620,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ ($json.body && $json.body.error && $json.body.error.message) || \"INTERNAL\" }}"
+      },
+      "name": "Alert LO-09",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        3860,
+        600
+      ]
+    },
+    {
+      "parameters": {
         "content": "## LO-08 Dashboard API\nRead API for the Next.js dashboard (spec §10 WF08, contracts/api.md). Every route needs `x-lo-key`.\nEach row: Webhook → Data Table reads (by `user_id`) → Code (`lib/projection.mjs`, pasted verbatim) → one shared **Respond** node that sends `{ ok, data }` or `{ ok:false, error }` with the HTTP status.\n**No polling:** the dashboard calls these on page load and button press only.\n**Alpaca Paper** (prices + clock) and **Frankfurter** (FX) are optional: on any error the Code falls back to last fill prices, `market_open: null` and config `fx_fallback_usdcad`. Positions are always derived from the user's own `orders` rows, because every user shares one paper account.",
         "width": 900,
         "height": 340,
@@ -1699,11 +1763,34 @@
           }
         ]
       ]
+    },
+    "Respond": {
+      "main": [
+        [
+          {
+            "node": "Internal error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Internal error?": {
+      "main": [
+        [
+          {
+            "node": "Alert LO-09",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1",
-    "timezone": "America/Vancouver"
+    "timezone": "America/Vancouver",
+    "errorWorkflow": "leftoverWF09errh"
   },
   "staticData": null
 }

@@ -206,7 +206,13 @@
         0
       ],
       "executeOnce": true,
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "leftoverCredAlpc",
+          "name": "Alpaca Paper"
+        }
+      }
     },
     {
       "parameters": {
@@ -483,6 +489,52 @@
         -40,
         -560
       ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "44696765-7374-4a20-896e-7465726e616c",
+              "leftValue": "={{ $json.status === 500 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "name": "Digest: internal error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        4340,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ ($json.body && $json.body.error && $json.body.error.message) || \"INTERNAL\" }}"
+      },
+      "name": "Digest: alert LO-09",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        4580,
+        -120
+      ]
     }
   ],
   "connections": {
@@ -715,11 +767,34 @@
           }
         ]
       ]
+    },
+    "Respond to webhook": {
+      "main": [
+        [
+          {
+            "node": "Digest: internal error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Digest: internal error?": {
+      "main": [
+        [
+          {
+            "node": "Digest: alert LO-09",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1",
-    "timezone": "America/Vancouver"
+    "timezone": "America/Vancouver",
+    "errorWorkflow": "leftoverWF09errh"
   },
   "staticData": null
 }

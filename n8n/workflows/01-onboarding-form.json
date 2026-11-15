@@ -849,7 +849,8 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "timezone": "America/Vancouver"
+    "timezone": "America/Vancouver",
+    "errorWorkflow": "leftoverWF09errh"
   },
   "staticData": null
 }

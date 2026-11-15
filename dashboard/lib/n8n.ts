@@ -207,9 +207,16 @@ export const ACTIONS: Record<string, ActionDef> = {
     describe: (d) => {
       const a = Array.isArray(d?.audits) ? d.audits[0] : null;
       if (!a) return 'Audit ran (no audit returned)';
-      const orders = Array.isArray(a.invest?.orders) ? a.invest.orders.length : 0;
-      const tail = a.status === 'invested' ? `, invested ${money(a.investable_cad)}` : '';
-      return `Audit ${a.audit_id}: ${a.status}${tail}${orders ? `, ${orders} orders placed` : ''}`;
+      // Count only orders Alpaca actually took: without Alpaca, LO-05 returns the computed split
+      // with status "dry_run" orders and an error, and nothing was invested (spec §19.5).
+      const placed = Array.isArray(a.invest?.orders)
+        ? a.invest.orders.filter((o: { status?: string }) => o?.status !== 'dry_run' && o?.status !== 'failed').length
+        : 0;
+      if (a.status === 'invested') return `Audit ${a.audit_id}: invested ${money(a.investable_cad)}, ${placed} orders placed`;
+      if (a.status === 'carried') return `Audit ${a.audit_id}: ${money(a.pending_carry_after_cad)} carried to next week (below the minimum)`;
+      if (a.status === 'skipped_paused') return `Audit ${a.audit_id}: investing is paused`;
+      const why = a.invest?.error?.code === 'UPSTREAM_ERROR' ? ' (Alpaca not connected)' : a.invest?.error ? ` (${a.invest.error.code})` : '';
+      return `Audit ${a.audit_id}: ${money(a.investable_cad)} ready to invest, not invested${why}`;
     },
   },
   digest: {
@@ -223,7 +230,8 @@ export const ACTIONS: Record<string, ActionDef> = {
     route: 'lo/demo/reset',
     body: () => ({}),
     describe: (d) =>
-      `Demo reset: ${d?.transactions_seeded ?? '?'} transactions, ${d?.budgets_seeded ?? '?'} budgets seeded`,
+      `Demo reset: ${d?.transactions_seeded ?? '?'} transactions, ${d?.budgets_seeded ?? '?'} budgets seeded` +
+      (Array.isArray(d?.backfilled) ? `, ${d.backfilled.filter((b: { audit_id?: string }) => b?.audit_id).length} past weeks audited` : ''),
   },
 };
 

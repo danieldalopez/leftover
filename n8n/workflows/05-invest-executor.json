@@ -296,7 +296,13 @@
         2220,
         360
       ],
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "leftoverCredAlpc",
+          "name": "Alpaca Paper"
+        }
+      }
     },
     {
       "parameters": {
@@ -371,7 +377,13 @@
         2880,
         600
       ],
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "leftoverCredAlpc",
+          "name": "Alpaca Paper"
+        }
+      }
     },
     {
       "parameters": {
@@ -406,7 +418,13 @@
         3100,
         600
       ],
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "leftoverCredAlpc",
+          "name": "Alpaca Paper"
+        }
+      }
     },
     {
       "parameters": {
@@ -1085,7 +1103,8 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "timezone": "America/Vancouver"
+    "timezone": "America/Vancouver",
+    "errorWorkflow": "leftoverWF09errh"
   },
   "staticData": null
 }
