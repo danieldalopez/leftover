@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "data": {
+    "user_id": "maya",
+    "selected_rate": 0.06,
+    "rates": [0.04, 0.06, 0.08],
+    "horizons_years": [10, 20, 30],
+    "disclaimer": "Illustrative, not a prediction. Assumes a constant annual return; real returns vary and can be negative.",
+    "lifetime": {
+      "contributed_cad": 98.58,
+      "weeks_invested": 3,
+      "weekly_average_cad": 32.86,
+      "by_rate": {
+        "0.04": [ { "years": 10, "value_cad": 145.92 }, { "years": 20, "value_cad": 216.00 }, { "years": 30, "value_cad": 319.73 } ],
+        "0.06": [ { "years": 10, "value_cad": 176.54 }, { "years": 20, "value_cad": 316.16 }, { "years": 30, "value_cad": 566.19 } ],
+        "0.08": [ { "years": 10, "value_cad": 212.83 }, { "years": 20, "value_cad": 459.48 }, { "years": 30, "value_cad": 991.98 } ]
+      }
+    },
+    "last_week": {
+      "audit_id": "maya-2026-11-02",
+      "invested_cad": 26.15,
+      "by_rate": {
+        "0.04": [ { "years": 10, "value_cad": 38.71 }, { "years": 20, "value_cad": 57.30 }, { "years": 30, "value_cad": 84.81 } ],
+        "0.06": [ { "years": 10, "value_cad": 46.83 }, { "years": 20, "value_cad": 83.87 }, { "years": 30, "value_cad": 150.19 } ],
+        "0.08": [ { "years": 10, "value_cad": 56.46 }, { "years": 20, "value_cad": 121.88 }, { "years": 30, "value_cad": 263.14 } ]
+      }
+    },
+    "your_choices": [
+      { "category_key": "shopping", "label": "Shopping", "weeks_under": 2, "weeks_total": 3, "leftover_cad": 61.01, "fv_30y_cad": { "0.04": 197.88, "0.06": 350.41, "0.08": 613.92 } },
+      { "category_key": "other", "label": "Other variable", "weeks_under": 3, "weeks_total": 3, "leftover_cad": 42.50, "fv_30y_cad": { "0.04": 137.84, "0.06": 244.10, "0.08": 427.66 } },
+      { "category_key": "personal_care", "label": "Personal care", "weeks_under": 2, "weeks_total": 3, "leftover_cad": 26.00, "fv_30y_cad": { "0.04": 84.33, "0.06": 149.33, "0.08": 261.63 } },
+      { "category_key": "transport", "label": "Transport", "weeks_under": 3, "weeks_total": 3, "leftover_cad": 19.50, "fv_30y_cad": { "0.04": 63.25, "0.06": 112.00, "0.08": 196.22 } },
+      { "category_key": "groceries", "label": "Groceries", "weeks_under": 2, "weeks_total": 3, "leftover_cad": 19.45, "fv_30y_cad": { "0.04": 63.08, "0.06": 111.71, "0.08": 195.72 } },
+      { "category_key": "entertainment", "label": "Fun and entertainment", "weeks_under": 2, "weeks_total": 3, "leftover_cad": 15.00, "fv_30y_cad": { "0.04": 48.65, "0.06": 86.15, "0.08": 150.94 } },
+      { "category_key": "eating_out", "label": "Eating out and coffee", "weeks_under": 2, "weeks_total": 3, "leftover_cad": 13.70, "fv_30y_cad": { "0.04": 44.43, "0.06": 78.69, "0.08": 137.86 } }
+    ]
+  }
+}
