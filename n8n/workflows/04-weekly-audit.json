@@ -1,0 +1,71 @@
+{
+  "name": "LO-04 Weekly Audit",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lo/audit/run",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "name": "POST /lo/audit/run",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "3aac395e-f047-4e8c-aa50-95b0ddb29440",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__LO_WEBHOOK_KEY_ID__",
+          "name": "LO Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// STUB: replaced by its lane (see BUILD-PLAN.md). Keep the workflow id.\nreturn [{ json: { ok: true, stub: true, workflow: 'LO-04' } }];"
+      },
+      "name": "Stub response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## LO-04 Weekly Audit: stub\nOwned by its lane in BUILD-PLAN.md. Answers {ok:true, stub:true} until the lane replaces it.\nRoutes: POST /lo/audit/run"
+      },
+      "name": "About this stub",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -220
+      ]
+    }
+  ],
+  "connections": {
+    "POST /lo/audit/run": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Vancouver"
+  },
+  "staticData": null
+}

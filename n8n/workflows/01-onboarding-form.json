@@ -1,0 +1,57 @@
+{
+  "name": "LO-01 Onboarding Form",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Run manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// STUB: replaced by its lane (see BUILD-PLAN.md). Keep the workflow id.\nreturn [{ json: { ok: true, stub: true, workflow: 'LO-01' } }];"
+      },
+      "name": "Stub response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## LO-01 Onboarding Form: stub\nOwned by its lane in BUILD-PLAN.md. Answers {ok:true, stub:true} until the lane replaces it.\nRoutes: n8n Form (own URL)"
+      },
+      "name": "About this stub",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -220
+      ]
+    }
+  ],
+  "connections": {
+    "Run manually": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Vancouver"
+  },
+  "staticData": null
+}

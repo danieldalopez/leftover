@@ -1,0 +1,206 @@
+{
+  "_about": "Node typeVersions available in the pinned n8n (2.47.7), read from n8n-nodes-base. Use `latest` unless a snippet in node-snippets.json says otherwise. Full node type = n8n-nodes-base.<key>.",
+  "n8n": "2.47.7",
+  "nodes": {
+    "webhook": {
+      "type": "n8n-nodes-base.webhook",
+      "latest": 2.2,
+      "all": [
+        1,
+        1.1,
+        2,
+        2.1,
+        2.2
+      ]
+    },
+    "scheduleTrigger": {
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "latest": 1.4,
+      "all": [
+        1,
+        1.1,
+        1.2,
+        1.3,
+        1.4
+      ]
+    },
+    "manualTrigger": {
+      "type": "n8n-nodes-base.manualTrigger",
+      "latest": 1,
+      "all": [
+        1
+      ]
+    },
+    "code": {
+      "type": "n8n-nodes-base.code",
+      "latest": 2,
+      "all": [
+        1,
+        2
+      ]
+    },
+    "dataTable": {
+      "type": "n8n-nodes-base.dataTable",
+      "latest": 1.1,
+      "all": [
+        1,
+        1.1
+      ]
+    },
+    "httpRequest": {
+      "type": "n8n-nodes-base.httpRequest",
+      "latest": 4.5,
+      "all": [
+        1,
+        2,
+        3,
+        4,
+        4.1,
+        4.2,
+        4.3,
+        4.4,
+        4.5
+      ]
+    },
+    "if": {
+      "type": "n8n-nodes-base.if",
+      "latest": 2.4,
+      "all": [
+        1,
+        2,
+        2.1,
+        2.2,
+        2.3,
+        2.4
+      ]
+    },
+    "switch": {
+      "type": "n8n-nodes-base.switch",
+      "latest": 3.5,
+      "all": [
+        1,
+        2,
+        3,
+        3.1,
+        3.2,
+        3.3,
+        3.4,
+        3.5
+      ]
+    },
+    "merge": {
+      "type": "n8n-nodes-base.merge",
+      "latest": 3.2,
+      "all": [
+        1,
+        2,
+        2.1,
+        3,
+        3.1,
+        3.2
+      ]
+    },
+    "set": {
+      "type": "n8n-nodes-base.set",
+      "latest": 3.5,
+      "all": [
+        1,
+        2,
+        3,
+        3.1,
+        3.2,
+        3.3,
+        3.4,
+        3.5
+      ]
+    },
+    "noOp": {
+      "type": "n8n-nodes-base.noOp",
+      "latest": 1,
+      "all": [
+        1
+      ]
+    },
+    "executeWorkflow": {
+      "type": "n8n-nodes-base.executeWorkflow",
+      "latest": 1.4,
+      "all": [
+        1,
+        1.1,
+        1.2,
+        1.3,
+        1.4
+      ]
+    },
+    "executeWorkflowTrigger": {
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "latest": 1.3,
+      "all": [
+        1,
+        1.1,
+        1.2,
+        1.3
+      ]
+    },
+    "respondToWebhook": {
+      "type": "n8n-nodes-base.respondToWebhook",
+      "latest": 1.5,
+      "all": [
+        1,
+        1.1,
+        1.2,
+        1.3,
+        1.4,
+        1.5
+      ]
+    },
+    "errorTrigger": {
+      "type": "n8n-nodes-base.errorTrigger",
+      "latest": 1,
+      "all": [
+        1
+      ]
+    },
+    "formTrigger": {
+      "type": "n8n-nodes-base.formTrigger",
+      "latest": 2.6,
+      "all": [
+        1,
+        2,
+        2.1,
+        2.2,
+        2.3,
+        2.4,
+        2.5,
+        2.6
+      ]
+    },
+    "form": {
+      "type": "n8n-nodes-base.form",
+      "latest": 2.5,
+      "all": [
+        1,
+        2.3,
+        2.4,
+        2.5
+      ]
+    },
+    "gmail": {
+      "type": "n8n-nodes-base.gmail",
+      "latest": 2.2,
+      "all": [
+        1,
+        2,
+        2.1,
+        2.2
+      ]
+    },
+    "stickyNote": {
+      "type": "n8n-nodes-base.stickyNote",
+      "latest": 1,
+      "all": [
+        1
+      ]
+    }
+  }
+}

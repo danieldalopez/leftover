@@ -1,0 +1,94 @@
+{
+  "name": "LO-07 Weekly Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lo/digest/send",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "name": "POST /lo/digest/send",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "f6092934-4677-461e-bfd7-0ecc7a1029d7",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__LO_WEBHOOK_KEY_ID__",
+          "name": "LO Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "name": "Called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// STUB: replaced by its lane (see BUILD-PLAN.md). Keep the workflow id.\nreturn [{ json: { ok: true, stub: true, workflow: 'LO-07' } }];"
+      },
+      "name": "Stub response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## LO-07 Weekly Digest: stub\nOwned by its lane in BUILD-PLAN.md. Answers {ok:true, stub:true} until the lane replaces it.\nRoutes: POST /lo/digest/send"
+      },
+      "name": "About this stub",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -220
+      ]
+    }
+  ],
+  "connections": {
+    "POST /lo/digest/send": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Vancouver"
+  },
+  "staticData": null
+}

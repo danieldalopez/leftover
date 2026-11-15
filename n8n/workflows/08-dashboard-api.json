@@ -1,0 +1,211 @@
+{
+  "name": "LO-08 Dashboard API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "lo/api/summary",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "name": "GET /lo/api/summary",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "f87c7964-d859-48c6-8dea-ebdcaff783a9",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__LO_WEBHOOK_KEY_ID__",
+          "name": "LO Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "lo/api/audits",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "name": "GET /lo/api/audits",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        180
+      ],
+      "webhookId": "9eb7f27f-8342-479a-96ea-9ed59da334a8",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__LO_WEBHOOK_KEY_ID__",
+          "name": "LO Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "lo/api/portfolio",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "name": "GET /lo/api/portfolio",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        360
+      ],
+      "webhookId": "73ff812b-ffda-4569-b76b-6d0cba8d1340",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__LO_WEBHOOK_KEY_ID__",
+          "name": "LO Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "lo/api/projection",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "name": "GET /lo/api/projection",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        540
+      ],
+      "webhookId": "a1eb9609-a01a-4e6a-bbc9-46d47cc984a0",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__LO_WEBHOOK_KEY_ID__",
+          "name": "LO Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lo/api/settings",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "name": "POST /lo/api/settings",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        720
+      ],
+      "webhookId": "7096bb60-b096-461d-be4b-bbd0ed735a7d",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__LO_WEBHOOK_KEY_ID__",
+          "name": "LO Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// STUB: replaced by its lane (see BUILD-PLAN.md). Keep the workflow id.\nreturn [{ json: { ok: true, stub: true, workflow: 'LO-08' } }];"
+      },
+      "name": "Stub response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## LO-08 Dashboard API: stub\nOwned by its lane in BUILD-PLAN.md. Answers {ok:true, stub:true} until the lane replaces it.\nRoutes: GET /lo/api/summary, GET /lo/api/audits, GET /lo/api/portfolio, GET /lo/api/projection, POST /lo/api/settings"
+      },
+      "name": "About this stub",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -220
+      ]
+    }
+  ],
+  "connections": {
+    "GET /lo/api/summary": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /lo/api/audits": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /lo/api/portfolio": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /lo/api/projection": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /lo/api/settings": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Vancouver"
+  },
+  "staticData": null
+}

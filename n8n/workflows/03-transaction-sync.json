@@ -1,0 +1,129 @@
+{
+  "name": "LO-03 Transaction Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lo/sync",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "name": "POST /lo/sync",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "ebf783f0-7c33-49dc-b528-de5099dc6117",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__LO_WEBHOOK_KEY_ID__",
+          "name": "LO Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lo/demo/add-txn",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "name": "POST /lo/demo/add-txn",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        180
+      ],
+      "webhookId": "ba1a2b83-e94b-4828-9260-ccead3f6b7c1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__LO_WEBHOOK_KEY_ID__",
+          "name": "LO Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "name": "Called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// STUB: replaced by its lane (see BUILD-PLAN.md). Keep the workflow id.\nreturn [{ json: { ok: true, stub: true, workflow: 'LO-03' } }];"
+      },
+      "name": "Stub response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## LO-03 Transaction Sync: stub\nOwned by its lane in BUILD-PLAN.md. Answers {ok:true, stub:true} until the lane replaces it.\nRoutes: POST /lo/sync, POST /lo/demo/add-txn"
+      },
+      "name": "About this stub",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -220
+      ]
+    }
+  ],
+  "connections": {
+    "POST /lo/sync": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /lo/demo/add-txn": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Stub response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Vancouver"
+  },
+  "staticData": null
+}

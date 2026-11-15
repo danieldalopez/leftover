@@ -1,0 +1,65 @@
+{
+  "name": "LO-09 Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "On workflow error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": { "__rl": true, "mode": "name", "value": "config" },
+        "matchType": "allConditions",
+        "filters": { "conditions": [{ "keyName": "key", "condition": "eq", "keyValue": "demo_email_to" }] },
+        "returnAll": true
+      },
+      "name": "Read alert recipient",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [220, 0],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Builds the alert email (spec §10 WF09). Sends nothing if no recipient is configured yet.\nconst err = $('On workflow error').first().json;\nconst to = ($input.first()?.json?.value || '').trim();\nif (!to) return [];\nconst wf = err.workflow?.name || 'unknown workflow';\nconst exec = err.execution || {};\nconst lines = [\n  `Workflow: ${wf}`,\n  `Node: ${exec.lastNodeExecuted || 'unknown'}`,\n  `Error: ${exec.error?.message || 'unknown error'}`,\n  `Execution: ${exec.url || exec.id || 'n/a'}`,\n  `Mode: ${exec.mode || 'n/a'}`,\n];\nreturn [{ json: { to, subject: `[Leftover] ${wf} failed`, body: lines.join('\\n') } }];"
+      },
+      "name": "Format alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {}
+      },
+      "name": "Send alert email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "content": "## LO-09 Error Handler\nSet as the error workflow on every LO workflow (Wave 3). Emails config `demo_email_to`.\nThe `Gmail` credential is attached when Lane E / Z connects Gmail; until then alerts are skipped or fail quietly here."
+      },
+      "name": "About",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-40, -220]
+    }
+  ],
+  "connections": {
+    "On workflow error": { "main": [[{ "node": "Read alert recipient", "type": "main", "index": 0 }]] },
+    "Read alert recipient": { "main": [[{ "node": "Format alert", "type": "main", "index": 0 }]] },
+    "Format alert": { "main": [[{ "node": "Send alert email", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "America/Vancouver" },
+  "staticData": null
+}
