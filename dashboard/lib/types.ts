@@ -181,7 +181,7 @@ export interface SettingsUpdate {
 /** Where a page's data came from. Mock data always shows a visible badge. */
 export type Source =
   | { kind: 'live' }
-  | { kind: 'mock'; reason: 'mock-mode' | 'stub' | 'unreachable' | 'error' | 'shape'; detail: string };
+  | { kind: 'mock'; reason: 'mock-mode' | 'unreachable' | 'error' | 'shape'; detail: string };
 
 export interface Loaded<T> {
   data: T;
@@ -191,7 +191,7 @@ export interface Loaded<T> {
 /** What the demo bar / settings routes return to the browser. */
 export interface ActionResult {
   ok: boolean;
-  /** true when the target workflow is still a stub or MOCK=1 */
+  /** true when nothing changed: MOCK=1, or a step that took its fallback */
   simulated: boolean;
   message: string;
   /** offer the manual-expense fallback (spec §15 backup) */

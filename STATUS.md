@@ -5,10 +5,11 @@
 **Repo:** https://github.com/danieldalopez/leftover (private) · **Dashboard:** https://leftover-rosy.vercel.app
 
 ## Where things stand
-- **Public dashboard:** https://leftover-rosy.vercel.app. It shows "Live from n8n" while this Mac runs n8n and the tunnel (preview servers `leftover-n8n` + `leftover-public`). Otherwise it shows its built-in sample data with a "Mock data" badge.
+- **Public dashboard:** https://leftover-rosy.vercel.app. It shows "Live from n8n" while this Mac runs n8n and the tunnel (preview servers `leftover-n8n` + `leftover-public`). Otherwise it shows its built-in sample data with a "Mock data" badge. **It still has the old look** until the redesign below is deployed (starting `leftover-public` redeploys it).
+- **Demo video:** `demo/leftover-demo.mp4` (3 minutes, 720p, captions). It shows the onboarding form and the dashboard run with today's fallbacks (no Plaid, Alpaca or Gmail keys). It doesn't show the n8n canvas, which needs the owner login.
 - **Backend:** 11 n8n workflows (LO-00 … LO-09) on this Mac's n8n 2.47.7. They're all built and published, with no stubs left.
 - **Checks:**
-  - `npm test`: 194/194.
+  - `npm test`: 195/195.
   - `node scripts/check-api.mjs`: passes.
   - `node scripts/demo-rehearsal.mjs --twice`: clean (with documented fallbacks).
   - A fresh, empty n8n set up from the repo passes the same checks.
@@ -56,24 +57,37 @@ Each lane's notes are in `n8n/notes/A.md` … `F.md`.
   - audit finality and carries are clarified.
 - **Cleanup:** the unused `LLM` credential was removed from n8n (backup: `~/.n8n/database.sqlite.bak-2026-11-15-before-llm-cred-delete`), and the six lane sessions were archived.
 
+**Final pass (2026-11-15)**
+- **Dashboard redesign.** One blocky pixel theme (square corners, bevelled panels, a pixel typeface). Each page was cut down to what matters:
+  - This week leads with the projected leftover, then spent and the cushion, then one line and one bar per category;
+  - History, Portfolio and Compounding show three totals each, and their tables lost the secondary columns;
+  - the header totals are gone, and the demo bar keeps the three demo steps in view with the rest under **More**.
+
+  Everything spec §13 lists is still there.
+- **Demo video** recorded by `demo/record-demo.mjs`, which drives the live form and dashboard in headless Chrome.
+- **Bug fixed in LO-04:** the late-posting true-up ignored the refund cap (D6), so a late charge could go unnoticed in a week where another category had a net refund. There's a test for it.
+- **FX fallback in LO-07/LO-08** is now 1.42 (D9; it was still 1.38), with the same 0.8–2.0 sanity range LO-05 uses.
+- **Digest without Gmail** shows on the dashboard as "Digest built … (not sent)" instead of a red failure.
+- **Leftovers of the build removed:** the stub builder and stub handling, the dev-only seed route in the LO-07/08 generator, five copies of the `.env` loader (now `scripts/env.mjs`), and lane and wave mentions in workflow notes, scripts and docs. LO-00, 01, 04, 07, 08 and 09 were pushed again.
+- **`README.md`** added.
+
 ## Next steps
 **Needs Sergio (in this order)**
 1. **Create the n8n owner account** at http://localhost:5678. It's needed to show the workflow canvas, the judged part.
-2. **To do: record the backup video** of one full run. Not made yet; spec §15 asks for it in case anything fails live.
-   - [ ] Start `leftover-n8n` and `leftover-public`, then run `node scripts/demo-rehearsal.mjs` so Maya starts clean.
-   - [ ] Press Cmd+Shift+5 → "Record Selected Portion", then follow `demo/demo-script.md`: onboarding form, This week, add the $14 purchase, Run audit now (with the n8n canvas), Send digest. About 5 minutes.
-   - [ ] Save it in `demo/` (or a shared drive if it's too big for git) and note where it is here.
-   - Fallback: Claude can build a captioned screenshot video of the dashboard steps with ffmpeg (no mouse or n8n canvas).
-3. **Demo day:**
+2. **Deploy the redesigned dashboard:** start `leftover-public` (it redeploys Vercel from `dashboard/`), then look at https://leftover-rosy.vercel.app.
+3. **Optional: a screen recording with the n8n canvas.** The video in `demo/` covers the product but not the canvas. With the owner account created, record LO-04 running (Cmd+Shift+5) while pressing **Run audit now**.
+4. **Demo day:**
    - start `leftover-n8n` and `leftover-public` (the app stops them between sessions);
    - run `node scripts/demo-rehearsal.mjs` (it ends with a reset);
    - present.
 
 **Optional (makes steps real instead of fallbacks)**
 
-4. **Alpaca paper keys** → n8n credential `Alpaca Paper`: `{"headers":{"APCA-API-KEY-ID":"…","APCA-API-SECRET-KEY":"…"}}`. Then check the items in `n8n/notes/B.md` "Blocked on the Alpaca Paper credential", including that all 5 symbols are fractionable.
-5. **Plaid sandbox keys** → `Plaid Sandbox`: `{"body":{"client_id":"…","secret":"…"}}`. Then check `n8n/notes/C.md` "Untested until the Plaid keys exist", for example whether Plaid categorizes the $14 Banh Mi as eating out.
-6. **Gmail.** Self-hosted n8n needs your own Google Cloud OAuth client (see `n8n/README.md` §3). Then turn on LO-07 "Digest: send email" and LO-09 "Send alert email", and set config `demo_email_to`.
+5. **Alpaca paper keys** → n8n credential `Alpaca Paper`: `{"headers":{"APCA-API-KEY-ID":"…","APCA-API-SECRET-KEY":"…"}}`. Then check the items in `n8n/notes/B.md` "Blocked on the Alpaca Paper credential", including that all 5 symbols are fractionable.
+6. **Plaid sandbox keys** → `Plaid Sandbox`: `{"body":{"client_id":"…","secret":"…"}}`. Then check `n8n/notes/C.md` "Untested until the Plaid keys exist", for example whether Plaid categorizes the $14 Banh Mi as eating out.
+7. **Gmail.** Self-hosted n8n needs your own Google Cloud OAuth client (see `n8n/README.md` §3). Then turn on LO-07 "Digest: send email" and LO-09 "Send alert email", and set config `demo_email_to`.
+
+After connecting any of these, re-record the video so it shows the real step: `npm i --no-save playwright-core && node demo/record-demo.mjs`.
 
 **Known limits**
 - **The live link depends on this Mac:** n8n and the tunnel must be running. The free tunnel address rotates; the dashboard shows sample data for about a minute while Vercel redeploys.
@@ -81,12 +95,14 @@ Each lane's notes are in `n8n/notes/A.md` … `F.md`.
 - **The Sunday 20:00 schedule audits every active user**, including the lanes' test users `test-a` … `test-f`. Reset before presenting.
 - **Untested paths:** n8n Cloud (UI import gives new workflow IDs; see `n8n/README.md` §6), and real Plaid and Alpaca calls (only their fallbacks and mocks are proven).
 - **After a future timezone release:** `brew upgrade icu4c && node scripts/update-icu-tz.mjs`.
+- **`spec.md` still describes the LLM** in its architecture diagram and in §10 (WF01, WF07). D4 (§18) overrides those lines; they were left as written because spec changes need Sergio's approval.
+- **Lane leftovers on this Mac:** four worktrees under `.claude/worktrees/` and six local `claude/lane-*` branches, all merged into `main`. Safe to remove.
 
 ## Where to look
 | What | File |
 |---|---|
 | Rules, decisions, contracts | `spec.md` (§18 decisions, §19 locked conventions), `contracts/` |
 | Set up / run n8n, credentials, going public | `n8n/README.md`, `n8n/CONVENTIONS.md` |
-| Presenting | `demo/demo-script.md`, `scripts/demo-rehearsal.mjs` |
+| Presenting | `demo/demo-script.md`, `scripts/demo-rehearsal.mjs`, `demo/leftover-demo.mp4` |
 | Per-workflow details and open checks | `n8n/notes/A.md` … `F.md` |
 | Timezone data | `n8n/icu-tz/README.md` |

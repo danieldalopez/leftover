@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
+import { Jersey_15 } from 'next/font/google';
 import './globals.css';
 import Nav from '@/components/Nav';
 import DemoBar from '@/components/DemoBar';
 import { demoUserId, getSummary, isMockMode } from '@/lib/n8n';
-import { cad } from '@/lib/format';
 import { DISCLAIMER } from '@/lib/constants';
+
+const pixel = Jersey_15({ weight: "400", subsets: ["latin"], variable: '--font-pixel' });
 
 export const metadata: Metadata = {
   title: { default: 'Leftover', template: '%s · Leftover' },
@@ -15,17 +17,14 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#fcfcfb' },
-    { media: '(prefers-color-scheme: dark)', color: '#1a1a19' },
-  ],
+  themeColor: '#fbfbf8',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { data: s } = await getSummary();
   const userId = demoUserId();
   return (
-    <html lang="en-CA">
+    <html lang="en-CA" className={pixel.variable}>
       <body>
         <header className="topbar">
           <div className="container topbar-inner">
@@ -33,17 +32,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <span className="brand-mark" aria-hidden /> Leftover
             </Link>
             <Nav />
-            <div className="header-stats" aria-label="Totals">
-              <div>
-                Invested so far<strong>{cad(s.lifetime.invested_cad)}</strong>
-              </div>
-              <div>
-                Cushion<strong>{cad(s.buffer.balance_cad)}</strong>
-              </div>
-              <div>
-                Portfolio<strong>{cad(s.portfolio.market_value_cad)}</strong>
-              </div>
-            </div>
           </div>
         </header>
         {s.demo_mode && <DemoBar userId={userId} canReset={userId === 'maya'} mockMode={isMockMode()} />}
@@ -53,7 +41,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer className="footer">
           <div className="container">
             <p>{DISCLAIMER}</p>
-            <p>Leftover · Loop Hackathon prototype · n8n workflows do the work; this page only reads and triggers them.</p>
           </div>
         </footer>
       </body>

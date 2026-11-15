@@ -37,31 +37,20 @@ export function pct(n: number, decimals?: number, signed = false): string {
   return `${sign}${Math.abs(v).toFixed(d)}%`;
 }
 
-export function rateLabel(r: number): string {
-  return `${Math.round(r * 100)}%`;
-}
-
 export function qty(n: number): string {
   return n.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
 }
 
-/** "2026-11-09" -> { y, m, d, weekday } without any timezone shift. */
+/** "2026-11-09" -> { m, d } without any timezone shift. */
 function dateOnly(s: string) {
-  const [y, m, d] = s.slice(0, 10).split('-').map(Number);
-  const weekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
-  return { y, m, d, weekday };
+  const [, m, d] = s.slice(0, 10).split('-').map(Number);
+  return { m, d };
 }
 
 /** "2026-11-09" -> "Nov 9" */
 export function day(s: string): string {
   const { m, d } = dateOnly(s);
   return `${MONTHS[m - 1]} ${d}`;
-}
-
-/** "2026-11-09" -> "Mon, Nov 9" */
-export function dayWithWeekday(s: string): string {
-  const { m, d, weekday } = dateOnly(s);
-  return `${WEEKDAYS[weekday].slice(0, 3)}, ${MONTHS[m - 1]} ${d}`;
 }
 
 /** "2026-11-09", "2026-11-15" -> "Nov 9 – 15" or "Oct 26 – Nov 1" */

@@ -15,7 +15,7 @@ JSON goes into `string` columns (`*_json`). Parse it in a Code node.
 ## users. Key: `user_id`
 | column | type | notes |
 |---|---|---|
-| user_id | string | lowercase slug; demo user `maya`, lane test users `test-a` … `test-f` |
+| user_id | string | lowercase slug; demo user `maya`, test users `test-a` … `test-f` |
 | email | string | |
 | name | string | |
 | created_at | date | |
@@ -43,7 +43,7 @@ Written by: LO-00 (seed), LO-01 (create), LO-04 (buffer and carries), LO-05 (`pe
 | tier | string | `cash` \| `conservative` \| `balanced` \| `growth` \| `all_equity` |
 | home_bias | string | `global` \| `more_canada` |
 | allocation_json | string | `{"equity_us":0.36,"equity_intl":0.21,"equity_ca":0.03,"bonds":0.40,"cash":0}`: weights sum to 1, user editable |
-| explanation | string | LLM text, general language |
+| explanation | string | template text (LLM text if D4 changes), general language |
 | updated_at | date | |
 | warnings_json | string | array of warning codes, e.g. `["low_emergency_fund","high_interest_debt"]` |
 

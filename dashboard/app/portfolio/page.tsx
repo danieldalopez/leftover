@@ -38,11 +38,11 @@ function OrderChip({ o, p }: { o: Order; p: Portfolio }) {
   );
 }
 
-function OrderDetail({ o, p }: { o: Order; p: Portfolio }) {
+function OrderDetail({ o }: { o: Order }) {
   if (o.status === 'queued') {
     return (
       <span className="muted">
-        {p.market_open ? 'Filling now' : `Waiting for ${p.next_open ? `${weekdayName(p.next_open)}'s` : 'the next'} open`}
+        est. {usd(o.estimated_value_usd ?? o.notional_usd)}
       </span>
     );
   }
@@ -50,11 +50,10 @@ function OrderDetail({ o, p }: { o: Order; p: Portfolio }) {
     return (
       <span className="ink-2">
         {qty(o.filled_qty)} @ {usd(o.filled_avg_price)}
-        {o.filled_at && <span className="muted small" style={{ display: 'block' }}>{dateTime(o.filled_at)}</span>}
       </span>
     );
   }
-  if (o.status === 'dry_run') return <span className="muted">Not sent to Alpaca</span>;
+  if (o.status === 'dry_run') return <span className="muted">est. {usd(o.estimated_value_usd ?? o.notional_usd)}</span>;
   return <span className="muted">—</span>;
 }
 
@@ -93,18 +92,10 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
         <SourceBadge source={source} />
       </div>
 
-      {source.kind === 'mock' && (
-        <p className="small muted">
-          Preview fixture:{' '}
-          {fixture === 'queued' ? <Link href="/portfolio">weekday (all filled)</Link> : <strong>weekday (all filled)</strong>} ·{' '}
-          {fixture === 'queued' ? <strong>Sunday night (orders queued)</strong> : <Link href="/portfolio?fixture=queued">Sunday night (orders queued)</Link>}
-        </p>
-      )}
-
       {queued.length > 0 && (
-        <div className="banner banner-warn" role="status">
+        <div className="banner" role="status">
           <span className="banner-icon" aria-hidden>
-            ⏱
+            …
           </span>
           <p>
             <strong>
@@ -118,42 +109,32 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
         </div>
       )}
 
-      <div className="grid-4">
-        <div className="card">
+      <section className="card grid-3" aria-label="Totals">
+        <div>
           <div className="tile-label">Market value</div>
           <div className="tile-value">{usd(t.market_value_usd)}</div>
-          <div className="tile-note">≈ {cad(t.market_value_cad)} CAD{t.queued_usd > 0 ? ' · excludes queued' : ''}</div>
+          <div className="tile-note">
+            ≈ {cad(t.market_value_cad)} CAD{t.queued_usd > 0 ? ` · ${usd(t.queued_usd)} queued` : ''}
+          </div>
         </div>
-        <div className="card">
-          <div className="tile-label">Total contributed</div>
+        <div>
+          <div className="tile-label">Contributed</div>
           <div className="tile-value">{cad(t.contributed_cad)}</div>
           <div className="tile-note">From weekly leftovers (CAD)</div>
         </div>
-        <div className="card">
+        <div>
           <div className="tile-label">Unrealized gain</div>
           <div className={`tile-value ${t.unrealized_pl_usd > 0 ? 'good-ink' : t.unrealized_pl_usd < 0 ? 'bad-ink' : ''}`}>
-            {t.unrealized_pl_usd > 0 ? '▲ ' : t.unrealized_pl_usd < 0 ? '▼ ' : ''}
             {usd(t.unrealized_pl_usd, { signed: true })}
           </div>
-          <div className="tile-note">
-            {pct(t.unrealized_pl_pct, 2, true)} on {usd(t.cost_basis_usd)} cost basis
-          </div>
+          <div className="tile-note">{pct(t.unrealized_pl_pct, 2, true)} on cost</div>
         </div>
-        <div className="card">
-          <div className="tile-label">Queued</div>
-          <div className="tile-value">{usd(t.queued_usd)}</div>
-          <div className="tile-note">
-            {typeof p.fx_rate_usdcad === 'number'
-              ? `FX ${p.fx_rate_usdcad.toFixed(4)} CAD per USD${p.fx_source ? ` (${p.fx_source})` : ''}`
-              : 'FX rate unavailable'}
-          </div>
-        </div>
-      </div>
+      </section>
 
       <section className="card" aria-labelledby="pos-h">
         <div className="card-head">
           <h2 id="pos-h">Positions</h2>
-          <span className="hint">As of {dateTime(p.as_of)}</span>
+          <span className="hint">By market value</span>
         </div>
         {p.positions.length === 0 ? (
           <p className="muted">No positions yet. The first orders fill after the first invested audit.</p>
@@ -164,7 +145,7 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
                 <span key={s} style={{ width: `${(v / totalMv) * 100}%`, background: sleeveColor(s) }} title={`${SLEEVE_LABELS[s] ?? s}: ${pct(v / totalMv, 0)}`} />
               ))}
             </div>
-            <div className="legend" style={{ marginBottom: 12 }}>
+            <div className="legend">
               {sleeves.map(([s, v]) => (
                 <span key={s}>
                   <span className="swatch" style={{ background: sleeveColor(s) }} /> {SLEEVE_LABELS[s] ?? s}{' '}
@@ -177,12 +158,9 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
                 <thead>
                   <tr>
                     <th>Symbol</th>
-                    <th>Sleeve</th>
                     <th className="num">Shares</th>
                     <th className="num">Price</th>
-                    <th className="num">Value (USD)</th>
-                    <th className="num">Value (CAD)</th>
-                    <th className="num">Contributed</th>
+                    <th className="num">Value</th>
                     <th className="num">Gain</th>
                   </tr>
                 </thead>
@@ -190,14 +168,11 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
                   {p.positions.map((pos) => (
                     <tr key={pos.symbol}>
                       <td>
-                        <strong>{pos.symbol}</strong>
+                        <strong>{pos.symbol}</strong> <span className="muted small">{SLEEVE_LABELS[pos.sleeve] ?? pos.sleeve}</span>
                       </td>
-                      <td className="ink-2">{SLEEVE_LABELS[pos.sleeve] ?? pos.sleeve}</td>
                       <td className="num">{qty(pos.qty)}</td>
                       <td className="num">{usd(pos.current_price_usd)}</td>
                       <td className="num">{usd(pos.market_value_usd)}</td>
-                      <td className="num">{cad(pos.market_value_cad)}</td>
-                      <td className="num">{cad(pos.contributed_cad)}</td>
                       <td className={`num ${pos.unrealized_pl_usd >= 0 ? 'good-ink' : 'bad-ink'}`}>
                         {usd(pos.unrealized_pl_usd, { signed: true })}
                       </td>
@@ -213,49 +188,42 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
       <section className="card" aria-labelledby="orders-h">
         <div className="card-head">
           <h2 id="orders-h">Orders</h2>
-          <span className="hint">One per sleeve per invested week · newest first</span>
+          <span className="hint">Newest first</span>
         </div>
         {groups.length === 0 ? (
           <p className="muted">No orders yet.</p>
         ) : (
           <div className="table-wrap">
-            <table className="orders-table">
+            <table>
               <thead>
                 <tr>
                   <th>Symbol</th>
                   <th>Status</th>
-                  <th className="num">Amount (CAD)</th>
-                  <th className="num">Amount (USD)</th>
+                  <th className="num">Amount</th>
                   <th>Fill</th>
                 </tr>
               </thead>
               {groups.map((g) => (
                 <tbody key={g.audit_id}>
                   <tr className="group-row">
-                    <td colSpan={5} style={{ background: 'var(--surface-2)', fontWeight: 600 }}>
+                    <td colSpan={4}>
                       Week of {day(g.week_start)}{' '}
-                      <span className="muted" style={{ fontWeight: 500 }}>
+                      <span className="muted">
                         · {cad(g.orders.reduce((s, o) => s + o.notional_cad, 0))} · submitted {dateTime(g.orders[0].submitted_at)}
                       </span>
                     </td>
                   </tr>
                   {g.orders.map((o) => (
                     <tr key={o.client_order_id}>
-                      <td className="c-sym">
+                      <td>
                         <strong>{o.symbol}</strong> <span className="muted small">{SLEEVE_LABELS[o.sleeve] ?? o.sleeve}</span>
                       </td>
-                      <td className="c-status">
+                      <td>
                         <OrderChip o={o} p={p} />
-                        {(o.status === 'queued' || o.status === 'dry_run') && (
-                          <span className="small ink-2 num" style={{ marginLeft: 8 }}>
-                            est. {usd(o.estimated_value_usd ?? o.notional_usd)}
-                          </span>
-                        )}
                       </td>
-                      <td className="num c-cad">{cad(o.notional_cad)}</td>
-                      <td className="num c-usd">{usd(o.notional_usd)}</td>
-                      <td className="c-fill">
-                        <OrderDetail o={o} p={p} />
+                      <td className="num">{cad(o.notional_cad)}</td>
+                      <td>
+                        <OrderDetail o={o} />
                       </td>
                     </tr>
                   ))}
@@ -265,6 +233,19 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
           </div>
         )}
       </section>
+
+      <p className="small on-page">
+        As of {dateTime(p.as_of)}
+        {typeof p.fx_rate_usdcad === 'number' && ` · FX ${p.fx_rate_usdcad.toFixed(4)} CAD per USD${p.fx_source ? ` (${p.fx_source})` : ''}`}
+        {source.kind === 'mock' && (
+          <>
+            {' · '}
+            <Link href={fixture === 'queued' ? '/portfolio' : '/portfolio?fixture=queued'}>
+              {fixture === 'queued' ? 'Show the weekday sample' : 'Show the Sunday-night sample (orders queued)'}
+            </Link>
+          </>
+        )}
+      </p>
     </div>
   );
 }

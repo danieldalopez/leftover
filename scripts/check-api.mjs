@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // scripts/check-api.mjs: calls every live LO-08 endpoint and checks its response against
 // contracts/fixtures/ (contracts/api.md: every key in a fixture is present, same JSON type;
-// a value may be 0 or null but never missing). Lane F builds against the fixtures, so this
-// is the guarantee that the live API won't break the dashboard. Z reuses it after merges.
+// a value may be 0 or null but never missing). The dashboard's mock data is those fixtures,
+// so this is the guarantee that the live API won't break the dashboard.
 //
-//   node scripts/check-api.mjs                 checks maya and test-e (read-only for maya)
+//   node scripts/check-api.mjs                 checks maya (read-only)
 //   node scripts/check-api.mjs test-e          checks only the given user(s)
 //   node scripts/check-api.mjs --no-write      skips the settings write round-trip on test-* users
 //
@@ -16,31 +16,10 @@
 // For test-* users only (never maya): a settings write round-trip, then restores the old values.
 // Exit code 1 if anything fails. Needs n8n running and N8N_WEBHOOK_KEY in .env.
 
-import { readFileSync, existsSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { env, root } from './env.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-
-// Same .env lookup as scripts/n8n.mjs (lane worktrees use the main checkout's .env).
-function loadEnv() {
-  let file = join(root, '.env');
-  if (!existsSync(file)) {
-    const r = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
-    const main = r.status === 0 ? join(dirname(r.stdout.trim()), '.env') : '';
-    if (main && existsSync(main)) file = main;
-  }
-  const env = {};
-  if (existsSync(file)) {
-    for (const line of readFileSync(file, 'utf8').split('\n')) {
-      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-      if (m) env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
-    }
-  }
-  return { ...env, ...process.env };
-}
-const env = loadEnv();
 const BASE = (env.N8N_BASE_URL || 'http://localhost:5678').replace(/\/$/, '');
 const KEY = env.N8N_WEBHOOK_KEY || '';
 
@@ -136,7 +115,6 @@ async function checkOk(label, method, path, body, fixtures, describe) {
   }
   if (res.status !== 200) out.errors.push(`HTTP ${res.status}: ${JSON.stringify(res.json).slice(0, 200)}`);
   else if (!res.json || res.json.ok !== true) out.errors.push(`ok is not true: ${JSON.stringify(res.json).slice(0, 200)}`);
-  else if (res.json.stub) out.errors.push('still the P0 stub (push the workflow)');
   else compare(res.json, template(fixtures.map(fixture)), '', out);
   report(label, out, out.errors.length || !describe ? '' : describe(res.json.data));
   return out.errors.length ? null : res.json.data;
@@ -189,7 +167,7 @@ async function main() {
   const args = process.argv.slice(2);
   const write = !args.includes('--no-write');
   const users = args.filter((a) => !a.startsWith('--'));
-  if (!users.length) users.push('maya', 'test-e');
+  if (!users.length) users.push('maya');
   if (!KEY) console.log('(warn) N8N_WEBHOOK_KEY is empty: expect 403s');
   console.log(`LO-08 at ${BASE}/webhook/  users: ${users.join(', ')}\n`);
 

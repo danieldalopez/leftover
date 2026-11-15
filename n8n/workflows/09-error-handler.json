@@ -74,7 +74,7 @@
     },
     {
       "parameters": {
-        "content": "## LO-09 Error Handler\nSet as the error workflow on every LO workflow (Wave 3). Emails config `demo_email_to`.\nThe `Gmail` credential is attached when Lane E / Z connects Gmail; until then alerts are skipped or fail quietly here."
+        "content": "## LO-09 Error Handler\nSet as the error workflow on every LO workflow. Emails config `demo_email_to`.\n**Send alert email** stays off until a `Gmail` credential exists; until then failures show only in the Executions list."
       },
       "name": "About",
       "type": "n8n-nodes-base.stickyNote",

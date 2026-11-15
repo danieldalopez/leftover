@@ -1,6 +1,6 @@
 'use client';
-// Small dependency-free column chart (dataviz rules: one axis, <=24px bars with 4px rounded data
-// ends, 2px gaps, hairline grid, legend + hover tooltip, table view lives next to it on the page).
+// Small dependency-free column chart: one axis, square columns up to 24px wide, hover tooltip.
+// The same numbers are in a table next to it on the page.
 import { useEffect, useRef, useState } from 'react';
 
 export interface Series {
@@ -34,19 +34,6 @@ function niceStep(max: number, ticks = 4): number {
   const pow = 10 ** Math.floor(Math.log10(raw));
   const n = raw / pow;
   return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * pow;
-}
-
-/** Column path: square at the baseline, 4px rounded at the data end. */
-function colPath(x: number, w: number, y0: number, y1: number): string {
-  const h = Math.abs(y1 - y0);
-  if (h < 0.5) return '';
-  const r = Math.min(4, w / 2, h);
-  if (y1 < y0) {
-    // grows up
-    return `M${x},${y0}V${y1 + r}Q${x},${y1} ${x + r},${y1}H${x + w - r}Q${x + w},${y1} ${x + w},${y1 + r}V${y0}Z`;
-  }
-  // grows down
-  return `M${x},${y0}V${y1 - r}Q${x},${y1} ${x + r},${y1}H${x + w - r}Q${x + w},${y1} ${x + w},${y1 - r}V${y0}Z`;
 }
 
 export default function ColumnChart({ series, groups, mode = 'grouped', height = 240, format, tickFormat, ariaLabel }: Props) {
@@ -111,15 +98,15 @@ export default function ColumnChart({ series, groups, mode = 'grouped', height =
             return (
               <g key={g.key}>
                 {hover === i && (
-                  <rect x={m.left + band * i + 2} y={m.top} width={band - 4} height={plotH} fill="var(--surface-2)" rx={6} />
+                  <rect className="band-hover" x={m.left + band * i + 2} y={m.top} width={band - 4} height={plotH} />
                 )}
                 {up.map((s, si) => {
                   const v = g.values[s.key] ?? 0;
-                  return <path key={s.key} d={colPath(gx + si * (barW + gap), barW, y0, y(v))} fill={s.color} />;
+                  return <rect key={s.key} x={gx + si * (barW + gap)} y={y(v)} width={barW} height={y0 - y(v)} fill={s.color} />;
                 })}
                 {down.map((s) => {
                   const v = g.values[s.key] ?? 0;
-                  return <path key={s.key} d={colPath(gx, barW, y0, y(-v))} fill={s.color} />;
+                  return <rect key={s.key} x={gx} y={y0} width={barW} height={y(-v) - y0} fill={s.color} />;
                 })}
                 <text className="axis-label" x={m.left + band * i + band / 2} y={height - 10} textAnchor="middle">
                   {g.label}

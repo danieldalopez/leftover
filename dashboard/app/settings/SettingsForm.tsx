@@ -100,7 +100,7 @@ export default function SettingsForm({
       }}
     >
       {(mockMode || sourceIsMock) && (
-        <div className="banner banner-warn" role="note">
+        <div className="banner" role="note">
           <span className="banner-icon" aria-hidden>
             !
           </span>
@@ -120,12 +120,12 @@ export default function SettingsForm({
             {status === 'active' ? 'Active' : 'Paused'}
           </span>
         </div>
-        <p className="small ink-2" style={{ marginBottom: 12 }}>
+        <p className="tile-note" style={{ margin: '0 0 14px' }}>
           {status === 'active'
             ? 'Every Sunday at 8:00 pm the audit invests what you didn’t spend.'
             : 'Paused: Sunday audits are recorded as skipped and nothing is invested.'}
         </p>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div className="row">
           <button
             type="button"
             className="btn"
@@ -143,16 +143,11 @@ export default function SettingsForm({
       <section className="card" aria-labelledby="budgets-h">
         <div className="card-head">
           <h2 id="budgets-h">Weekly budgets</h2>
-          <span className="hint">Variable spending only · {cad(weeklyTotal)} a week</span>
-        </div>
-        <div className="form-row small muted" aria-hidden style={{ paddingTop: 0 }}>
-          <span>Category</span>
-          <span style={{ textAlign: 'right' }}>Per week</span>
-          <span style={{ textAlign: 'center' }}>Active</span>
+          <span className="hint">{cad(weeklyTotal)} a week · untick to switch a category off</span>
         </div>
         {draft.budgets.map((b, i) => (
           <div className="form-row" key={b.category_key}>
-            <label htmlFor={`amt-${b.category_key}`} style={{ fontWeight: 560, opacity: b.active ? 1 : 0.55 }}>
+            <label htmlFor={`amt-${b.category_key}`} data-off={!b.active}>
               {b.label}
             </label>
             <div className="money-input">
@@ -189,7 +184,7 @@ export default function SettingsForm({
       <section className="card" aria-labelledby="cushion-h">
         <div className="card-head">
           <h2 id="cushion-h">Cushion</h2>
-          <span className="hint">Cash kept back so you don&apos;t invest money you&apos;ll need</span>
+          <span className="hint">Cash kept back before anything is invested</span>
         </div>
         <div className="grid-3">
           <div className="field">
@@ -208,22 +203,21 @@ export default function SettingsForm({
           </div>
           <div className="field">
             <label htmlFor="rate">Share of leftover that fills it</label>
-            <div className="money-input">
+            <div className="money-input pct">
               <input
                 id="rate"
                 className="input"
                 inputMode="decimal"
                 value={draft.cushionPct}
-                style={{ paddingLeft: 10, paddingRight: 26 }}
                 aria-invalid={!(num(draft.cushionPct) >= 0 && num(draft.cushionPct) <= 100)}
                 onChange={(e) => setDraft({ ...draft, cushionPct: e.target.value })}
               />
-              <span style={{ left: 'auto', right: 10 }}>%</span>
+              <span>%</span>
             </div>
           </div>
           <div className="field">
             <span className="label">Overspending</span>
-            <label className="check" style={{ minHeight: 34 }}>
+            <label className="check">
               <input
                 type="checkbox"
                 aria-label="Overspending comes out of the cushion"
@@ -234,7 +228,7 @@ export default function SettingsForm({
             </label>
           </div>
         </div>
-        <p className="small muted" style={{ marginTop: 12 }}>
+        <p className="tile-note" style={{ marginTop: 14 }}>
           Limits: nothing is invested in a week under {cad(saved.min_invest_cad)} (it carries to next week), and at most{' '}
           {cad(saved.max_weekly_invest_cad, { decimals: 0 })} a week.
         </p>

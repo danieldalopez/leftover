@@ -12,3 +12,6 @@ out/
 # os / editor
 .DS_Store
 *.log
+
+# demo recording scratch
+demo/.frames/

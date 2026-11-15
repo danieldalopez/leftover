@@ -1,5 +1,5 @@
 // Server-only: every call to n8n goes through here, so N8N_WEBHOOK_KEY never reaches the browser.
-// Reads never throw: when n8n is a stub, unreachable or returns an error, the page gets the
+// Reads never throw: when n8n is unreachable or returns an error, the page gets the
 // contract fixture instead, plus a Source that the UI shows as a "Mock data" badge.
 import { cache } from 'react';
 import { connection } from 'next/server';
@@ -73,8 +73,9 @@ function describeFailure(r: N8nResponse): string {
   return `HTTP ${r.status}: ${r.text.slice(0, 160) || 'empty response'}`;
 }
 
-function isStub(json: any): boolean {
-  return json?.ok === true && json.stub === true;
+function errorText(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  return err.name === 'TimeoutError' ? 'timed out' : err.message;
 }
 
 const REQUIRED: Record<string, string[]> = {
@@ -101,7 +102,6 @@ async function load<T>(
   };
   try {
     const r = await request();
-    if (isStub(r.json)) return fallback('stub', `${r.json.workflow ?? 'LO-08'} is still a stub`);
     if (r.status >= 200 && r.status < 300 && r.json?.ok === true && r.json.data) {
       const missing = REQUIRED[name].filter((k) => !(k in r.json.data));
       if (missing.length) return fallback('shape', `live response is missing ${missing.join(', ')}`);
@@ -109,8 +109,7 @@ async function load<T>(
     }
     return fallback('error', describeFailure(r));
   } catch (err) {
-    const msg = err instanceof Error ? (err.name === 'TimeoutError' ? 'timed out' : err.message) : String(err);
-    return fallback('unreachable', `n8n at ${env.baseUrl} unreachable (${msg})`);
+    return fallback('unreachable', `n8n at ${env.baseUrl} unreachable (${errorText(err)})`);
   }
 }
 
@@ -170,7 +169,7 @@ interface ActionDef {
   describe: (data: any) => string;
 }
 
-export const DEMO_PURCHASE = { merchant: 'Banh Mi Saigon', amount_cad: 14.0, category_key: 'eating_out' };
+const DEMO_PURCHASE = { merchant: 'Banh Mi Saigon', amount_cad: 14.0, category_key: 'eating_out' };
 
 export const ACTIONS: Record<string, ActionDef> = {
   'connect-bank': {
@@ -248,17 +247,13 @@ export async function runAction(name: string): Promise<ActionResult> {
   }
   try {
     const r = await callN8n('POST', def.route, { body, timeoutMs: ACTION_TIMEOUT_MS });
-    if (isStub(r.json)) {
-      return {
-        ok: true,
-        simulated: true,
-        message: `${r.json.workflow ?? 'That workflow'} is still a stub, nothing changed`,
-        offerManual: name === 'add-purchase',
-        raw: r.json,
-      };
-    }
     if (r.status >= 200 && r.status < 300 && r.json?.ok !== false) {
       return { ok: true, simulated: false, message: def.describe(r.json?.data ?? r.json), raw: r.json };
+    }
+    // Without Gmail, LO-07 answers 502 with the email it built (spec §19.5): a fallback, not a failure.
+    if (name === 'digest' && r.json?.data?.subject) {
+      const why = r.json.error?.message ?? 'the email step failed';
+      return { ok: true, simulated: true, message: `Digest built: "${r.json.data.subject}" (not sent: ${why})`, raw: r.json };
     }
     return {
       ok: false,
@@ -268,14 +263,13 @@ export async function runAction(name: string): Promise<ActionResult> {
       raw: r.json ?? r.text,
     };
   } catch (err) {
-    const msg = err instanceof Error ? (err.name === 'TimeoutError' ? 'timed out' : err.message) : String(err);
-    return { ok: false, simulated: false, message: `Failed: n8n unreachable (${msg})`, offerManual: name === 'add-purchase' };
+    return { ok: false, simulated: false, message: `Failed: n8n unreachable (${errorText(err)})`, offerManual: name === 'add-purchase' };
   }
 }
 
 // ---------------------------------------------------------------- settings save
 
-export function validateSettings(u: SettingsUpdate): string | null {
+function validateSettings(u: SettingsUpdate): string | null {
   if (u.status !== undefined && u.status !== 'active' && u.status !== 'paused') return 'status must be active or paused';
   if (u.cushion_rate !== undefined && !(u.cushion_rate >= 0 && u.cushion_rate <= 1)) return 'cushion rate must be 0–100%';
   if (u.buffer_target !== undefined && !(u.buffer_target >= 0)) return 'buffer target must be 0 or more';
@@ -324,15 +318,11 @@ export async function saveSettings(update: SettingsUpdate): Promise<ActionResult
   }
   try {
     const r = await callN8n('POST', 'lo/api/settings', { body: { user_id: env.userId, ...update }, timeoutMs: 20_000 });
-    if (isStub(r.json)) {
-      return { ok: true, simulated: true, message: 'Settings API (LO-08) is still a stub: nothing was saved', raw: r.json };
-    }
     if (r.status >= 200 && r.status < 300 && r.json?.ok === true) {
       return { ok: true, simulated: false, message: 'Saved', settings: r.json.data as Settings };
     }
     return { ok: false, simulated: false, message: `Save failed: ${describeFailure(r)}`, raw: r.json ?? r.text };
   } catch (err) {
-    const msg = err instanceof Error ? (err.name === 'TimeoutError' ? 'timed out' : err.message) : String(err);
-    return { ok: false, simulated: false, message: `Save failed: n8n unreachable (${msg})` };
+    return { ok: false, simulated: false, message: `Save failed: n8n unreachable (${errorText(err)})` };
   }
 }

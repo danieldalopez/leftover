@@ -16,35 +16,11 @@
 import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { env, root } from './env.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const N8N_VERSION = JSON.parse(readFileSync(join(root, 'n8n/templates/node-versions.json'), 'utf8')).n8n;
-
-// .env is gitignored, so lane worktrees don't have one: fall back to the main
-// checkout's .env (the parent of git's common dir).
-function envFile() {
-  const local = join(root, '.env');
-  if (existsSync(local)) return local;
-  const r = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
-  const main = r.status === 0 ? join(dirname(r.stdout.trim()), '.env') : '';
-  return main && existsSync(main) ? main : local;
-}
-
-function loadEnv() {
-  const env = {};
-  const file = envFile();
-  if (existsSync(file)) {
-    for (const line of readFileSync(file, 'utf8').split('\n')) {
-      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-      if (m) env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
-    }
-  }
-  return { ...env, ...process.env };
-}
-
-const env = loadEnv();
 const BASE = (env.N8N_BASE_URL || 'http://localhost:5678').replace(/\/$/, '');
 const useApi = Boolean(env.N8N_API_KEY);
 
@@ -160,7 +136,7 @@ async function main() {
       break;
     }
     default:
-      console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 16).join('\n'));
+      console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 14).join('\n'));
   }
 }
 

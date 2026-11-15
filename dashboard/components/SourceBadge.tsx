@@ -2,7 +2,6 @@ import type { Source } from '@/lib/types';
 
 const REASON: Record<string, string> = {
   'mock-mode': 'mock mode',
-  stub: 'API is a stub',
   unreachable: 'n8n unreachable',
   error: 'API error',
   shape: 'unexpected shape',

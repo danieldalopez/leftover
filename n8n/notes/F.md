@@ -1,5 +1,7 @@
 # Lane F: Dashboard (Next.js)
 
+> Updated 2026-11-15, after the lanes merged: the dashboard was restyled (blocky pixel theme, `app/globals.css`) and decluttered. The home page leads with the projected leftover; History, Portfolio and Compounding show three totals and narrower tables; the demo bar keeps Add sandbox purchase, Run audit now and Send digest in view, with Connect sandbox bank, Sync now and Reset demo under **More**. The stub handling described below is gone, and `.env` is read from the repo root only.
+
 Status 2026-11-14: all five pages render from fixtures (`MOCK=1`) and from live n8n; `npm run build` passes. Not deployed (Wave 3 does Vercel).
 
 ## What it is

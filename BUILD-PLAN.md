@@ -1,5 +1,7 @@
 # Leftover: parallel build plan
 
+> **History.** The build this plan describes finished on 2026-11-15: every lane is merged and no stubs are left. Current state: `STATUS.md`.
+
 Companion to `spec.md`, the single source of truth. The spec says **what** to build. This file says **who builds what, in what order**, so several Claude Code sessions can work at the same time without stepping on each other. If this file and `spec.md` ever disagree, `spec.md` wins.
 
 ---

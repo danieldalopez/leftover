@@ -18,7 +18,7 @@ Derived from `spec.md` §19.1 and §19.2; if they disagree, the spec wins. The d
 Money: dollars rounded to cents, `_cad` / `_usd` suffixes. Dates `YYYY-MM-DD`; timestamps ISO 8601 with offset.
 
 ```bash
-# how every lane tests
+# how to call a route
 curl -s -X POST "$N8N_BASE_URL/webhook/lo/audit/run" \
   -H "x-lo-key: $N8N_WEBHOOK_KEY" -H 'content-type: application/json' \
   -d '{"user_id":"test-a"}'
@@ -142,4 +142,3 @@ Response: `fixtures/settings.json` (the full settings after the update).
 | LO-02 → LO-03 | `{user_id}` | the `data` object of `/lo/sync` |
 | LO-00 → LO-04 | `{user_id, week_start, invest: false}`, once per past week | `{status, body}`: body is the `/lo/audit/run` envelope |
 
-Until a lane fills in its workflow, its stub returns `{"ok": true, "stub": true}`. Callers must not break on that.

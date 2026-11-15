@@ -1,24 +1,21 @@
 #!/usr/bin/env node
-// Generates Lane E's workflows so their Code nodes always carry lib/week.mjs + lib/projection.mjs
+// Generates LO-07 and LO-08 so their Code nodes always carry lib/week.mjs + lib/projection.mjs
 // verbatim (spec §19.6), the same way scripts/build-wf00.mjs builds LO-00:
 //
-//   node scripts/build-wf07-08.mjs          writes n8n/workflows/07-weekly-digest.json + 08-dashboard-api.json
-//   node scripts/build-wf07-08.mjs --dev    also adds the dev-only POST /lo/dev-e/seed-test-e route to LO-08
-//                                           (rewrites test-e's rows; push, call once, then rebuild without --dev and push)
+//   node scripts/build-wf07-08.mjs    writes n8n/workflows/07-weekly-digest.json + 08-dashboard-api.json
 //
 // Then: node scripts/n8n.mjs push n8n/workflows/08-dashboard-api.json (and 07-…).
 //
 // LO-08 Dashboard API (spec §10 WF08, contracts/api.md): five webhook rows, each
 //   Webhook -> Data Table reads (filtered by user_id) -> [Alpaca + FX lookups] -> Code (lib) -> Respond
 // LO-07 Weekly Digest (spec §10 WF07, §19.5): webhook + Execute Workflow Trigger -> reads -> facts ->
-//   LLM summary (template fallback) -> Gmail (skipped on dry_run) -> envelope for the webhook / data for LO-04.
+//   template summary (the LLM nodes are off, spec D4) -> Gmail (skipped on dry_run) -> envelope for the webhook / data for LO-04.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const DEV = process.argv.includes('--dev');
 const versions = JSON.parse(readFileSync(join(root, 'n8n/templates/node-versions.json'), 'utf8')).nodes;
 const ids = JSON.parse(readFileSync(join(root, 'n8n/ids.json'), 'utf8'));
 const stripExport = (src) => src.replace(/^export\s*\{[\s\S]*?\};?\s*$/m, '').trim();
@@ -53,9 +50,8 @@ const uuid = (tag) => {
 };
 
 // ---------- node factories (shapes from n8n/templates/node-snippets.json + node-types.json) ----------
-function webhook(name, method, path, webhookId, position, responseMode = 'responseNode') {
-  const parameters = { httpMethod: method, path, authentication: 'headerAuth', responseMode, options: {} };
-  if (responseMode === 'lastNode') parameters.responseData = 'firstEntryJson';
+function webhook(name, method, path, webhookId, position) {
+  const parameters = { httpMethod: method, path, authentication: 'headerAuth', responseMode: 'responseNode', options: {} };
   return { parameters, name, type: T('webhook'), typeVersion: V('webhook'), position, webhookId, credentials: HOOK_CRED };
 }
 function code(name, jsCode, position) {
@@ -75,24 +71,6 @@ function dtUpdate(name, table, conditions, position, executeOnce = false) {
       columns: { mappingMode: 'autoMapInputData', value: {}, matchingColumns: [], schema: [] }, options: {},
     },
     name, type: T('dataTable'), typeVersion: V('dataTable'), position, alwaysOutputData: true, ...(executeOnce ? { executeOnce: true } : {}),
-  };
-}
-function dtDelete(name, table, userId, position) {
-  return {
-    parameters: {
-      resource: 'row', operation: 'deleteRows', dataTableId: { __rl: true, mode: 'name', value: table }, matchType: 'allConditions',
-      filters: { conditions: [{ keyName: 'user_id', condition: 'eq', keyValue: userId }] }, options: {},
-    },
-    name, type: T('dataTable'), typeVersion: V('dataTable'), position, executeOnce: true, alwaysOutputData: true,
-  };
-}
-function dtInsert(name, table, position) {
-  return {
-    parameters: {
-      resource: 'row', operation: 'insert', dataTableId: { __rl: true, mode: 'name', value: table },
-      columns: { mappingMode: 'autoMapInputData', value: {}, matchingColumns: [], schema: [] }, options: {},
-    },
-    name, type: T('dataTable'), typeVersion: V('dataTable'), position,
   };
 }
 function http(name, url, query, position, credentials) {
@@ -125,7 +103,7 @@ function respond(name, position) {
     name, type: T('respondToWebhook'), typeVersion: V('respondToWebhook'), position,
   };
 }
-// Wave 3: a Code node that catches an exception answers 500 INTERNAL, so the run would count as a
+// A Code node that catches an exception answers 500 INTERNAL, so the run would count as a
 // success and never reach LO-09 (contracts/webhooks.md: INTERNAL also reaches LO-09). After the
 // reply has gone out, fail the run on purpose so the error workflow fires.
 function alertOnInternal(ifName, stopName, position, g, after) {
@@ -350,8 +328,6 @@ return [{ json: res }];`), [X(12), y]),
     ].join('\n'), [-40, -420], 900, 340, 7),
   );
 
-  if (DEV) devSeed(nodes, g), devDigestCall(nodes, g);
-
   return {
     id: ids.workflows['LO-08'],
     name: 'LO-08 Dashboard API',
@@ -361,110 +337,6 @@ return [{ json: res }];`), [X(12), y]),
     settings: { executionOrder: 'v1', timezone: 'America/Vancouver', errorWorkflow: ids.workflows['LO-09'] },
     staticData: null,
   };
-}
-
-// ---------- dev only: rewrite test-e's rows (users, budgets, transactions, audits, orders) ----------
-function devSeed(nodes, g) {
-  const y = 1700;
-  const H = 'POST /lo/dev-e/seed-test-e';
-  const U = 'test-e';
-  const X = (i) => 260 + i * 220;
-  const WEEK = stripExport(readFileSync(join(root, 'lib/week.mjs'), 'utf8'));
-  const rowsCode = (rows) => `${WEEK}\nconst now = new Date();\nconst ws = weekStart(now);\nconst day = (n) => seedDate(n, now);\nconst at = (n, hhmm) => new Date(\`\${addDays(ws, n)}T\${hhmm}:00-07:00\`).toISOString();\n${rows}`;
-  const line = (k, label, p, a) => ({ category_key: k, label, planned: p, actual: a, under: Math.max(Math.round((p - a) * 100), 0) / 100, over: Math.max(Math.round((a - p) * 100), 0) / 100 });
-  const auditsJs = JSON.stringify([
-    { off: -28, status: 'skipped_paused', lines: [], gross: 0, over: 0, toBuf: 0, bufAfter: 0, inv: 0, carry: 0 },
-    { off: -21, status: 'invested', lines: [line('groceries', 'Groceries', 70, 58.2), line('eating_out', 'Eating out and coffee', 40, 31), line('transport', 'Transport', 25, 25)], gross: 20.8, over: 0, toBuf: 10.4, bufAfter: 10.4, inv: 10.4, carry: 0 },
-    { off: -14, status: 'carried', lines: [line('groceries', 'Groceries', 70, 76), line('eating_out', 'Eating out and coffee', 40, 36.8), line('transport', 'Transport', 25, 30)], gross: 3.2, over: 11, toBuf: 1.6, bufAfter: 1.6, inv: 0, carry: 1.6 },
-    { off: -7, status: 'invested', lines: [line('groceries', 'Groceries', 70, 41.3), line('eating_out', 'Eating out and coffee', 40, 22.5), line('transport', 'Transport', 25, 12)], gross: 59.2, over: 0, toBuf: 29.6, bufAfter: 31.2, inv: 31.2, carry: 0 },
-  ]);
-  nodes.push(
-    webhook(H, 'POST', 'lo/dev-e/seed-test-e', 'd0e5eed0-7e57-4e00-8000-00000000000e', [0, y], 'lastNode'),
-    dtDelete('DEV-E: delete orders', 'orders', U, [X(0), y]),
-    dtDelete('DEV-E: delete audits', 'audits', U, [X(1), y]),
-    dtDelete('DEV-E: delete transactions', 'transactions', U, [X(2), y]),
-    dtDelete('DEV-E: delete budgets', 'budgets', U, [X(3), y]),
-    dtDelete('DEV-E: delete users', 'users', U, [X(4), y]),
-    code('DEV-E: user row', rowsCode(`return [{ json: {
-  user_id: '${U}', email: 'test-e@example.com', name: 'Tess', created_at: at(-35, '12:00'), timezone: 'America/Vancouver',
-  status: 'active', consent_at: at(-35, '12:00'), buffer_balance: 31.2, buffer_target: 100, cushion_rate: 0.5,
-  absorb_overspend: true, min_invest: 5, max_weekly_invest: 200, pending_carry: 0, deficit_carry: 0,
-} }];`), [X(5), y]),
-    dtInsert('DEV-E: insert user', 'users', [X(6), y]),
-    code('DEV-E: budget rows', `return [
-  ['groceries', 'Groceries', 70, true], ['eating_out', 'Eating out and coffee', 40, true],
-  ['transport', 'Transport', 25, true], ['shopping', 'Shopping', 30, false],
-].map(([category_key, label, weekly_amount, active]) => ({ json: { user_id: '${U}', category_key, label, weekly_amount, active } }));`, [X(7), y]),
-    dtInsert('DEV-E: insert budgets', 'budgets', [X(8), y]),
-    code('DEV-E: transaction rows', rowsCode(`const t = (id, off, amount, category_key, merchant, extra = {}) => ({ json: {
-  txn_id: 'test-e-' + id, user_id: '${U}', date: day(off), amount, merchant, pfc_primary: '', pfc_detailed: '', category_key,
-  pending: false, pending_txn_id: '', source: 'manual', removed: false, synced_at: now.toISOString(), ...extra } });
-return [
-  t('g1', 0, 32.4, 'groceries', 'Kin\\'s Farm Market'),
-  t('g2', 1, -4.5, 'groceries', 'Kin\\'s Farm Market (refund)'),
-  t('e1', 0, 18, 'eating_out', 'Phnom Penh'),
-  t('e2', 1, 26.75, 'eating_out', 'Earls'),
-  t('p1', 0, 6, 'transport', 'Evo Car Share', { pending: true }),
-  t('p2', 1, 6.25, 'transport', 'Evo Car Share', { pending_txn_id: 'test-e-p1' }),
-  t('p3', 1, 3.1, 'transport', 'TransLink', { pending: true }),
-  t('x1', 0, 1450, 'excluded', 'Rent'),
-  t('r1', 0, 99, 'groceries', 'Duplicate charge', { removed: true }),
-  t('s1', 0, 12, 'shopping', 'Winners'),
-  t('old', -3, 50, 'groceries', 'Save-On-Foods'),
-];`), [X(9), y]),
-    dtInsert('DEV-E: insert transactions', 'transactions', [X(10), y]),
-    code('DEV-E: audit rows', rowsCode(`return ${auditsJs}.map((a) => {
-  const w = addDays(ws, a.off);
-  return { json: {
-    audit_id: '${U}-' + w, user_id: '${U}', week_start: w, week_end: addDays(w, 6), lines_json: JSON.stringify(a.lines),
-    gross_surplus: a.gross, total_over: a.over, late_adj: 0, to_buffer: a.toBuf, buffer_after: a.bufAfter,
-    investable_cad: a.inv, pending_carry_after: a.carry, status: a.status, created_at: at(a.off + 6, '20:00'),
-  } };
-});`), [X(11), y]),
-    dtInsert('DEV-E: insert audits', 'audits', [X(12), y]),
-    code('DEV-E: order rows', rowsCode(`const o = (off, symbol, sleeve, cad, status, fill, suffix = '') => {
-  const audit_id = '${U}-' + addDays(ws, off);
-  const usd = Math.round((cad / 1.4) * 100) / 100;
-  return { json: {
-    client_order_id: audit_id + '-' + symbol + suffix, audit_id, user_id: '${U}', symbol, sleeve, notional_usd: usd, notional_cad: cad,
-    fx_rate: 1.4, alpaca_order_id: 'dev-e-' + symbol + suffix + off, status,
-    filled_qty: fill ? Math.round((usd / fill) * 1e9) / 1e9 : 0, filled_avg_price: fill || 0,
-    submitted_at: at(off + 6, '20:00'), filled_at: fill ? at(off + 7, '06:30') : null,
-  } };
-};
-return [
-  o(-21, 'VTI', 'equity_us', 4.16, 'filled', 330),
-  o(-21, 'BND', 'bonds', 6.24, 'filled', 73),
-  o(-7, 'VTI', 'equity_us', 12.48, 'accepted'),
-  o(-7, 'BND', 'bonds', 15.6, 'new'),
-  o(-7, 'EWC', 'equity_ca', 3.12, 'rejected'),
-  o(-7, 'EWC', 'equity_ca', 3.12, 'accepted', 0, '-r1'),
-];`), [X(13), y]),
-    dtInsert('DEV-E: insert orders', 'orders', [X(14), y]),
-    code('DEV-E: done', `return [{ json: { ok: true, data: { user_id: '${U}', seeded: {
-  budgets: $('DEV-E: insert budgets').all().length, transactions: $('DEV-E: insert transactions').all().length,
-  audits: $('DEV-E: insert audits').all().length, orders: $('DEV-E: insert orders').all().length } } } }];`, [X(15), y]),
-    sticky('About DEV-E', '## DEV-E (dev only)\nRewrites `test-e` rows for Lane E testing. Built only with `node scripts/build-wf07-08.mjs --dev`; never shipped.', [-40, y - 200], 520, 160, 3),
-  );
-  g.chain(H, 'DEV-E: delete orders', 'DEV-E: delete audits', 'DEV-E: delete transactions', 'DEV-E: delete budgets', 'DEV-E: delete users',
-    'DEV-E: user row', 'DEV-E: insert user', 'DEV-E: budget rows', 'DEV-E: insert budgets', 'DEV-E: transaction rows', 'DEV-E: insert transactions',
-    'DEV-E: audit rows', 'DEV-E: insert audits', 'DEV-E: order rows', 'DEV-E: insert orders', 'DEV-E: done');
-}
-
-// ---------- dev only: call LO-07 the way LO-04 does (Execute Workflow, passthrough items) ----------
-function devDigestCall(nodes, g) {
-  const y = 2000;
-  const H = 'POST /lo/dev-e/call-digest';
-  nodes.push(
-    webhook(H, 'POST', 'lo/dev-e/call-digest', 'd0e5eed0-7e57-4e00-8000-0000000000d7', [0, y], 'lastNode'),
-    code('DEV-E: digest input', `return [{ json: $('${H}').first().json.body || {} }];`, [260, y]),
-    {
-      parameters: { workflowId: { __rl: true, value: ids.workflows['LO-07'], mode: 'id', cachedResultName: 'LO-07 Weekly Digest' }, mode: 'each', options: { waitForSubWorkflow: true } },
-      name: 'DEV-E: run LO-07', type: T('executeWorkflow'), typeVersion: V('executeWorkflow'), position: [480, y], onError: 'continueRegularOutput',
-    },
-    code('DEV-E: digest output', 'return [{ json: { ok: true, data: { returned: $input.all().map((i) => i.json) } } }];', [700, y]),
-  );
-  g.chain(H, 'DEV-E: digest input', 'DEV-E: run LO-07', 'DEV-E: digest output');
 }
 
 // ======================= LO-07 Weekly Digest =======================
@@ -572,9 +444,8 @@ return [{ json: r.body && r.body.ok ? r.body.data : r.body }];`, [X(16), y + 120
       '## LO-07 Weekly Digest',
       'Called by LO-04 after the audit (`{user_id, audit_id}`) or via `POST /lo/digest/send {user_id, audit_id?, dry_run?}`.',
       'Builds the scoreboard, cushion, invested, lifetime, portfolio value and the 4/6/8% × 10/20/30y **illustrative** projection (`lib/projection.mjs`).',
-      '**LLM** writes an 80–120 word summary; if it fails or breaks a rule (tickers, advice, unlabelled projection) the fixed template is used (spec §19.5).',
+      'The summary is a fixed template (spec D4: no LLM). The two LLM nodes stay in the workflow, switched off.',
       '`dry_run: true` returns `subject` + `body` without sending. **Gmail** failure → `502 UPSTREAM_ERROR` with the computed email.',
-      'Provider is open (D4): the chat model sub-node is Anthropic; swap it for OpenAI without touching the chain.',
     ].join('\n'), [-40, -560], 900, 360, 7),
   );
   g.link(H, 'Digest: request');
@@ -604,7 +475,7 @@ return [{ json: r.body && r.body.ok ? r.body.data : r.body }];`, [X(16), y + 120
 
 const write = (file, wf) => {
   writeFileSync(join(root, file), `${JSON.stringify(wf, null, 2)}\n`);
-  console.log(`wrote ${file} (${wf.nodes.length} nodes${DEV && file.includes('08') ? ', with DEV-E seed route' : ''})`);
+  console.log(`wrote ${file} (${wf.nodes.length} nodes)`);
 };
 write('n8n/workflows/08-dashboard-api.json', buildWf08());
 write('n8n/workflows/07-weekly-digest.json', buildWf07());

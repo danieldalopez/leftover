@@ -1,5 +1,5 @@
 {
-  "_about": "Realistic Plaid /transactions/sync responses (shape per plaid.com/docs/api/products/transactions/#transactionssync, PFC v2 names per plaid.com/documents/pfc-taxonomy-all.csv), used by lib/categorize.test.mjs and by Lane C's mock Plaid harness. run_1 = first sync of a new Item (cursor ''), two pages. run_2 = the next sync after a refresh: a pending coffee posts (posted row added with pending_transaction_id, pending id removed), a grocery amount is corrected, a charge is reversed. not_ready = what Plaid returns when the Item hasn't pulled transactions yet. incomplete = a run that stopped while has_more was still true.",
+  "_about": "Realistic Plaid /transactions/sync responses (shape per plaid.com/docs/api/products/transactions/#transactionssync, PFC v2 names per plaid.com/documents/pfc-taxonomy-all.csv), used by lib/categorize.test.mjs. run_1 = first sync of a new Item (cursor ''), two pages. run_2 = the next sync after a refresh: a pending coffee posts (posted row added with pending_transaction_id, pending id removed), a grocery amount is corrected, a charge is reversed. not_ready = what Plaid returns when the Item hasn't pulled transactions yet. incomplete = a run that stopped while has_more was still true.",
   "user_id": "test-c",
   "item_id": "item-sample-001",
   "run_1": {

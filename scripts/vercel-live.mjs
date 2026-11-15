@@ -8,28 +8,12 @@
 // Live mode first checks that <url>/webhook/lo/api/summary answers with the webhook key, so Vercel is
 // never pointed at a dead URL. Values go to the Vercel CLI on stdin; the key is never printed.
 
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
+import { env, root } from './env.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dash = join(root, 'dashboard');
-
-function envKey(key) {
-  if (process.env[key]) return process.env[key];
-  const candidates = [join(root, '.env')];
-  const r = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
-  if (r.status === 0) candidates.push(join(dirname(r.stdout.trim()), '.env'));
-  for (const f of candidates) {
-    if (!existsSync(f)) continue;
-    for (const line of readFileSync(f, 'utf8').split('\n')) {
-      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-      if (m && m[1] === key) return m[2].replace(/^['"]|['"]$/g, '');
-    }
-  }
-  return '';
-}
 
 function vercel(args, input) {
   const r = spawnSync('vercel', args, { cwd: dash, encoding: 'utf8', input });
@@ -51,7 +35,7 @@ async function main() {
   } else {
     const base = arg.replace(/\/$/, '');
     if (!/^https:\/\//.test(base)) throw new Error(`not an https URL: ${base}`);
-    const key = envKey('N8N_WEBHOOK_KEY');
+    const key = env.N8N_WEBHOOK_KEY ?? '';
     if (!key) throw new Error('N8N_WEBHOOK_KEY is empty in .env');
     const res = await fetch(`${base}/webhook/lo/api/summary?user_id=maya`, { headers: { 'x-lo-key': key } }).catch((e) => ({ ok: false, status: e.message }));
     if (!res.ok) throw new Error(`${base} doesn't answer the dashboard API (${res.status}); is the tunnel up and n8n running?`);

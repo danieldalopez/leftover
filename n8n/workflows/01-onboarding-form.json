@@ -609,7 +609,7 @@
     },
     {
       "parameters": {
-        "content": "## Explanation (spec §19.5)\n**Explain (LLM)** is disabled until the `LLM` credential exists; disabled, it passes its input through and **Pick explanation** uses the template.\nTo turn it on: attach the credential and enable this one node. For OpenAI, replace it with the OpenAI node, same name, same prompt expressions. Don't set temperature/top_p/top_k.",
+        "content": "## Explanation (spec §19.5)\n**Explain (LLM)** is disabled by choice (spec D4); disabled, it passes its input through and **Pick explanation** uses the template.\nTo turn it on: attach the credential and enable this one node. For OpenAI, replace it with the OpenAI node, same name, same prompt expressions. Don't set temperature/top_p/top_k.",
         "width": 560,
         "height": 280
       },

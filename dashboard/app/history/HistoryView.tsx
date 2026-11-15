@@ -24,7 +24,7 @@ export default function HistoryView({ data }: { data: Audits }) {
     return (
       <div className="card">
         <h2>No audits yet</h2>
-        <p className="muted" style={{ marginTop: 6 }}>
+        <p className="muted">
           The first audit runs Sunday at 8:00 pm, or press <strong>Run audit now</strong> in the demo bar.
         </p>
       </div>
@@ -50,81 +50,52 @@ export default function HistoryView({ data }: { data: Audits }) {
     };
   });
 
+  const filter = (
+    <select id="cat" className="input" aria-label="Category" value={cat} onChange={(e) => setCat(e.target.value)}>
+      <option value={ALL}>All categories</option>
+      {categories.map((c) => (
+        <option key={c.key} value={c.key}>
+          {c.label}
+        </option>
+      ))}
+    </select>
+  );
+
   return (
     <>
-      <div className="grid-4">
-        <div className="card">
-          <div className="tile-label">Left over (gross)</div>
+      <section className="card grid-3" aria-label="Totals">
+        <div>
+          <div className="tile-label">Left over</div>
           <div className="tile-value">{cad(t.gross_surplus_cad)}</div>
           <div className="tile-note">Unspent budget, all weeks</div>
         </div>
-        <div className="card">
+        <div>
           <div className="tile-label">To cushion</div>
           <div className="tile-value">{cad(t.to_buffer_cad)}</div>
-          <div className="tile-note">Kept as cash for overspending</div>
+          <div className="tile-note">Kept as cash</div>
         </div>
-        <div className="card">
+        <div>
           <div className="tile-label">Invested</div>
           <div className="tile-value">{cad(t.invested_cad)}</div>
-          <div className="tile-note">Paper trades, CAD at the time</div>
-        </div>
-        <div className="card">
-          <div className="tile-label">Weeks invested</div>
-          <div className="tile-value">
-            {t.weeks_invested} <small>of {t.weeks_audited}</small>
+          <div className="tile-note">
+            {t.weeks_invested} of {t.weeks_audited} weeks
           </div>
-          <div className="tile-note">Audited weeks</div>
         </div>
-      </div>
-
-      <div className="filter-row" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <label htmlFor="cat" className="small ink-2" style={{ fontWeight: 600 }}>
-          Category
-        </label>
-        <select id="cat" className="input" value={cat} onChange={(e) => setCat(e.target.value)}>
-          <option value={ALL}>All categories</option>
-          {categories.map((c) => (
-            <option key={c.key} value={c.key}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      </section>
 
       <section className="card" aria-labelledby="chart-h">
         <div className="card-head">
           <h2 id="chart-h">{cat === ALL ? 'Weekly leftover' : `${catLabel}: under or over budget`}</h2>
-          {cat === ALL ? (
-            <div className="legend">
-              <span>
-                <span className="swatch" style={{ background: 'var(--series-1)' }} /> Left over
-              </span>
-              <span>
-                <span className="swatch" style={{ background: 'var(--series-2)' }} /> To cushion
-              </span>
-              <span>
-                <span className="swatch" style={{ background: 'var(--series-3)' }} /> Invested
-              </span>
-            </div>
-          ) : (
-            <div className="legend">
-              <span>
-                <span className="swatch" style={{ background: 'var(--under)' }} /> Under budget ↑
-              </span>
-              <span>
-                <span className="swatch" style={{ background: 'var(--over)' }} /> Over budget ↓
-              </span>
-            </div>
-          )}
+          {filter}
         </div>
         {cat === ALL ? (
           <ColumnChart
             key="all"
             ariaLabel="Weekly left over, to cushion and invested, oldest week first"
             series={[
-              { key: 'gross', label: 'Left over', color: 'var(--series-1)' },
-              { key: 'buffer', label: 'To cushion', color: 'var(--series-2)' },
-              { key: 'invested', label: 'Invested', color: 'var(--series-3)' },
+              { key: 'gross', label: 'Left over', color: 'var(--leftover)' },
+              { key: 'buffer', label: 'To cushion', color: 'var(--cushion)' },
+              { key: 'invested', label: 'Invested', color: 'var(--invested)' },
             ]}
             groups={allGroups}
             format={(n) => cad(n)}
@@ -144,6 +115,23 @@ export default function HistoryView({ data }: { data: Audits }) {
             tickFormat={tickCad}
           />
         )}
+        <div className="legend">
+          {(cat === ALL
+            ? [
+                ['Left over', 'var(--leftover)'],
+                ['To cushion', 'var(--cushion)'],
+                ['Invested', 'var(--invested)'],
+              ]
+            : [
+                ['Under budget ↑', 'var(--under)'],
+                ['Over budget ↓', 'var(--over)'],
+              ]
+          ).map(([label, color]) => (
+            <span key={label}>
+              <span className="swatch" style={{ background: color }} /> {label}
+            </span>
+          ))}
+        </div>
       </section>
 
       <section className="card" aria-labelledby="table-h">
@@ -159,11 +147,8 @@ export default function HistoryView({ data }: { data: Audits }) {
                   <th>Week</th>
                   <th>Status</th>
                   <th className="num">Left over</th>
-                  <th className="num">Overspent</th>
                   <th className="num">To cushion</th>
                   <th className="num">Invested</th>
-                  <th className="num">Cushion after</th>
-                  <th>Best category</th>
                 </tr>
               </thead>
               <tbody>
@@ -177,30 +162,19 @@ export default function HistoryView({ data }: { data: Audits }) {
                       </span>
                     </td>
                     <td className="num">{cad(a.gross_surplus_cad)}</td>
-                    <td className="num">{a.total_over_cad > 0 ? cad(a.total_over_cad) : '—'}</td>
                     <td className="num">{cad(a.to_buffer_cad)}</td>
                     <td className="num">
                       {a.status === 'invested' ? (
                         <strong>{cad(a.investable_cad)}</strong>
                       ) : a.status === 'computed' && a.investable_cad > 0 ? (
-                        <span className="muted" title="Computed by the audit but not sent to Alpaca (backfill, or invest step failed)">
-                          {cad(a.investable_cad)} not invested
+                        <span className="muted" title="Computed by the audit but not sent to Alpaca">
+                          {cad(a.investable_cad)} ready
                         </span>
                       ) : (
                         '—'
                       )}
                       {a.pending_carry_after_cad > 0 && (
                         <div className="small muted">{cad(a.pending_carry_after_cad)} carried</div>
-                      )}
-                    </td>
-                    <td className="num">{cad(a.buffer_after_cad)}</td>
-                    <td>
-                      {a.best_category ? (
-                        <>
-                          {a.best_category.label} <span className="muted">({cad(a.best_category.under_cad)} under)</span>
-                        </>
-                      ) : (
-                        <span className="muted">—</span>
                       )}
                     </td>
                   </tr>
@@ -211,11 +185,8 @@ export default function HistoryView({ data }: { data: Audits }) {
                   <td>Total</td>
                   <td />
                   <td className="num">{cad(t.gross_surplus_cad)}</td>
-                  <td className="num">{cad(audits.reduce((s, a) => s + a.total_over_cad, 0))}</td>
                   <td className="num">{cad(t.to_buffer_cad)}</td>
                   <td className="num">{cad(t.invested_cad)}</td>
-                  <td />
-                  <td />
                 </tr>
               </tfoot>
             </table>
@@ -251,8 +222,8 @@ export default function HistoryView({ data }: { data: Audits }) {
 
       <section className="card" aria-labelledby="streaks-h">
         <div className="card-head">
-          <h2 id="streaks-h">Best-category streaks</h2>
-          <span className="hint">Weeks at or under budget</span>
+          <h2 id="streaks-h">Streaks</h2>
+          <span className="hint">Weeks at or under budget, oldest first</span>
         </div>
         <div className="streaks">
           {[...data.streaks]
@@ -263,22 +234,13 @@ export default function HistoryView({ data }: { data: Audits }) {
                 return { key: a.audit_id, under: l ? l.actual_cad <= l.planned_cad : false };
               });
               return (
-                <div className="streak" key={s.category_key} data-selected={cat === s.category_key}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                    <strong>{s.label}</strong>
-                    <span className="small ink-2 num">
-                      {s.weeks_under}/{s.weeks_total}
-                    </span>
-                  </div>
-                  <div className="small muted">
-                    {s.current_streak > 0
-                      ? `${s.current_streak}-week streak${s.current_streak === s.weeks_total && s.weeks_total > 1 ? ' · every week' : ''}`
-                      : 'Over budget last week'}
-                  </div>
+                <div key={s.category_key}>
+                  <div>{s.label}</div>
                   <div className="pips" aria-label={`${s.weeks_under} of ${s.weeks_total} weeks under budget, oldest first`}>
                     {pips.map((p) => (
                       <span key={p.key} data-under={p.under} />
                     ))}
+                    <em className="small">{s.current_streak > 0 ? `${s.current_streak}-week streak` : 'over last week'}</em>
                   </div>
                 </div>
               );

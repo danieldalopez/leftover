@@ -14,40 +14,23 @@
 //    seeds config, category_map and Maya, and backfills her past weeks.
 //
 // Targets the instance in N8N_USER_FOLDER (default ~/.n8n). The instance may be running: a running
-// n8n picks imports up in ~10-15 s. Third-party credentials (Alpaca, Plaid, LLM, Gmail) are entered
+// n8n picks imports up in ~10-15 s. Third-party credentials (Alpaca, Plaid, Gmail) are entered
 // by hand in n8n: see n8n/README.md.
 
 import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { env, root } from './env.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const N8N_VERSION = JSON.parse(readFileSync(join(root, 'n8n/templates/node-versions.json'), 'utf8')).n8n;
 const ids = JSON.parse(readFileSync(join(root, 'n8n/ids.json'), 'utf8'));
 
-export const IMPORT_ORDER = [
+const IMPORT_ORDER = [
   '09-error-handler', '05-invest-executor', '07-weekly-digest', '04-weekly-audit', '00-setup-and-seed',
   '03-transaction-sync', '02-plaid-connect-sandbox', '03b-manual-expense', '01-onboarding-form',
   '06-order-reconcile', '08-dashboard-api',
 ];
-
-// Same .env lookup as scripts/n8n.mjs (lane worktrees fall back to the main checkout's .env).
-function readEnvKey(key) {
-  const candidates = [join(root, '.env')];
-  const r = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
-  if (r.status === 0) candidates.push(join(dirname(r.stdout.trim()), '.env'));
-  if (process.env[key]) return process.env[key];
-  for (const file of candidates) {
-    if (!existsSync(file)) continue;
-    for (const line of readFileSync(file, 'utf8').split('\n')) {
-      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-      if (m && m[1] === key) return m[2].replace(/^['"]|['"]$/g, '');
-    }
-  }
-  return '';
-}
 
 function n8n(...args) {
   const r = spawnSync('npx', ['-y', `n8n@${N8N_VERSION}`, ...args], {
@@ -57,7 +40,7 @@ function n8n(...args) {
 }
 
 function importWebhookCredential() {
-  const key = readEnvKey('N8N_WEBHOOK_KEY');
+  const key = env.N8N_WEBHOOK_KEY ?? '';
   if (!key) throw new Error('N8N_WEBHOOK_KEY is empty: set it in .env (any long random string)');
   const dir = mkdtempSync(join(tmpdir(), 'lo-cred-'));
   try {
@@ -125,16 +108,14 @@ function pushAll() {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  try {
-    if (!process.argv.includes('--skip-credentials')) {
-      importWebhookCredential();
-      ensurePlaceholderCredentials();
-    }
-    pushAll();
-    console.log('\nDone. Wait ~15 s, then: node scripts/n8n.mjs call POST lo/demo/reset \'{}\'');
-  } catch (e) {
-    console.error(e.message);
-    process.exit(1);
+try {
+  if (!process.argv.includes('--skip-credentials')) {
+    importWebhookCredential();
+    ensurePlaceholderCredentials();
   }
+  pushAll();
+  console.log('\nDone. Wait ~15 s, then: node scripts/n8n.mjs call POST lo/demo/reset \'{}\'');
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
 }

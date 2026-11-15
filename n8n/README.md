@@ -77,7 +77,7 @@ Other options:
 
 ## 7. Checks
 ```bash
-npm test                          # pure logic + seed + fixtures (192 tests)
+npm test                          # pure logic + seed + fixtures
 node scripts/check-api.mjs        # live dashboard API against contracts/fixtures
 node scripts/demo-rehearsal.mjs   # the spec §15 demo, step by step, against the live routes
 ```

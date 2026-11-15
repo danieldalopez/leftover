@@ -1,6 +1,6 @@
 # Contract: dashboard API (LO-08)
 
-Derived from `spec.md` §10 WF08, §13 and §19; if they disagree, the spec wins. Lane E implements this exactly; Lane F builds against it.
+Derived from `spec.md` §10 WF08, §13 and §19; if they disagree, the spec wins. LO-08 implements this exactly; the dashboard builds against it.
 
 - **Auth and envelope:** see `webhooks.md`.
 - **Fixtures:** `fixtures/*.json` show Maya on **Sat 2026-11-14 15:30** after a reset plus a backfill of her 3 past weeks. They're consistent with `demo/seed-data.json` (checked by `scripts/fixtures.test.mjs`).

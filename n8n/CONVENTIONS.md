@@ -1,6 +1,6 @@
 # n8n conventions
 
-Facts about **this** n8n that every lane relies on, all verified on 2026-11-14. Behaviour lives in `spec.md`; this file covers the tooling.
+Facts about **this** n8n that the workflows and scripts rely on, all verified on 2026-11-14. Behaviour lives in `spec.md`; this file covers the tooling.
 
 ## Instance
 - **n8n 2.47.7**, self-hosted with `npx` on Sergio's Mac (no Docker), Node 26. Data lives in `~/.n8n` (SQLite).
@@ -41,8 +41,8 @@ Facts about **this** n8n that every lane relies on, all verified on 2026-11-14. 
 - `n8n/templates/node-versions.json`: `typeVersion` to use for each node (`latest`).
 - `n8n/templates/node-snippets.json`: node JSON copied from workflows that **ran** here (webhook with header auth, Code, every Data Table operation we use, …). Copy from it.
 - `n8n/templates/node-types.json`: full parameter definitions of the 26 node types this project uses (from `n8n export:nodes`). Use it for nodes with no snippet yet (Schedule, HTTP Request, If, Merge, Execute Workflow, Respond to Webhook, Form, LLM). When yours runs, add it to the snippets.
-- Generated files: `00-setup-and-seed.json` is built by `scripts/build-wf00.mjs` (seed + `lib/week.mjs` embedded); stubs by `scripts/build-stubs.mjs`. Edit the sources, rebuild, push.
-- Every workflow: `settings: { "executionOrder": "v1", "timezone": "America/Vancouver" }`. Z adds `errorWorkflow: "leftoverWF09errh"` in Wave 3.
+- Generated files: `00-setup-and-seed.json` is built by `scripts/build-wf00.mjs` (seed + `lib/week.mjs` embedded), and `07-weekly-digest.json` and `08-dashboard-api.json` by `scripts/build-wf07-08.mjs`. Edit the sources, rebuild, push.
+- Every workflow: `settings: { "executionOrder": "v1", "timezone": "America/Vancouver" }`. Plus `errorWorkflow: "leftoverWF09errh"` on all but LO-09 itself.
 - Webhook nodes: `authentication: "headerAuth"` with credential `{ "id": "leftoverCredHook", "name": "LO Webhook Key" }`, and a unique `webhookId` (any UUID). `responseMode: "lastNode"` + `responseData: "firstEntryJson"` returns the last node's first item. Use `"responseNode"` + a Respond to Webhook node when you need custom status codes (errors).
 
 ## Data Tables (verified by running LO-00)
@@ -62,6 +62,6 @@ Facts about **this** n8n that every lane relies on, all verified on 2026-11-14. 
 | `Alpaca Paper` | Custom Auth (2 headers) | **created** (`leftoverCredAlpc`) with placeholder values by `scripts/setup-instance.mjs`: Sergio pastes the paper keys into it in n8n |
 | `Plaid Sandbox` | Custom Auth (body `client_id`, `secret`) | **created** (`leftoverCredPlad`) with placeholder values: Sergio pastes the sandbox keys into it in n8n |
 | `LLM` | Anthropic | **not used** (D4: template text for the demo). The LLM nodes stay in LO-01 and LO-07, switched off |
-| `Gmail` | Gmail OAuth2 | needed before Lane E |
+| `Gmail` | Gmail OAuth2 | **missing**: needs Sergio's own Google Cloud OAuth client (`n8n/README.md` §3) |
 
-These four hold third-party keys, which Sergio enters in n8n himself. Until they exist, lanes build and test everything up to the external call, using stubs or mocks at that boundary.
+Alpaca, Plaid and Gmail hold third-party keys, which Sergio enters in n8n himself. Until a key exists, its step takes the fallback in spec §19.5.

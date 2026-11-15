@@ -1,5 +1,5 @@
 // Checks demo/seed-data.json adds up to its own _expected block (spec §6, §19.4).
-// Independent re-implementation in integer cents, so Lane A has a second opinion.
+// Independent re-implementation in integer cents, so lib/audit.mjs has a second opinion.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

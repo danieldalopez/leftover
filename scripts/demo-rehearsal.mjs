@@ -3,34 +3,13 @@
 // the dashboard's demo bar calls them, and takes the documented fallback when a service is missing.
 //
 //   node scripts/demo-rehearsal.mjs           one run, then a reset so the real demo starts clean
-//   node scripts/demo-rehearsal.mjs --twice   BUILD-PLAN Z step 6: two clean runs in a row
+//   node scripts/demo-rehearsal.mjs --twice   two clean runs in a row
 //
 // Uses N8N_BASE_URL / N8N_WEBHOOK_KEY from .env (or the environment). Only touches maya.
 // Exit code 1 if a step fails in a way the demo can't recover from.
 
-import { readFileSync, existsSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { env } from './env.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-function loadEnv() {
-  let file = join(root, '.env');
-  if (!existsSync(file)) {
-    const r = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
-    const main = r.status === 0 ? join(dirname(r.stdout.trim()), '.env') : '';
-    if (main && existsSync(main)) file = main;
-  }
-  const env = {};
-  if (existsSync(file)) {
-    for (const line of readFileSync(file, 'utf8').split('\n')) {
-      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-      if (m) env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
-    }
-  }
-  return { ...env, ...process.env };
-}
-const env = loadEnv();
 const BASE = (env.N8N_BASE_URL || 'http://localhost:5678').replace(/\/$/, '');
 const USER = 'maya';
 
@@ -54,12 +33,12 @@ async function rehearse(run) {
 
   let r = await call('POST', 'lo/demo/reset', {});
   const bf = r.json?.data?.backfilled ?? [];
-  if (r.json?.ok && bf.length === 3 && bf.every((b) => b.audit_id)) line('✓', 'Reset demo', `43 txns, 3 past weeks audited (${bf.map((b) => b.investable_cad).join(' / ')}), ${r.ms} ms`);
+  if (r.json?.ok && bf.length === 3 && bf.every((b) => b.audit_id)) line('✓', 'Reset demo', `${r.json.data.transactions_seeded} txns, 3 past weeks audited (${bf.map((b) => b.investable_cad).join(' / ')}), ${r.ms} ms`);
   else { line('✗', 'Reset demo', err(r)); fatal++; }
 
   r = await call('GET', `lo/api/summary?user_id=${USER}`);
   const before = eatingOut(r);
-  if (r.json?.ok) line('✓', '"This week"', `eating out $${before} of $50 (over), groceries under`);
+  if (r.json?.ok) line('✓', '"This week"', `eating out $${before} so far`);
   else { line('✗', '"This week"', err(r)); fatal++; }
 
   r = await call('POST', 'lo/plaid/connect-sandbox', { user_id: USER });
