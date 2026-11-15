@@ -1,0 +1,8 @@
+{
+  "name": "leftover",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test 'lib/*.test.mjs' 'scripts/*.test.mjs'"
+  }
+}

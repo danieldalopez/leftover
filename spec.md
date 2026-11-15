@@ -226,23 +226,34 @@ Budgets and audits are in **CAD**. Alpaca paper trades US listed securities in *
 
 Data Tables support string, number, boolean and date columns. Store JSON as a string. Data Tables are **not** included in workflow JSON exports, so WF00 creates them.
 
+- **Date-only values** (`transactions.date`, `audits.week_start`, `audits.week_end`) are **strings** `YYYY-MM-DD`, so no timezone conversion can shift them by a day. Real moments in time (`created_at`, `filled_at`, …) use date columns.
+- Data Tables don't enforce uniqueness. Workflows upsert on the keys marked unique: `users.user_id`, `profiles.user_id`, `budgets (user_id, category_key)`, `category_map (plaid_pfc_primary, plaid_pfc_detailed)`, `bank_links.item_id`, `transactions.txn_id`, `audits.audit_id`, `orders.client_order_id`, `config.key`.
+- Exact column types: `contracts/data-tables.md`.
+
 **users**: user_id (string), email, name, created_at (date), timezone, status ("active" | "paused"), consent_at (date), buffer_balance (number), buffer_target (number), cushion_rate (number), absorb_overspend (boolean), min_invest (number), max_weekly_invest (number), pending_carry (number), deficit_carry (number)
 
 **profiles**: user_id, answers_json (string), capacity_score (number), willingness_score (number), tier (string: cash | conservative | balanced | growth | all_equity), home_bias (string), allocation_json (string, user editable), explanation (string), updated_at (date), warnings_json (string)
 
 **budgets**: user_id, category_key, label, weekly_amount (number), active (boolean)
 
-**category_map**: plaid_pfc_primary, plaid_pfc_detailed, category_key, excluded (boolean)
+**category_map**: plaid_pfc_primary, plaid_pfc_detailed, category_key, excluded (boolean). Lookup: exact (primary, detailed) match first, then the row with that primary and an empty `plaid_pfc_detailed`; an unmapped primary falls back to `other`. Excluded rows use `category_key = "excluded"`.
 
 **bank_links**: user_id, item_id, access_token (string; sandbox only, flag as a production risk), cursor (string), institution_name, linked_at
 
-**transactions**: txn_id (string, unique), user_id, date (date), amount (number, CAD), merchant, pfc_primary, pfc_detailed, category_key, pending (boolean), pending_txn_id, source ("plaid" | "manual" | "seed"), removed (boolean), synced_at
+**transactions**: txn_id (string, unique), user_id, date (string YYYY-MM-DD), amount (number, CAD), merchant, pfc_primary, pfc_detailed, category_key, pending (boolean), pending_txn_id, source ("plaid" | "manual" | "seed"), removed (boolean), synced_at
 
-**audits**: audit_id (string = user_id + week_start), user_id, week_start (date), week_end (date), lines_json (string: per category planned/actual/under/over), gross_surplus, total_over, late_adj, to_buffer, buffer_after, investable_cad, pending_carry_after, status ("computed" | "invested" | "carried" | "skipped_paused"), created_at
+**audits**: audit_id (string = user_id + week_start), user_id, week_start (string YYYY-MM-DD, a Monday), week_end (string YYYY-MM-DD), lines_json (string: per category planned/actual/under/over), gross_surplus, total_over, late_adj, to_buffer, buffer_after, investable_cad, pending_carry_after, status ("computed" | "invested" | "carried" | "skipped_paused"), created_at
 
 **orders**: client_order_id (string, unique), audit_id, user_id, symbol, sleeve (equity_us | equity_intl | equity_ca | bonds | cash), notional_usd, notional_cad, fx_rate, alpaca_order_id, status, filled_qty, filled_avg_price, submitted_at, filled_at
 
-**config**: key, value (string). Keys: fx_fallback_usdcad, assumed_returns ("0.04,0.06,0.08"), demo_mode, alpaca_base_url.
+**config**: key, value (string). Keys:
+- `fx_fallback_usdcad`: CAD per 1 USD, used only if the FX API fails.
+- `assumed_returns`: `"0.04,0.06,0.08"`.
+- `demo_mode`: `"true"` or `"false"`.
+- `alpaca_base_url`, `plaid_base_url`.
+- `sleeve_symbols`: JSON, sleeve → ticker (§11.5). This is the "mapping is a table" from the production note.
+- `demo_email_to`: if set, the demo user's digest goes here.
+- `dashboard_url`: linked from the onboarding result page and the digest.
 
 ---
 
@@ -521,7 +532,7 @@ All routes need the header `x-lo-key` (credential `LO Webhook Key`).
 | `GET /lo/api/summary` | LO-08 | `?user_id=` |
 | `GET /lo/api/audits` | LO-08 | `?user_id=` |
 | `GET /lo/api/portfolio` | LO-08 | `?user_id=` |
-| `GET /lo/api/projection` | LO-08 | `?user_id=&rate=` (`rate` is one of `0.04`, `0.06`, `0.08`) |
+| `GET /lo/api/projection` | LO-08 | `?user_id=&rate=`. The response carries all three rates (0.04, 0.06, 0.08), so the dashboard toggle needs no extra call; `rate` only sets `selected_rate` (default 0.06). |
 | `POST /lo/api/settings` | LO-08 | `{user_id, budgets?, status?, buffer_target?, cushion_rate?, absorb_overspend?}` |
 
 LO-01 is an n8n Form with its own URL. LO-09 has no route.
@@ -547,7 +558,7 @@ LO-01 is an n8n Form with its own URL. LO-09 has no route.
 - `user_id` values are lowercase, URL-safe slugs.
 
 ### 19.4 Seed data
-`demo/seed-data.json` stores transaction dates as `day_offset` from the current week's Monday (0 = this Monday, -7 = last Monday). LO-00 turns them into real dates at seed time, so whenever the demo runs there's always a live "this week" plus 3 past weeks.
+`demo/seed-data.json` stores transaction dates as `day_offset` from the current week's Monday (0 = this Monday, -7 = last Monday). LO-00 turns them into real dates at seed time with `seedDate()` from `lib/week.mjs`, clamping any date after today to today, so whenever the demo runs there's always a live "this week" plus 3 past weeks. The seed's `_expected` block holds the audit results a correct implementation must produce (checked by `scripts/seed.test.mjs`).
 
 ### 19.5 Code
 - Pure logic lives in `lib/*.mjs`: plain functions, no imports, no npm packages, tested with `node --test`, then pasted verbatim into Code nodes.

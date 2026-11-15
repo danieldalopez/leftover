@@ -1,0 +1,55 @@
+{
+  "ok": true,
+  "data": {
+    "user_id": "maya",
+    "name": "Maya",
+    "status": "active",
+    "demo_mode": true,
+    "as_of": "2026-11-14T15:30:00-08:00",
+    "week": {
+      "week_start": "2026-11-09",
+      "week_end": "2026-11-15",
+      "days_left": 2,
+      "next_audit_at": "2026-11-15T20:00:00-08:00"
+    },
+    "lines": [
+      { "category_key": "groceries", "label": "Groceries", "planned_cad": 80.00, "actual_cad": 41.20, "pending_cad": 0, "remaining_cad": 38.80, "over_cad": 0, "pct_used": 0.52, "state": "ok", "projected_actual_cad": 48.07, "projected_under_cad": 31.93 },
+      { "category_key": "eating_out", "label": "Eating out and coffee", "planned_cad": 50.00, "actual_cad": 58.40, "pending_cad": 0, "remaining_cad": 0, "over_cad": 8.40, "pct_used": 1.17, "state": "over", "projected_actual_cad": 68.13, "projected_under_cad": 0 },
+      { "category_key": "transport", "label": "Transport", "planned_cad": 30.00, "actual_cad": 9.50, "pending_cad": 9.50, "remaining_cad": 20.50, "over_cad": 0, "pct_used": 0.32, "state": "ok", "projected_actual_cad": 11.08, "projected_under_cad": 18.92 },
+      { "category_key": "entertainment", "label": "Fun and entertainment", "planned_cad": 40.00, "actual_cad": 18.00, "pending_cad": 0, "remaining_cad": 22.00, "over_cad": 0, "pct_used": 0.45, "state": "ok", "projected_actual_cad": 21.00, "projected_under_cad": 19.00 },
+      { "category_key": "shopping", "label": "Shopping", "planned_cad": 40.00, "actual_cad": 0, "pending_cad": 0, "remaining_cad": 40.00, "over_cad": 0, "pct_used": 0, "state": "ok", "projected_actual_cad": 0, "projected_under_cad": 40.00 },
+      { "category_key": "personal_care", "label": "Personal care", "planned_cad": 20.00, "actual_cad": 0, "pending_cad": 0, "remaining_cad": 20.00, "over_cad": 0, "pct_used": 0, "state": "ok", "projected_actual_cad": 0, "projected_under_cad": 20.00 },
+      { "category_key": "other", "label": "Other variable", "planned_cad": 20.00, "actual_cad": 0, "pending_cad": 0, "remaining_cad": 20.00, "over_cad": 0, "pct_used": 0, "state": "ok", "projected_actual_cad": 0, "projected_under_cad": 20.00 }
+    ],
+    "totals": {
+      "planned_cad": 280.00,
+      "actual_cad": 127.10,
+      "remaining_cad": 161.30,
+      "over_cad": 8.40,
+      "projected_leftover_cad": 149.85
+    },
+    "buffer": {
+      "balance_cad": 41.00,
+      "target_cad": 100.00,
+      "cushion_rate": 0.5,
+      "absorb_overspend": true
+    },
+    "lifetime": {
+      "invested_cad": 98.58,
+      "weeks_invested": 3,
+      "weeks_audited": 3
+    },
+    "last_audit": {
+      "audit_id": "maya-2026-11-02",
+      "week_start": "2026-11-02",
+      "status": "invested",
+      "investable_cad": 26.15
+    },
+    "portfolio": {
+      "market_value_usd": 71.98,
+      "market_value_cad": 99.52,
+      "fx_rate_usdcad": 1.3826,
+      "queued_usd": 0
+    }
+  }
+}
