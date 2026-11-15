@@ -33,6 +33,7 @@ Schedule ┴─ Normalize request ─ Get users ─ Get budgets ─ Get transact
 - **`invest: false`** (backfill): writes the audit and balances as usual, never calls LO-05 or LO-07. The week stays `computed` with its would-be `investable_cad` and is not carried.
 - **LO-07** is called for every newly written audit of an investing run (`computed`, `invested` or `carried`), after LO-05. Not for backfills, reruns or paused users.
 - LO-05 / LO-07 errors don't fail the audit (`onError: continueRegularOutput`); the audit then stays `computed`.
+- Lane B confirmed LO-05 matches (its `n8n/notes/B.md`): it needs the audit `computed`, the user active with `consent_at`, and the amount within [`min_invest`, `max_weekly_invest`]. It returns its data object: `status: "invested"` (it set the audit itself; `already_invested: true` on a repeat), or `dry_run` / `partial` / `failed` with `error {code, message}`, leaving the audit `computed`. It writes `max(pending_carry − invested, 0)`, a no-op after LO-04 zeroes the carry.
 - Default run (no `user_id`): every user with status `active` or `paused`, the current week. **Don't call it on the shared dev n8n**: it would audit every lane's test user.
 
 ## How to test
