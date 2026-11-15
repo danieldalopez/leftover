@@ -5,11 +5,165 @@
   "nodes": [
     {
       "parameters": {
+        "content": "## LO-03b Manual Expense\nLog a purchase by hand: the demo fallback when Plaid is down (spec §10 WF03b, §19.5).\n- **Form** `/form/lo-log-purchase` → calls this same workflow, so it gets exactly the API's checks, then shows the result page.\n- **API** `POST /lo/expense {user_id, amount_cad, category_key, merchant, date?}` (header `x-lo-key`).\n- Category must be one of the user's active budgets (key or label). Writes a `transactions` row with `source: \"manual\"`.\n- Errors: 400 BAD_REQUEST, 404 NOT_FOUND (user has no budgets).",
+        "width": 640,
+        "height": 300
+      },
+      "name": "About LO-03b",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -340
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "none",
+        "formTitle": "Log a purchase",
+        "formDescription": "Cash, or the bank feed is down? Add the purchase here. It counts toward this week's budget in the Sunday audit.\n\nEducational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "User",
+              "fieldName": "user_id",
+              "fieldType": "text",
+              "placeholder": "maya",
+              "defaultValue": "maya",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Amount (CAD)",
+              "fieldName": "amount_cad",
+              "fieldType": "number",
+              "placeholder": "14.00",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Category",
+              "fieldName": "category",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Groceries"
+                  },
+                  {
+                    "option": "Eating out and coffee"
+                  },
+                  {
+                    "option": "Transport"
+                  },
+                  {
+                    "option": "Fun and entertainment"
+                  },
+                  {
+                    "option": "Shopping"
+                  },
+                  {
+                    "option": "Personal care"
+                  },
+                  {
+                    "option": "Other variable"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Merchant",
+              "fieldName": "merchant",
+              "fieldType": "text",
+              "placeholder": "Banh Mi Saigon",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Date (empty = today)",
+              "fieldName": "date",
+              "fieldType": "date"
+            }
+          ]
+        },
+        "responseMode": "onReceived",
+        "options": {
+          "path": "lo-log-purchase",
+          "buttonLabel": "Log purchase",
+          "appendAttribution": false
+        }
+      },
+      "name": "Log a purchase (form)",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "d9c92fbe-85a2-45d5-84f6-32e4ea0edc26"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The form's fields → the same request shape as POST /lo/expense.\nconst f = $input.first().json;\nreturn [{ json: {\n  channel: 'form',\n  user_id: f.user_id ?? '',\n  amount_cad: f.amount_cad ?? '',\n  category_key: f.category ?? '',\n  merchant: f.merchant ?? '',\n  date: f.date ?? '',\n} }];"
+      },
+      "name": "From the form",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "leftoverWF03bexp",
+          "mode": "id",
+          "cachedResultName": "LO-03b Manual Expense"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "name": "Log it (same checks as the API)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "text",
+        "completionTitle": "={{ $json.title }}",
+        "completionMessage": "={{ $json.message }}",
+        "limitWaitTime": true,
+        "limitType": "afterTimeInterval",
+        "resumeAmount": 10,
+        "resumeUnit": "minutes",
+        "options": {}
+      },
+      "name": "Show the result",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
         "httpMethod": "POST",
         "path": "lo/expense",
         "authentication": "headerAuth",
-        "responseMode": "lastNode",
-        "responseData": "firstEntryJson",
+        "responseMode": "responseNode",
         "options": {}
       },
       "name": "POST /lo/expense",
@@ -17,7 +171,7 @@
       "typeVersion": 2.2,
       "position": [
         0,
-        0
+        260
       ],
       "webhookId": "cd963e41-60a6-496e-95b3-9420219d687b",
       "credentials": {
@@ -29,35 +183,342 @@
     },
     {
       "parameters": {
-        "jsCode": "// STUB: replaced by its lane (see BUILD-PLAN.md). Keep the workflow id.\nreturn [{ json: { ok: true, stub: true, workflow: 'LO-03b' } }];"
+        "inputSource": "passthrough"
       },
-      "name": "Stub response",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "name": "Called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
       "position": [
-        320,
-        0
+        0,
+        460
       ]
     },
     {
       "parameters": {
-        "content": "## LO-03b Manual Expense: stub\nOwned by its lane in BUILD-PLAN.md. Answers {ok:true, stub:true} until the lane replaces it.\nRoutes: POST /lo/expense"
+        "jsCode": "// One request shape for both entries: POST /lo/expense (body) or a call from the form path.\nconst j = $input.first().json || {};\nconst fromWebhook = typeof j.headers === 'object' && 'body' in j;\nconst src = (fromWebhook ? j.body : j) || {};\nreturn [{ json: {\n  channel: fromWebhook ? 'api' : (src.channel || 'internal'),\n  user_id: String(src.user_id ?? '').trim().toLowerCase(),\n  amount_cad: src.amount_cad ?? '',\n  category_key: src.category_key ?? src.category ?? '',\n  merchant: src.merchant ?? '',\n  date: src.date ?? '',\n} }];"
       },
-      "name": "About this stub",
-      "type": "n8n-nodes-base.stickyNote",
+      "name": "Read request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "budgets"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "name": "Read budgets",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        360
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ---- lib/week.mjs (pasted verbatim; edit the lib, not this node) ----\n// lib/week.mjs: week math for Leftover (spec §6.1, §19.6).\n// A week runs Monday 00:00 to Sunday 23:59 in America/Vancouver and is\n// identified by its Monday, `week_start` ('YYYY-MM-DD').\n//\n// Two kinds of values, never mix them up:\n//   - calendar dates ('YYYY-MM-DD'): transactions.date, audits.week_start.\n//     They already ARE a local day. Never run them through a timezone.\n//   - instants (Date objects or ISO timestamps with a Z/offset): \"now\",\n//     created_at, filled_at. Convert to a local day with localDate().\n//\n// Plain functions, no imports, so this pastes straight into an n8n Code node:\n// copy everything above the `export` line at the bottom.\n\nconst LO_TZ = 'America/Vancouver';\nconst YMD_RE = /^\\d{4}-\\d{2}-\\d{2}$/;\n\nfunction isYmd(value) {\n  return typeof value === 'string' && YMD_RE.test(value);\n}\n\n// Local calendar date ('YYYY-MM-DD') of an instant in `tz`.\nfunction localDate(instant, tz = LO_TZ) {\n  const d = instant instanceof Date ? instant : new Date(instant);\n  if (Number.isNaN(d.getTime())) throw new Error(`localDate: invalid instant ${instant}`);\n  const parts = {};\n  for (const { type, value } of new Intl.DateTimeFormat('en-CA', {\n    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',\n  }).formatToParts(d)) parts[type] = value;\n  return `${parts.year}-${parts.month}-${parts.day}`;\n}\n\n// Calendar date of a date-only value. Accepts 'YYYY-MM-DD', or a value that a\n// date column turned into midnight UTC ('2026-11-09T00:00:00.000Z' or a Date):\n// the first 10 characters are the day, with no timezone shift.\nfunction calendarDate(value) {\n  if (isYmd(value)) return value;\n  if (value instanceof Date) return value.toISOString().slice(0, 10);\n  if (typeof value === 'string' && YMD_RE.test(value.slice(0, 10))) return value.slice(0, 10);\n  throw new Error(`calendarDate: not a date ${value}`);\n}\n\n// Add n days to a calendar date (calendar arithmetic, immune to DST).\nfunction addDays(ymd, n) {\n  if (!isYmd(ymd)) throw new Error(`addDays: not YYYY-MM-DD ${ymd}`);\n  const d = new Date(`${ymd}T00:00:00Z`);\n  d.setUTCDate(d.getUTCDate() + n);\n  return d.toISOString().slice(0, 10);\n}\n\n// 0 = Monday … 6 = Sunday.\nfunction weekdayIndex(ymd) {\n  if (!isYmd(ymd)) throw new Error(`weekdayIndex: not YYYY-MM-DD ${ymd}`);\n  return (new Date(`${ymd}T00:00:00Z`).getUTCDay() + 6) % 7;\n}\n\n// Monday of the week containing `value`. A 'YYYY-MM-DD' string is treated as a\n// calendar date; anything else as an instant converted to local time in `tz`.\nfunction weekStart(value = new Date(), tz = LO_TZ) {\n  const ymd = isYmd(value) ? value : localDate(value, tz);\n  return addDays(ymd, -weekdayIndex(ymd));\n}\n\n// Sunday of the week that starts on `weekStartYmd`.\nfunction weekEnd(weekStartYmd) {\n  if (weekdayIndex(weekStartYmd) !== 0) throw new Error(`weekEnd: ${weekStartYmd} is not a Monday`);\n  return addDays(weekStartYmd, 6);\n}\n\nfunction previousWeekStart(weekStartYmd) {\n  if (weekdayIndex(weekStartYmd) !== 0) throw new Error(`previousWeekStart: ${weekStartYmd} is not a Monday`);\n  return addDays(weekStartYmd, -7);\n}\n\n// True if calendar date `ymd` falls inside the week starting `weekStartYmd`.\nfunction isInWeek(ymd, weekStartYmd) {\n  const day = calendarDate(ymd);\n  return day >= weekStartYmd && day <= addDays(weekStartYmd, 6);\n}\n\n// Days left in the current week including today: Monday = 7 … Sunday = 1.\nfunction daysLeft(now = new Date(), tz = LO_TZ) {\n  return 7 - weekdayIndex(localDate(now, tz));\n}\n\n// Real date for a seed transaction (spec §19.4): `dayOffset` days from the\n// current week's Monday, clamped so seed data never lands in the future.\nfunction seedDate(dayOffset, now = new Date(), tz = LO_TZ) {\n  const today = localDate(now, tz);\n  const date = addDays(weekStart(today), dayOffset);\n  return date > today ? today : date;\n}\n\n// ---- lib/categorize.mjs (pasted verbatim; edit the lib, not this node) ----\n// lib/categorize.mjs: bank data logic for Leftover (spec §6.2, §6.3, §9, §10 WF03, WF03b).\n//   - Plaid personal finance category (PFC) → budget category_key via category_map rows\n//   - Plaid /transactions/sync pages → rows to upsert / ids to mark removed + the new cursor\n//   - pending → posted dedupe (which rows count)\n//   - manual expense validation (LO-03b)\n//\n// Conventions (contracts/data-tables.md):\n//   - amount: positive = money out, negative = money in (refund). Plaid uses the same sign.\n//   - date: 'YYYY-MM-DD' local calendar date, stored as a string.\n//   - category_map lookup: exact (primary, detailed) → (primary, '') → 'other'.\n//     Rows with excluded = true use category_key 'excluded'.\n//\n// Plain functions, no imports, so this pastes straight into an n8n Code node:\n// copy everything above the `export` line at the bottom.\n\nconst EXCLUDED_KEY = 'excluded';\nconst FALLBACK_KEY = 'other';\nconst CAT_YMD_RE = /^\\d{4}-\\d{2}-\\d{2}$/;\nconst USER_ID_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/;\n\n// Data Tables return booleans as true/false, 1/0 or 'true'/'false'.\nfunction toBool(value) {\n  if (typeof value === 'string') return ['true', '1', 'yes'].includes(value.trim().toLowerCase());\n  return Boolean(value);\n}\n\n// Dollars rounded to cents. The 1e-6 nudge stops 14.005 * 100 = 1400.4999… rounding down.\nfunction cents(value) {\n  const n = Number(value);\n  if (!Number.isFinite(n)) throw new Error(`cents: not a number ${value}`);\n  const r = (Math.sign(n) * Math.round(Math.abs(n) * 100 + 1e-6)) / 100;\n  return Object.is(r, -0) ? 0 : r;\n}\n\n// A real calendar date in 'YYYY-MM-DD' (rejects 2026-02-30).\nfunction isCalendarYmd(value) {\n  if (typeof value !== 'string' || !CAT_YMD_RE.test(value)) return false;\n  const d = new Date(`${value}T00:00:00Z`);\n  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;\n}\n\nfunction pfcKey(value) {\n  return String(value ?? '').trim().toUpperCase();\n}\n\n// category_map rows → lookup index. Later rows win on a duplicate key.\nfunction buildCategoryIndex(mapRows) {\n  const index = new Map();\n  for (const row of mapRows || []) {\n    if (!row || !pfcKey(row.plaid_pfc_primary)) continue;\n    const key = `${pfcKey(row.plaid_pfc_primary)}|${pfcKey(row.plaid_pfc_detailed)}`;\n    const excluded = toBool(row.excluded) || row.category_key === EXCLUDED_KEY;\n    index.set(key, { category_key: excluded ? EXCLUDED_KEY : String(row.category_key || FALLBACK_KEY), excluded });\n  }\n  return index;\n}\n\n// PFC primary/detailed → { category_key, excluded, rule }.\n// rule: 'detailed' (exact row), 'primary' (row with empty detailed), 'fallback' ('other').\n// A transaction with no PFC at all (Plaid fills it ~95% of the time) also falls back to 'other'.\nfunction categorize(primary, detailed, index) {\n  const p = pfcKey(primary);\n  const d = pfcKey(detailed);\n  if (p && d && index.has(`${p}|${d}`)) return { ...index.get(`${p}|${d}`), rule: 'detailed' };\n  if (p && index.has(`${p}|`)) return { ...index.get(`${p}|`), rule: 'primary' };\n  return { category_key: FALLBACK_KEY, excluded: false, rule: 'fallback' };\n}\n\n// One Plaid transaction object → a `transactions` row (contracts/data-tables.md).\n// Uses authorized_date (when the purchase happened) over date (when it posted), so a\n// late-posting charge lands in the week it was made; LO-04's true-up (§6.6) handles that.\n// Throws on a record that can't be stored; mapSyncPages() catches and skips it.\nfunction mapPlaidTransaction(txn, ctx) {\n  if (!txn || typeof txn !== 'object') throw new Error('not an object');\n  const txnId = String(txn.transaction_id || '').trim();\n  if (!txnId) throw new Error('missing transaction_id');\n  const date = txn.authorized_date || txn.date;\n  if (!isCalendarYmd(date)) throw new Error(`bad date ${date}`);\n  const amount = Number(txn.amount);\n  if (!Number.isFinite(amount)) throw new Error(`bad amount ${txn.amount}`);\n  const pfc = txn.personal_finance_category || {};\n  const { category_key } = categorize(pfc.primary, pfc.detailed, ctx.index);\n  const merchant = String(txn.merchant_name || txn.name || '').trim() || 'Unknown';\n  return {\n    txn_id: txnId,\n    user_id: ctx.user_id,\n    date,\n    amount: cents(amount),\n    merchant: merchant.slice(0, 120),\n    pfc_primary: pfcKey(pfc.primary),\n    pfc_detailed: pfcKey(pfc.detailed),\n    category_key,\n    pending: Boolean(txn.pending),\n    pending_txn_id: String(txn.pending_transaction_id || ''),\n    source: 'plaid',\n    removed: false,\n    synced_at: ctx.synced_at,\n  };\n}\n\n// Fold the pages of one /transactions/sync run (in order) into what to write.\n//   ctx: { user_id, index, synced_at, cursor }  (cursor = the one stored before this run)\n// Returns:\n//   upserts:     rows to upsert by txn_id (one per id, last state wins)\n//   removals:    txn_ids to mark removed = true that aren't in `upserts`\n//   next_cursor: cursor to store, or null when the run is incomplete (keep the old one)\n//   complete:    false if the last page still says has_more (stopped early)\n//   not_ready:   true if Plaid hasn't pulled the Item's transactions yet\n//   counts:      { added, modified, removed } as reported by Plaid\n//   skipped:     [{ transaction_id, reason }] for records that couldn't be mapped\n// Pending → posted: the posted row carries pending_txn_id, and Plaid also lists the pending id\n// in `removed`. The pending row is marked removed either way, so it never counts twice.\nfunction mapSyncPages(pages, ctx) {\n  const rows = new Map();\n  const removals = new Set();\n  const counts = { added: 0, modified: 0, removed: 0 };\n  const skipped = [];\n  let cursor = '';\n  let last = null;\n\n  const put = (txn) => {\n    try {\n      const row = mapPlaidTransaction(txn, ctx);\n      rows.set(row.txn_id, row);\n      removals.delete(row.txn_id);\n    } catch (err) {\n      skipped.push({ transaction_id: (txn && txn.transaction_id) || null, reason: err.message });\n    }\n  };\n  const drop = (txnId) => {\n    if (!txnId) return;\n    if (rows.has(txnId)) rows.get(txnId).removed = true;\n    else removals.add(txnId);\n  };\n\n  for (const page of pages || []) {\n    if (!page || typeof page !== 'object') continue;\n    last = page;\n    const added = page.added || [];\n    const modified = page.modified || [];\n    const removed = page.removed || [];\n    counts.added += added.length;\n    counts.modified += modified.length;\n    counts.removed += removed.length;\n    added.forEach(put);\n    modified.forEach(put);\n    removed.forEach((r) => drop(r && r.transaction_id));\n    if (page.next_cursor) cursor = page.next_cursor;\n  }\n\n  // A posted row supersedes its pending row.\n  for (const row of [...rows.values()]) {\n    if (!row.pending && row.pending_txn_id && row.pending_txn_id !== row.txn_id) drop(row.pending_txn_id);\n  }\n\n  const complete = !last || !last.has_more;\n  const notReady = Boolean(last) && last.transactions_update_status === 'NOT_READY' && !cursor;\n  let nextCursor = cursor || ctx.cursor || '';\n  if (!complete) nextCursor = null;\n  return {\n    upserts: [...rows.values()],\n    removals: [...removals],\n    next_cursor: nextCursor,\n    complete,\n    not_ready: notReady,\n    counts,\n    skipped,\n  };\n}\n\n// The `transactions` columns (contracts/data-tables.md). Rows read back from a Data Table also\n// carry n8n's id/createdAt/updatedAt, which an upsert must not send.\nconst TXN_COLUMNS = ['txn_id', 'user_id', 'date', 'amount', 'merchant', 'pfc_primary', 'pfc_detailed',\n  'category_key', 'pending', 'pending_txn_id', 'source', 'removed', 'synced_at'];\n\n// Everything one sync run must upsert into `transactions`: the mapped rows, plus a full copy of\n// each already-stored row that Plaid removed (removed = true). Upserting full rows means one\n// write operation and never a half-empty row for an id we've never seen.\n//   existingRows: this user's stored Plaid rows (any extra keys are dropped)\nfunction rowsToWrite(syncResult, existingRows, syncedAt) {\n  const stored = new Map((existingRows || []).filter((r) => r && r.txn_id).map((r) => [r.txn_id, r]));\n  const rows = [...syncResult.upserts];\n  for (const id of syncResult.removals) {\n    const prev = stored.get(id);\n    if (!prev || toBool(prev.removed)) continue;\n    const row = {};\n    for (const col of TXN_COLUMNS) row[col] = prev[col];\n    row.date = String(row.date ?? '').slice(0, 10);\n    row.pending = toBool(row.pending);\n    row.removed = true;\n    row.synced_at = syncedAt;\n    rows.push(row);\n  }\n  return rows;\n}\n\n// Plaid base URL from the `config` rows (key plaid_base_url). Sandbox only (spec §0 rule 6 spirit,\n// §16.3): anything else is refused so a config typo can never reach production Plaid.\nfunction plaidBaseUrl(configRows) {\n  const row = (configRows || []).find((r) => r && r.key === 'plaid_base_url');\n  const url = String((row && row.value) || 'https://sandbox.plaid.com').trim().replace(/\\/+$/, '');\n  if (url !== 'https://sandbox.plaid.com') throw new Error(`plaid_base_url must be https://sandbox.plaid.com, got ${url}`);\n  return url;\n}\n\n// POST /lo/demo/add-txn → one /sandbox/transactions/create transaction.\n//   input: { user_id, merchant, amount_cad, date? }; today: 'YYYY-MM-DD' (Vancouver)\n// Plaid takes dates up to today (no future) and up to 730 days back; positive amount = money out.\nfunction buildSandboxTransaction(input, today) {\n  const fail = (status, code, message) => ({ ok: false, status, code, message });\n  const src = input || {};\n  const userId = String(src.user_id ?? '').trim().toLowerCase();\n  if (!USER_ID_RE.test(userId)) return fail(400, 'BAD_REQUEST', 'user_id is required (lowercase letters, digits, - or _)');\n  const merchant = String(src.merchant ?? '').trim();\n  if (!merchant) return fail(400, 'BAD_REQUEST', 'merchant is required');\n  const amount = src.amount_cad === '' || src.amount_cad === null || src.amount_cad === undefined ? NaN : Number(src.amount_cad);\n  if (!Number.isFinite(amount) || cents(amount) === 0) return fail(400, 'BAD_REQUEST', 'amount_cad must be a non-zero number (negative = refund)');\n  if (Math.abs(amount) > 10000) return fail(400, 'BAD_REQUEST', 'amount_cad is too large for a demo purchase');\n  const date = String(src.date ?? '').trim().slice(0, 10) || today;\n  if (!isCalendarYmd(date)) return fail(400, 'BAD_REQUEST', 'date must be YYYY-MM-DD');\n  if (date > today) return fail(400, 'BAD_REQUEST', `date ${date} is in the future (today is ${today})`);\n  const oldest = new Date(`${today}T00:00:00Z`);\n  oldest.setUTCDate(oldest.getUTCDate() - 730);\n  if (date < oldest.toISOString().slice(0, 10)) return fail(400, 'BAD_REQUEST', 'date is more than 730 days ago');\n  return {\n    ok: true,\n    user_id: userId,\n    transaction: { date_transacted: date, date_posted: date, amount: cents(amount), description: merchant.slice(0, 120) },\n  };\n}\n\n// Plaid's error from an n8n HTTP Request error-output item. Returns { code, message }.\n// n8n puts Plaid's JSON in different places: error.message = `400 - \"<JSON string>\"` for a plain\n// request, error.error = `<JSON string>` (with error.statusCode) when pagination is on.\nfunction plaidError(item) {\n  const e = (item && item.error) || {};\n  const candidates = typeof e === 'string' ? [e] : [e.message, e.error, e.description, item && item.details && item.details.message];\n  let parsed = null;\n  for (const c of candidates) {\n    if (parsed || !c) continue;\n    try {\n      let rest = typeof c === 'string' ? c.replace(/^\\d{3}\\s*-\\s*/, '') : c;\n      for (let i = 0; i < 2 && typeof rest === 'string'; i += 1) rest = JSON.parse(rest);\n      if (rest && typeof rest === 'object' && rest.error_code) parsed = rest;\n    } catch { /* not JSON: try the next place */ }\n  }\n  const text = typeof e === 'string' ? e : String(e.message || e.error || '');\n  if (parsed) {\n    return { code: parsed.error_code, message: `Plaid said ${parsed.error_code}: ${parsed.error_message || ''}`.trim() };\n  }\n  const m = JSON.stringify(item || {}).match(/error_code[^A-Z]*([A-Z_]{4,})/);\n  if (m) return { code: m[1], message: `Plaid said ${m[1]}` };\n  return { code: 'PLAID_REQUEST_FAILED', message: `Plaid request failed: ${(text || e.name || 'no response').slice(0, 200)}` };\n}\n\n// The reply for LO-03 once every bank link has been synced (spec §19.2 envelope).\n//   request: { channel: 'api' | 'add-txn' | 'internal' | 'schedule', user_id }\n//   results: one per link { user_id, item_id, ok, counts?, not_ready?, error? }\n// /lo/sync and internal calls: { users, added, modified, removed }; /lo/demo/add-txn:\n// { user_id, sync: {…} }. not_ready: true is added when Plaid hadn't pulled the Item yet.\n// Any failed link → 502 UPSTREAM_ERROR (rows from links that worked are still saved).\nfunction syncReply(request, results) {\n  const list = results || [];\n  const total = { added: 0, modified: 0, removed: 0 };\n  for (const r of list) {\n    if (!r.ok || !r.counts) continue;\n    total.added += r.counts.added;\n    total.modified += r.counts.modified;\n    total.removed += r.counts.removed;\n  }\n  const failed = list.filter((r) => !r.ok);\n  if (failed.length) {\n    const what = failed.map((r) => `${r.user_id}/${r.item_id}: ${r.error || 'failed'}`).join('; ');\n    return { status: 502, body: { ok: false, error: { code: 'UPSTREAM_ERROR', message: `Plaid sync failed for ${what}` } } };\n  }\n  const users = new Set(list.map((r) => r.user_id)).size;\n  const notReady = list.some((r) => r.not_ready);\n  const sync = notReady ? { ...total, not_ready: true } : total;\n  const data = request.channel === 'add-txn' ? { user_id: request.user_id, sync } : { users, ...sync };\n  return { status: 200, body: { ok: true, data } };\n}\n\n// The rows that count toward spend (contracts/data-tables.md \"What counts toward a week\"):\n// not removed, a budget category (not 'excluded'), and not superseded by a posted row whose\n// pending_txn_id points at it. Pending rows count until they post.\nfunction countableTransactions(rows) {\n  const live = (rows || []).filter((r) => r && !toBool(r.removed));\n  const superseded = new Set(live.map((r) => r.pending_txn_id).filter(Boolean));\n  return live.filter((r) => r.category_key && r.category_key !== EXCLUDED_KEY && !superseded.has(r.txn_id));\n}\n\n// LO-03b: validate a manual expense against the user's budgets and build the row.\n//   input:   { user_id, amount_cad, category_key | category (key or label), merchant, date? }\n//   budgets: the user's `budgets` rows\n//   ctx:     { today: 'YYYY-MM-DD' (Vancouver), now: ISO timestamp, id_suffix: unique string }\n// Returns { ok: true, row, data } or { ok: false, status, code, message } (spec §19.2 codes).\nfunction buildManualExpense(input, budgets, ctx) {\n  const fail = (status, code, message) => ({ ok: false, status, code, message });\n  const src = input || {};\n\n  const userId = String(src.user_id ?? '').trim().toLowerCase();\n  if (!USER_ID_RE.test(userId)) return fail(400, 'BAD_REQUEST', 'user_id is required (lowercase letters, digits, - or _)');\n\n  const rawAmount = typeof src.amount_cad === 'string' ? src.amount_cad.replace(/[$,\\s]/g, '') : src.amount_cad;\n  const amount = rawAmount === '' || rawAmount === null || rawAmount === undefined ? NaN : Number(rawAmount);\n  if (!Number.isFinite(amount) || cents(amount) === 0) return fail(400, 'BAD_REQUEST', 'amount_cad must be a non-zero number (negative = refund)');\n  if (Math.abs(amount) > 100000) return fail(400, 'BAD_REQUEST', 'amount_cad is too large');\n\n  const merchant = String(src.merchant ?? '').trim();\n  if (!merchant) return fail(400, 'BAD_REQUEST', 'merchant is required');\n\n  const rawDate = String(src.date ?? '').trim().slice(0, 10);\n  const date = rawDate || ctx.today;\n  if (!isCalendarYmd(date)) return fail(400, 'BAD_REQUEST', 'date must be YYYY-MM-DD');\n  if (date > ctx.today) return fail(400, 'BAD_REQUEST', `date ${date} is in the future (today is ${ctx.today})`);\n\n  const mine = (budgets || []).filter((b) => b && b.user_id === userId);\n  if (mine.length === 0) return fail(404, 'NOT_FOUND', `unknown user ${userId}: no budgets found`);\n  const active = mine.filter((b) => b.active === undefined || b.active === null || b.active === '' || toBool(b.active));\n\n  const wanted = String(src.category_key ?? src.category ?? '').trim();\n  if (!wanted) return fail(400, 'BAD_REQUEST', 'category_key is required');\n  const norm = (s) => String(s ?? '').trim().toLowerCase();\n  const budget = active.find((b) => norm(b.category_key) === norm(wanted))\n    || active.find((b) => norm(b.label) === norm(wanted));\n  if (!budget) {\n    const keys = active.map((b) => b.category_key).join(', ');\n    return fail(400, 'BAD_REQUEST', `category_key ${wanted} is not one of ${userId}'s budgets (${keys})`);\n  }\n\n  const row = {\n    txn_id: `manual-${userId}-${ctx.id_suffix}`,\n    user_id: userId,\n    date,\n    amount: cents(amount),\n    merchant: merchant.slice(0, 120),\n    pfc_primary: '',\n    pfc_detailed: '',\n    category_key: budget.category_key,\n    pending: false,\n    pending_txn_id: '',\n    source: 'manual',\n    removed: false,\n    synced_at: ctx.now,\n  };\n  const data = { txn_id: row.txn_id, user_id: userId, date, amount_cad: row.amount, category_key: row.category_key };\n  return { ok: true, row, data };\n}\n\n// ---- node logic ----\nconst req = $('Read request').first().json;\nconst budgets = $input.all().map((i) => i.json).filter((b) => b && b.user_id);\nconst now = new Date();\nconst out = buildManualExpense(req, budgets, {\n  today: localDate(now),\n  now: now.toISOString(),\n  id_suffix: now.getTime().toString(36) + Math.random().toString(36).slice(2, 6),\n});\nif (out.ok) return [{ json: out.row }];   // clean row: item keys = transactions columns\nreturn [{ json: {\n  channel: req.channel,\n  status: out.status,\n  body: { ok: false, error: { code: out.code, message: out.message } },\n  title: 'That purchase was not logged',\n  message: out.message + '\\n\\nEducational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.',\n} }];\n"
+      },
+      "name": "Validate expense",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6c5954be-e6ff-409d-8d13-b2d1c16e5201",
+              "leftValue": "={{ !!$json.txn_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        900,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "transactions"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "name": "Insert transaction",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const req = $('Read request').first().json;\nconst row = $('Validate expense').first().json;\nconst budget = $('Read budgets').all().map((i) => i.json).find((b) => b.category_key === row.category_key) || {};\nconst money = (n) => (n < 0 ? '-$' : '$') + Math.abs(n).toFixed(2);\nreturn [{ json: {\n  channel: req.channel,\n  status: 200,\n  body: { ok: true, data: { txn_id: row.txn_id, user_id: row.user_id, date: row.date, amount_cad: row.amount, category_key: row.category_key } },\n  title: 'Purchase logged',\n  message: money(row.amount) + ' at ' + row.merchant + ' on ' + row.date + ', counted in ' + (budget.label || row.category_key)\n    + ' for ' + row.user_id + '. It shows up on the dashboard and in Sunday\\'s audit.\\n\\nEducational prototype using simulated (paper) trading. Not investment advice. Projections are illustrative.',\n} }];"
+      },
+      "name": "Reply: logged",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "251b8c2a-b396-4f68-8ddd-2828a22b2b16",
+              "leftValue": "={{ $json.channel === 'api' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Called by the API?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1560,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "responseCode": "={{ $json.status }}"
+        }
+      },
+      "name": "Respond to API",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1780,
+        260
+      ]
+    },
+    {
+      "parameters": {},
+      "name": "Back to the form",
+      "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        -40,
-        -220
+        1780,
+        460
       ]
     }
   ],
   "connections": {
+    "Log a purchase (form)": {
+      "main": [
+        [
+          {
+            "node": "From the form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "From the form": {
+      "main": [
+        [
+          {
+            "node": "Log it (same checks as the API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log it (same checks as the API)": {
+      "main": [
+        [
+          {
+            "node": "Show the result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "POST /lo/expense": {
       "main": [
         [
           {
-            "node": "Stub response",
+            "node": "Read request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Read request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read request": {
+      "main": [
+        [
+          {
+            "node": "Read budgets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read budgets": {
+      "main": [
+        [
+          {
+            "node": "Validate expense",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate expense": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Insert transaction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Called by the API?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert transaction": {
+      "main": [
+        [
+          {
+            "node": "Reply: logged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply: logged": {
+      "main": [
+        [
+          {
+            "node": "Called by the API?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Called by the API?": {
+      "main": [
+        [
+          {
+            "node": "Respond to API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Back to the form",
             "type": "main",
             "index": 0
           }
